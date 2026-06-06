@@ -79,6 +79,16 @@ button:focus-visible,
 /* ================================================
    Layout utilities
 ================================================ */
+
+/* Cover for the sticky Hero — wraps every section that follows it in
+   index.astro and paints over the hero as the page scrolls past. */
+.hero-cover {
+  position: relative;
+  z-index: 1;
+  background-color: var(--c-bg);
+  border-bottom: 1px solid var(--c-line);
+}
+
 .container {
   width: 100%;
   max-width: var(--max-w);

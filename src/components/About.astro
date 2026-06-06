@@ -1,6 +1,7 @@
 ---
 import SectionMeta from './SectionMeta.astro';
 import PrimaryCta from './PrimaryCta.astro';
+import StarIcon from './StarIcon.astro';
 import { contact } from '../config/site';
 import about from '../content/about.json';
 ---
@@ -11,15 +12,7 @@ import about from '../content/about.json';
   <!-- Decorative oversized asterisk: lives behind all section content,
        gets parallax + a continuous base rotation that accelerates with
        scroll velocity. Mirrors the marquee/section-meta star glyph. -->
-  <svg
-    class="about__star svg-star"
-    id="about-star"
-    viewBox="0 0 44 49"
-    fill="none"
-    aria-hidden="true"
-  >
-    <path d="M19.139 48.5C21.1121 35.7531 21.3094 30.7739 21.3094 25.5954C16.574 28.3838 10.2601 32.1681 2.76233 38.7407L0 33.9606C9.66816 30.5747 16.1794 26.9896 20.9148 24.4004C16.1794 21.8112 9.66816 18.027 0 14.8403L2.76233 10.0602C10.2601 16.6328 16.574 20.2178 21.3094 23.2054C21.3094 18.027 21.1121 13.0477 19.139 0.5H24.6637C22.8879 13.0477 22.6906 18.027 22.4933 23.4046C27.0314 20.417 33.3453 16.6328 41.0404 10.0602L44 14.8403C34.5292 18.2261 28.0179 22.0104 23.0852 24.4004C28.0179 26.9896 34.5292 30.5747 44 33.9606L41.0404 38.7407C33.3453 32.1681 27.0314 28.1846 22.4933 25.3963C22.6906 30.7739 22.8879 35.7531 24.6637 48.5H19.139Z" fill="currentColor"/>
-  </svg>
+  <StarIcon id="about-star" class="about__star" />
 
   <div class="about__meta container">
     <SectionMeta index={about.metaIndex} rightLabel={about.metaRightLabel} rightIcon="asterisk" />
@@ -72,7 +65,7 @@ import about from '../content/about.json';
     display: flex;
     flex-direction: column;
     justify-content: center;
-    padding-bottom: var(--sp-144);
+    padding-block: var(--sp-144);
     /* overflow-x clip so the star's negative right offset doesn't trigger
        a horizontal scrollbar; vertical stays visible so the star can
        spill above/below the section as parallax travels its full range. */
@@ -82,8 +75,10 @@ import about from '../content/about.json';
   /* Oversized decorative asterisk, anchored to the right edge. z-index 0
      pins it under all content (meta, hero row, text). Two CSS vars drive
      it: --star-spin (rotation, JS-controlled) and --about-star-parallax
-     (translateY, JS-controlled). transform composes both. */
-  .about__star {
+     (translateY, JS-controlled). transform composes both.
+     :global() because the SVG is rendered by <StarIcon/> — its own scope
+     doesn't see About's astro-cid, so the rule has to be unscoped. */
+  :global(.about__star) {
     position: absolute;
     /* Anchored near the bottom of the section so on first entry the star
        sits low and rises through the section as you scroll. */
@@ -103,7 +98,7 @@ import about from '../content/about.json';
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .about__star {
+    :global(.about__star) {
       transform: translateY(-50%);
     }
   }
@@ -408,6 +403,9 @@ import about from '../content/about.json';
 </style>
 
 <script>
+  import { fitByDom } from '../scripts/FitText';
+  import { startStarSpin } from '../scripts/StarSpin';
+
   const section = document.getElementById('about');
   const hero = document.getElementById('about-hero');
   const hello = document.getElementById('about-hello');
@@ -419,16 +417,13 @@ import about from '../content/about.json';
 
     // Fit HELLO to its container's full width.
     function fitHello() {
-      hello!.style.fontSize = '100px';
       hello!.style.whiteSpace = 'nowrap';
       const cs = window.getComputedStyle(hero!);
       const padLeft = parseFloat(cs.paddingLeft) || 0;
       const padRight = parseFloat(cs.paddingRight) || 0;
       const containerWidth = hero!.getBoundingClientRect().width - padLeft - padRight;
-      const naturalWidth = hello!.getBoundingClientRect().width;
-      if (naturalWidth > 0 && containerWidth > 0) {
-        hello!.style.fontSize = `${(100 * containerWidth) / naturalWidth}px`;
-      }
+      const fs = fitByDom(hello!, containerWidth);
+      if (fs > 0) hello!.style.fontSize = `${fs}px`;
     }
 
     // Parallax: offset goes from -1 (section below viewport) to +1
@@ -521,42 +516,7 @@ import about from '../content/about.json';
 
     window.addEventListener('scroll', onScroll, { passive: true });
 
-    // Star spin loop: continuous base rotation that accelerates with
-    // scroll velocity. Mirrors the marquee's velocity-boost envelope —
-    // boost jumps up on input, decays smoothly when input stops.
-    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    if (star && !reduced) {
-      const BASE_DEG_PER_SEC = 6;      // gentle continuous idle rotation
-      const BOOST_FACTOR = 0.08;       // scroll-velocity → deg/s multiplier
-      const MAX_BOOST = 90;            // cap (deg/s) — keep it a nudge, not a spin
-      const DECAY = 0.90;              // per-60fps-frame exponential decay
-
-      let angle = 0;
-      let boost = 0;
-      let prevScrollY = window.scrollY;
-      let prevT = performance.now();
-
-      const spin = (now: number) => {
-        const dt = Math.min(0.1, (now - prevT) / 1000);
-        prevT = now;
-
-        const dy = window.scrollY - prevScrollY;
-        prevScrollY = window.scrollY;
-        const instBoost = dt > 0
-          ? Math.min(MAX_BOOST, Math.abs(dy / dt) * BOOST_FACTOR)
-          : 0;
-        if (instBoost > boost) {
-          boost = instBoost;
-        } else {
-          boost *= Math.pow(DECAY, dt * 60);
-        }
-
-        angle = (angle + (BASE_DEG_PER_SEC + boost) * dt) % 360;
-        star.style.setProperty('--star-spin', `${angle}deg`);
-        requestAnimationFrame(spin);
-      };
-      requestAnimationFrame(spin);
-    }
+    if (star) startStarSpin(star);
 
   }
 </script>

@@ -279,6 +279,8 @@ import hero from '../content/hero.json';
 
 <script>
   import { HeroKineticEffect } from '../scripts/HeroKineticEffect';
+  import { fitByCanvas } from '../scripts/FitText';
+  import { makePixelDrift } from '../scripts/PixelDrift';
 
   const scrollBtn = document.getElementById('hero-scroll');
   if (scrollBtn) {
@@ -321,23 +323,18 @@ import hero from '../content/hero.json';
   function fitHeroRole() {
     if (!roleText || !roleWrap) return;
     const containerW = roleWrap.getBoundingClientRect().width;
-    if (containerW <= 0) return;
-    const tmp = document.createElement('canvas').getContext('2d');
-    if (!tmp) return;
-    const baseFs = 100;
-    tmp.font = `400 ${baseFs}px "Bebas Neue", Impact, sans-serif`;
-    if ('letterSpacing' in tmp) {
-      (tmp as CanvasRenderingContext2D & { letterSpacing: string }).letterSpacing =
-        `${-0.02 * baseFs}px`;
-    }
-    const longest = Math.max(
-      tmp.measureText('RODRIGO LAGO').width,
-      tmp.measureText('UX ENGINEER').width,
-    );
-    if (longest <= 0) return;
 
     // Width-fit: fontSize at which the longest line equals the wrapper width.
-    const widthFs = (baseFs * containerW) / longest;
+    const widthFs = fitByCanvas(
+      ['RODRIGO LAGO', 'UX ENGINEER'],
+      containerW,
+      {
+        weight: 400,
+        family: '"Bebas Neue", Impact, sans-serif',
+        letterSpacingEm: -0.02,
+      },
+    );
+    if (widthFs <= 0) return;
 
     // Height-cap: largest fontSize that still lets 2 lines fit inside
     // .hero__center alongside .hero__desc and the column gap. centerH is
@@ -365,119 +362,25 @@ import hero from '../content/hero.json';
   }
   window.addEventListener('resize', fitHeroRole, { passive: true });
 
-  // Pixelated background canvas — same effect as Footer. Renders the
-  // source image into a tiny canvas (PIXEL_W × PIXEL_H), CSS stretches
-  // it up with image-rendering: pixelated so every internal pixel
-  // becomes a chunky block. JS animates the source offset so the
-  // blocks drift slowly across the right side of the source image.
-  // PIXEL_H is derived from the hero's actual size so each CSS pixel
-  // stays at TARGET_PIXEL_ASPECT (horizontal) on every viewport.
+  // Pixelated background canvas — shared makePixelDrift factory (same as
+  // FAQ row glow). Renders a tiny canvas that CSS stretches with
+  // image-rendering: pixelated so each internal pixel becomes a chunky
+  // block; the source offset drifts via a spring chase.
   const heroBgCanvas = document.getElementById('hero-bg-canvas') as HTMLCanvasElement | null;
   const heroBg = heroBgCanvas?.parentElement as HTMLElement | null;
   if (heroBgCanvas && heroBg) {
-    const heroBgCtx = heroBgCanvas.getContext('2d');
-    if (heroBgCtx) {
-      const PIXEL_W = 12;
-      const TARGET_PIXEL_ASPECT = 1.78;
-      const SRC_OVERSCAN = 3;
-      const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-
-      let PIXEL_H = PIXEL_W;
-      let drawW = PIXEL_W * SRC_OVERSCAN;
-      let drawH = PIXEL_H * SRC_OVERSCAN;
-      let MAX_DX = PIXEL_W * (SRC_OVERSCAN - 1) / 2;
-      let MAX_DY = PIXEL_H * (SRC_OVERSCAN - 1) / 2;
-
-      const recomputeBgDims = () => {
-        const { width: vw, height: vh } = heroBg.getBoundingClientRect();
-        if (vw <= 0 || vh <= 0) return;
-        PIXEL_H = Math.max(3, Math.round(PIXEL_W * (vh / vw) * TARGET_PIXEL_ASPECT));
-        heroBgCanvas.width = PIXEL_W;
-        heroBgCanvas.height = PIXEL_H;
-        drawW = PIXEL_W * SRC_OVERSCAN;
-        drawH = PIXEL_H * SRC_OVERSCAN;
-        MAX_DX = PIXEL_W * (SRC_OVERSCAN - 1) / 2;
-        MAX_DY = PIXEL_H * (SRC_OVERSCAN - 1) / 2;
-        heroBgCtx.imageSmoothingEnabled = false;
-      };
-      recomputeBgDims();
-      window.addEventListener('resize', recomputeBgDims, { passive: true });
-
-      const bgImg = new Image();
-      bgImg.decoding = 'async';
-      bgImg.src = '/images/background.png';
-
-      bgImg.onload = () => {
-        const X_BIAS = -0.55;
-        const X_RANGE = 0.4;
-
-        let dx = 0;
-        let dy = 0;
-        let vx = 0;
-        let vy = 0;
-        let targetX = 0;
-        let targetY = 0;
-        let nextRetargetAt = 0;
-
-        const pickNewTarget = () => {
-          targetX = (X_BIAS + (Math.random() * 2 - 1) * X_RANGE) * MAX_DX;
-          targetY = (Math.random() * 2 - 1) * MAX_DY;
-        };
-        pickNewTarget();
-
-        const TARGET_INTERVAL_MIN = 3600;
-        const TARGET_INTERVAL_MAX = 7200;
-        const CHASE = 0.0017;
-        const DAMPING = 0.93;
-        const JITTER = 0.006;
-
-        const drawBgFrame = (t: number) => {
-          if (t >= nextRetargetAt) {
-            pickNewTarget();
-            nextRetargetAt = t + TARGET_INTERVAL_MIN +
-              Math.random() * (TARGET_INTERVAL_MAX - TARGET_INTERVAL_MIN);
-          }
-
-          vx += (targetX - dx) * CHASE;
-          vy += (targetY - dy) * CHASE;
-          const jitterAngle = Math.random() * Math.PI * 2;
-          vx += Math.cos(jitterAngle) * JITTER;
-          vy += Math.sin(jitterAngle) * JITTER;
-
-          vx *= DAMPING;
-          vy *= DAMPING;
-          dx += vx;
-          dy += vy;
-
-          if (dx > MAX_DX) { dx = MAX_DX; vx = -Math.abs(vx) * 0.3; }
-          else if (dx < -MAX_DX) { dx = -MAX_DX; vx = Math.abs(vx) * 0.3; }
-          if (dy > MAX_DY) { dy = MAX_DY; vy = -Math.abs(vy) * 0.3; }
-          else if (dy < -MAX_DY) { dy = -MAX_DY; vy = Math.abs(vy) * 0.3; }
-
-          heroBgCtx.clearRect(0, 0, PIXEL_W, PIXEL_H);
-          heroBgCtx.drawImage(
-            bgImg,
-            -PIXEL_W * (SRC_OVERSCAN - 1) / 2 + dx,
-            -PIXEL_H * (SRC_OVERSCAN - 1) / 2 + dy,
-            drawW,
-            drawH,
-          );
-          if (!reduced) requestAnimationFrame(drawBgFrame);
-        };
-
-        if (reduced) {
-          heroBgCtx.clearRect(0, 0, PIXEL_W, PIXEL_H);
-          heroBgCtx.drawImage(
-            bgImg,
-            -PIXEL_W * (SRC_OVERSCAN - 1) / 2,
-            -PIXEL_H * (SRC_OVERSCAN - 1) / 2,
-            drawW,
-            drawH,
-          );
-        } else {
-          requestAnimationFrame(drawBgFrame);
-        }
-      };
-    }
+    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const bgImg = new Image();
+    bgImg.decoding = 'async';
+    bgImg.src = '/images/background.png';
+    bgImg.onload = () => {
+      const drift = makePixelDrift(heroBgCanvas, heroBg, bgImg);
+      if (reduced) {
+        drift.renderOnce();
+      } else {
+        drift.start();
+        window.addEventListener('resize', drift.resize, { passive: true });
+      }
+    };
   }
 </script>

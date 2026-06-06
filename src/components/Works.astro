@@ -151,11 +151,10 @@ const metaRightLabel = works.metaRightLabelTemplate.replace('{count}', projectCo
   function fitWorksHeading() {
     const heading = document.querySelector('.works__heading-group');
     if (!(heading instanceof HTMLElement)) return;
-    const selected = heading.querySelector('.works__selected');
-    const titleEl = heading.querySelector('.works__title');
-    if (!(selected instanceof HTMLElement) || !(titleEl instanceof HTMLElement)) return;
+    const selected = heading.querySelector<HTMLElement>('.works__selected');
+    const titleEl = heading.querySelector<HTMLElement>('.works__title');
+    if (!selected || !titleEl) return;
 
-    // Measure natural widths at a base font-size
     const baseFs = 100;
     selected.style.fontSize = `${baseFs}px`;
     titleEl.style.fontSize = `${baseFs}px`;
@@ -165,24 +164,17 @@ const metaRightLabel = works.metaRightLabelTemplate.replace('{count}', projectCo
     const containerW = heading.getBoundingClientRect().width;
     const selectedW = selected.getBoundingClientRect().width;
     const titleW = titleEl.getBoundingClientRect().width;
-    const totalW = selectedW + titleW;
 
-    // Optical compensation: Cormorant italic looks visually larger than
-    // Bebas Neue at the same point size due to wider letterforms.
-    // Shrink the italic side so both feel matched.
+    // Optical compensation: Cormorant italic vs Bebas Neue at the same
+    // point size — set to 1 means same display size. Tweak if italic
+    // ever needs to feel smaller than the display caps on the left.
     const TITLE_VISUAL_SCALE = 1;
+    const denom = selectedW + TITLE_VISUAL_SCALE * titleW;
+    if (denom <= 0 || containerW <= 0) return;
 
-    if (totalW > 0 && containerW > 0) {
-      // Solve for newFs so that:
-      //   selectedW × (newFs / baseFs)
-      // + titleW    × (newFs × scale / baseFs)
-      // + gap = containerW
-      const newFs =
-        (baseFs * (containerW - gap)) /
-        (selectedW + TITLE_VISUAL_SCALE * titleW);
-      selected.style.fontSize = `${newFs}px`;
-      titleEl.style.fontSize = `${newFs * TITLE_VISUAL_SCALE}px`;
-    }
+    const newFs = (baseFs * (containerW - gap)) / denom;
+    selected.style.fontSize = `${newFs}px`;
+    titleEl.style.fontSize = `${newFs * TITLE_VISUAL_SCALE}px`;
   }
 
   if (document.fonts && document.fonts.ready) {

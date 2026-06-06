@@ -475,9 +475,11 @@ export class TextDistortion {
 }
 
 export function readTextColor() {
-  const value = getComputedStyle(document.documentElement)
-    .getPropertyValue('--c-text')
-    .trim();
+  // Read the body's computed color rather than the raw --c-text custom
+  // property: the property may hold a `light-dark()` value as its literal
+  // unresolved string, but `color` is always returned as a resolved rgb()
+  // so we get the real theme-aware ink colour.
+  const value = getComputedStyle(document.body).color.trim();
   return value || '#1F1C1D';
 }
 

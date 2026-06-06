@@ -1,4 +1,6 @@
 ---
+import StarIcon from './StarIcon.astro';
+
 interface Props {
   index: string;
   rightLabel?: string;
@@ -16,11 +18,7 @@ const showIcon = rightIcon !== 'none';
   </span>
   {rightLabel && (
     <span class="section-meta__item overline">
-      {showIcon && (
-        <svg class="svg-star section-meta__star" viewBox="0 0 44 49" fill="none" aria-hidden="true">
-          <path d="M19.139 48.5C21.1121 35.7531 21.3094 30.7739 21.3094 25.5954C16.574 28.3838 10.2601 32.1681 2.76233 38.7407L0 33.9606C9.66816 30.5747 16.1794 26.9896 20.9148 24.4004C16.1794 21.8112 9.66816 18.027 0 14.8403L2.76233 10.0602C10.2601 16.6328 16.574 20.2178 21.3094 23.2054C21.3094 18.027 21.1121 13.0477 19.139 0.5H24.6637C22.8879 13.0477 22.6906 18.027 22.4933 23.4046C27.0314 20.417 33.3453 16.6328 41.0404 10.0602L44 14.8403C34.5292 18.2261 28.0179 22.0104 23.0852 24.4004C28.0179 26.9896 34.5292 30.5747 44 33.9606L41.0404 38.7407C33.3453 32.1681 27.0314 28.1846 22.4933 25.3963C22.6906 30.7739 22.8879 35.7531 24.6637 48.5H19.139Z" fill="currentColor"/>
-        </svg>
-      )}
+      {showIcon && <StarIcon class="section-meta__star" />}
       {rightLabel}
     </span>
   )}
@@ -75,10 +73,10 @@ const showIcon = rightIcon !== 'none';
   }
 
   /* Marquee-matching star. Rotation is driven by page scroll via JS
-     setting --star-rotate on the element. Inline-block ensures the
-     transform applies on every browser; transform-origin pins the
-     rotation to the visual centre of the glyph. */
-  .section-meta__star {
+     setting --star-rotate on the element. :global() because the SVG is
+     rendered by <StarIcon/> — its own scope doesn't see SectionMeta's
+     astro-cid, so the rule has to be unscoped. */
+  :global(.section-meta__star) {
     width: 1em;
     height: auto;
     color: var(--c-text);
@@ -91,7 +89,7 @@ const showIcon = rightIcon !== 'none';
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .section-meta__star {
+    :global(.section-meta__star) {
       transition: none;
       transform: none;
     }

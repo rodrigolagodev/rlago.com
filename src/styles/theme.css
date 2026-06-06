@@ -1,0 +1,29 @@
+/* ================================================
+   Theme — light / dark via CSS light-dark().
+   The OS preference wins until the user picks a theme; the theme-init
+   inline script in Layout.astro sets [data-theme] on <html> before
+   first paint, which swaps `color-scheme` and so flips every token
+   below in lockstep without re-declaring anything.
+================================================ */
+:root {
+  color-scheme: light dark;
+
+  --c-bg:               light-dark(#F0F0EB, #1F1C1D);
+  --c-text:             light-dark(#1F1C1D, #F0F0EB);
+  --c-text-muted:       light-dark(#555250, #B5B2B0);
+  --c-line:             light-dark(rgba(31, 28, 29, 0.12), rgba(240, 240, 235, 0.12));
+  --c-line-dash:        light-dark(rgba(31, 28, 29, 0.18), rgba(240, 240, 235, 0.18));
+  --c-line-strong:      light-dark(rgba(31, 28, 29, 0.20), rgba(240, 240, 235, 0.20));
+  --c-surface-tint:     light-dark(rgba(31, 28, 29, 0.06), rgba(240, 240, 235, 0.06));
+  --c-surface-tint-strong: light-dark(rgba(31, 28, 29, 0.08), rgba(240, 240, 235, 0.08));
+  --c-surface-tint-soft:   light-dark(rgba(31, 28, 29, 0.04), rgba(240, 240, 235, 0.04));
+  --c-stripe-line:      light-dark(rgba(31, 28, 29, 0.035), rgba(240, 240, 235, 0.035));
+  --c-overlay-hover:    light-dark(rgba(31, 28, 29, 0.25), rgba(0, 0, 0, 0.35));
+  --c-logo:             light-dark(#1F1C1D, #F0F0EB);
+
+  /* Theme-invariant — "paper" used as the white over dark imagery. */
+  --c-white: #F0F0EB;
+}
+
+[data-theme="light"] { color-scheme: light; }
+[data-theme="dark"]  { color-scheme: dark; }

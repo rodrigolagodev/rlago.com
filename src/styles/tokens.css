@@ -38,6 +38,7 @@
   /* =====================
      Spacers — fluid, named by max px value
   ===================== */
+  --sp-6:   clamp(0.25rem, 0.3vw,  0.375rem);
   --sp-12:  clamp(0.5rem,  0.6vw,  0.75rem);  /* nav padding */
   --sp-24:  clamp(1rem,    1.5vw,  1.5rem);
   --sp-36:  clamp(1rem,    2.25vw, 2.25rem);

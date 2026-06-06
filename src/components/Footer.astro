@@ -1,5 +1,6 @@
 ---
 import PrimaryCta from './PrimaryCta.astro';
+import StarIcon from './StarIcon.astro';
 import { site, contact, social } from '../config/site';
 import footer from '../content/footer.json';
 const year = new Date().getFullYear();
@@ -10,18 +11,10 @@ const copyright = footer.copyrightTemplate
 
 <footer class="footer" id="contact">
 
-  <!-- Oversized background asterisk — anchored to the left edge,
+  <!-- Oversized background asterisk — anchored to the right edge,
        sits under everything else. Parallax + base rotation that
        accelerates with scroll velocity (same envelope as About). -->
-  <svg
-    class="footer__star svg-star"
-    id="footer-star"
-    viewBox="0 0 44 49"
-    fill="none"
-    aria-hidden="true"
-  >
-    <path d="M19.139 48.5C21.1121 35.7531 21.3094 30.7739 21.3094 25.5954C16.574 28.3838 10.2601 32.1681 2.76233 38.7407L0 33.9606C9.66816 30.5747 16.1794 26.9896 20.9148 24.4004C16.1794 21.8112 9.66816 18.027 0 14.8403L2.76233 10.0602C10.2601 16.6328 16.574 20.2178 21.3094 23.2054C21.3094 18.027 21.1121 13.0477 19.139 0.5H24.6637C22.8879 13.0477 22.6906 18.027 22.4933 23.4046C27.0314 20.417 33.3453 16.6328 41.0404 10.0602L44 14.8403C34.5292 18.2261 28.0179 22.0104 23.0852 24.4004C28.0179 26.9896 34.5292 30.5747 44 33.9606L41.0404 38.7407C33.3453 32.1681 27.0314 28.1846 22.4933 25.3963C22.6906 30.7739 22.8879 35.7531 24.6637 48.5H19.139Z" fill="currentColor"/>
-  </svg>
+  <StarIcon id="footer-star" class="footer__star" />
 
   <div class="footer__content container">
 
@@ -112,7 +105,9 @@ const copyright = footer.copyrightTemplate
      - Sits at z-index 0 under all content
      - Two CSS vars: --footer-star-parallax (translateY, JS) and
        --star-spin (rotation, JS — same envelope as About) */
-  .footer__star {
+  /* :global() because the SVG is rendered by <StarIcon/> — its own
+     scope doesn't see Footer's astro-cid, so the rule has to be unscoped. */
+  :global(.footer__star) {
     position: absolute;
     top: 32%;
     right: clamp(-8rem, -6vw, -3rem);
@@ -130,7 +125,7 @@ const copyright = footer.copyrightTemplate
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .footer__star { transform: translateY(-50%); }
+    :global(.footer__star) { transform: translateY(-50%); }
   }
 
   /* ── Foreground content ─────────────────────────────── */
@@ -140,8 +135,7 @@ const copyright = footer.copyrightTemplate
     flex: 1;
     display: flex;
     flex-direction: column;
-    padding-top: clamp(1.5rem, 3vh, 2.5rem);
-    padding-bottom: var(--gutter);
+    padding-block: var(--sp-144);
   }
 
   .footer__main {
@@ -320,13 +314,10 @@ const copyright = footer.copyrightTemplate
     .footer {
       min-height: clamp(68svh, 82vh, 92vh);
     }
-    .footer__content {
-      padding-top: clamp(0.5rem, 1vh, 0.875rem);
-    }
     .footer__main {
       padding-block: clamp(0.25rem, 0.6vh, 0.5rem);
     }
-    .footer__star {
+    :global(.footer__star) {
       width: clamp(16rem, 50vw, 24rem);
       opacity: 0.06;
       right: clamp(-6rem, -8vw, -2rem);
@@ -359,35 +350,30 @@ const copyright = footer.copyrightTemplate
 </style>
 
 <script>
+  import { fitByCanvas } from '../scripts/FitText';
+  import { startStarSpin } from '../scripts/StarSpin';
+
   // ──────────────────────────────────────────────────────────
   // Fit the question text so the longest line spans the wrap's
   // full width (which CSS pins to 90vw). Same recipe as Hero's
-  // fitHeroRole. Re-runs on font load and resize.
+  // role text. Re-runs on font load and resize.
   // ──────────────────────────────────────────────────────────
   const questionEl = document.querySelector<HTMLElement>('.footer__question');
   const wrapEl = document.querySelector<HTMLElement>('.footer__question-wrap');
 
   function fitQuestion() {
     if (!questionEl || !wrapEl) return;
-
-    // Fit font-size so the longest line spans the wrap's width (90vw).
     const targetWidth = wrapEl.getBoundingClientRect().width;
-    if (targetWidth <= 0) return;
-    const tmp = document.createElement('canvas').getContext('2d');
-    if (!tmp) return;
-    const baseFs = 100;
-    tmp.font = `400 ${baseFs}px "Bebas Neue", Impact, sans-serif`;
-    if ('letterSpacing' in tmp) {
-      (tmp as CanvasRenderingContext2D & { letterSpacing: string }).letterSpacing =
-        `${-0.02 * baseFs}px`;
-    }
-    // Bebas is uppercase-rendered via CSS; measure the uppercase glyphs.
-    const longest = Math.max(
-      tmp.measureText('ARE YOU MINDING').width,
-      tmp.measureText('A PROJECT?').width,
+    const fs = fitByCanvas(
+      ['ARE YOU MINDING', 'A PROJECT?'],
+      targetWidth,
+      {
+        weight: 400,
+        family: '"Bebas Neue", Impact, sans-serif',
+        letterSpacingEm: -0.02,
+      },
     );
-    if (longest <= 0) return;
-    questionEl.style.fontSize = `${(baseFs * targetWidth) / longest}px`;
+    if (fs > 0) questionEl.style.fontSize = `${fs}px`;
   }
   if (document.fonts && document.fonts.ready) {
     document.fonts.ready.then(fitQuestion);
@@ -436,7 +422,6 @@ const copyright = footer.copyrightTemplate
   // ──────────────────────────────────────────────────────────
   const footerEl = document.querySelector<HTMLElement>('.footer');
   const star = document.getElementById('footer-star');
-  const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   if (footerEl && star) {
     // Parallax — offset goes from -1 (section below) to +1 (above),
@@ -462,36 +447,6 @@ const copyright = footer.copyrightTemplate
     window.addEventListener('resize', onScroll, { passive: true });
     updateParallax();
 
-    if (!reducedMotion) {
-      // Same velocity-boost envelope as About's star.
-      const BASE_DEG_PER_SEC = 6;
-      const BOOST_FACTOR = 0.08;
-      const MAX_BOOST = 90;
-      const DECAY = 0.90;
-
-      let angle = 0;
-      let boost = 0;
-      let prevScrollY = window.scrollY;
-      let prevT = performance.now();
-
-      const spin = (now: number) => {
-        const dt = Math.min(0.1, (now - prevT) / 1000);
-        prevT = now;
-        const dy = window.scrollY - prevScrollY;
-        prevScrollY = window.scrollY;
-        const instBoost = dt > 0
-          ? Math.min(MAX_BOOST, Math.abs(dy / dt) * BOOST_FACTOR)
-          : 0;
-        if (instBoost > boost) {
-          boost = instBoost;
-        } else {
-          boost *= Math.pow(DECAY, dt * 60);
-        }
-        angle = (angle + (BASE_DEG_PER_SEC + boost) * dt) % 360;
-        star.style.setProperty('--star-spin', `${angle}deg`);
-        requestAnimationFrame(spin);
-      };
-      requestAnimationFrame(spin);
-    }
+    startStarSpin(star);
   }
 </script>

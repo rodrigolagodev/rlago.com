@@ -25,19 +25,5 @@ import About from '../components/About.astro';
   </main>
 </Layout>
 
-<style is:global>
-  /* The hero is sticky-top (Hero.astro), so this wrapper covers it from
-     below as the page scrolls past. Solid background keeps the hero
-     hidden behind everything that follows. The footer no longer hides
-     under this cover — it sits in normal flow after it.
-     Marked global because Astro's scoped-style hash on a wrapper that
-     contains other components occasionally fails to attach (cache /
-     HMR race), leaving the cover transparent and revealing the sticky
-     hero behind every section. Going global is the simplest guarantee. */
-  .hero-cover {
-    position: relative;
-    z-index: 1;
-    background-color: var(--c-bg);
-    border-bottom: 1px solid var(--c-line);
-  }
-</style>
+<!-- .hero-cover styles live in src/styles/global.css — the wrapper covers
+     the sticky Hero from below as the page scrolls past it. -->

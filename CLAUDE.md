@@ -1,53 +1,72 @@
 # Portfolio — Rodrigo Lago
 
-Single-page portfolio website for Rodrigo Lago, UI/UX Developer & Front End Engineer. Built with Astro 6, pure CSS, zero external dependencies.
+Single-page portfolio for Rodrigo Lago, UX Engineer. Built with Astro 6, pure CSS, vanilla TypeScript, self-hosted fonts. Deployed to Cloudflare Workers (static assets).
 
 ## Stack
 
-- **Framework**: Astro 6.3.3 (static site generation)
-- **Language**: TypeScript (strict mode)
+- **Framework**: Astro 6.3.3 (static site generation, sitemap integration)
+- **Language**: TypeScript (strict, `astro/tsconfigs/strict`)
 - **Styling**: Pure CSS — no Tailwind, no CSS Modules, no styled-components
-- **Fonts**: Google Fonts CDN (Bebas Neue, Barlow, Barlow Condensed, Cormorant Garamond)
-- **JS**: Vanilla only — no React, Vue, Svelte, or any UI framework
+- **Fonts**: Self-hosted via Fontsource (Bebas Neue, Barlow, Barlow Condensed, Cormorant Garamond) — bundled by Vite, no third-party CDN at runtime
+- **JS**: Vanilla TS only — no React/Vue/Svelte
+- **Smooth scroll**: [`lenis`](https://www.npmjs.com/package/lenis)
 - **Runtime**: Node.js >= 22.12.0
+- **Hosting**: Cloudflare Workers (assets), `wrangler.jsonc` at root, custom domains `rlago.com` + `www.rlago.com`
 
 ## Commands
 
 ```bash
-npm run dev      # Start dev server (localhost:4321)
-npm run build    # Production build → /dist
-npm run preview  # Preview production build
+npm run dev        # Dev server on localhost:4321
+npm run build      # Production build → /dist
+npm run preview    # Preview production build
+npm run typecheck  # astro check
 ```
+
+CI runs `typecheck` + `build` on every push (`.github/workflows/ci.yml`).
 
 ## Project Structure
 
 ```
 src/
-├── components/      # Reusable Astro components
+├── components/      Reusable Astro components
+├── config/
+│   └── site.ts      Site metadata + contact/social + {{token}} interpolation
+├── content/         Copy as JSON — one file per component
 ├── layouts/
-│   └── Layout.astro # Root HTML template (fonts, meta, global animations)
+│   └── Layout.astro Root template — fonts, meta, JSON-LD, init wiring
 ├── pages/
-│   └── index.astro  # Only page — all sections composed here
+│   ├── index.astro  Single content page
+│   └── 404.astro    Not-found page (served by Cloudflare)
+├── scripts/         Vanilla TS modules — one responsibility each
 └── styles/
-    ├── tokens.css       # CSS custom properties (colors, type scale, spacers)
-    ├── global.css       # CSS reset + layout utilities
-    └── typography.css   # Heading and text styles
+    ├── tokens.css       CSS custom properties (fonts, type scale, spacers, palette)
+    ├── theme.css        Light + dark themes via light-dark()
+    ├── global.css       Reset + layout utilities
+    └── typography.css   Heading / text styles
 ```
 
 ## Design System
 
-All design tokens live in `src/styles/tokens.css` as CSS custom properties.
+All design tokens live in `src/styles/tokens.css`. Theme colors live in `src/styles/theme.css` and resolve via CSS `light-dark()`.
 
 ### Colors
 
-```css
---c-bg:         #F0F0EB  /* warm off-white, main background */
---c-bg-dark:    #1F1C1D  /* dark, used for overlays and loader */
---c-text:       #1F1C1D  /* primary text */
---c-text-muted: #6B6866  /* secondary / muted text */
---c-white:      #F0F0EB  /* used as "white" in dark contexts */
---c-line:       rgba(31, 28, 29, 0.12)   /* subtle borders */
---c-line-dash:  rgba(31, 28, 29, 0.18)   /* dashed borders */
+The site uses two themes (light/dark) that share a single token surface. The active theme is picked by `data-theme` on `<html>` (set by an inline script before first paint to avoid FOUC). When `data-theme` is unset, the OS preference wins via `color-scheme: light dark`.
+
+Key tokens (resolve to different values per theme):
+
+```
+--c-bg            page background
+--c-text          primary text
+--c-text-muted    secondary / muted text
+--c-line          hairline borders (12% opacity)
+--c-line-dash     dashed dividers (18% opacity)
+--c-line-strong   stronger borders (20% opacity)
+--c-surface-tint(-soft/-strong)  subtle tinted fills
+--c-overlay-hover hover scrim on cards
+--c-logo          inkable logo fill
+--c-white         theme-invariant paper colour (for text over dark imagery)
+--c-ink / --c-paper  theme-invariant brand constants
 ```
 
 ### Typography
@@ -56,30 +75,45 @@ Three-font system with strict role separation:
 
 | Token | Font | Role |
 |---|---|---|
-| `font-display` | Bebas Neue | H1 — large display, uppercase |
-| `font-serif` | Cormorant Garamond | H2, para-lg — elegant, italic |
-| `font-ui` | Barlow / Barlow Condensed | H3, H4, body, buttons |
+| `--font-display` | Bebas Neue | H1 — large display, uppercase |
+| `--font-serif` | Cormorant Garamond | H2, para-lg — elegant, italic |
+| `--font-ui` | Barlow | H4, body, CTA labels |
+| `--font-condensed` | Barlow Condensed | H3, btn-rg |
 
-Type scale uses `clamp()` for fluid scaling — do not use fixed `px` for typography.
+Type scale uses `clamp()` for fluid scaling. Never use fixed `px` for typography.
 
-```css
---text-h1:      clamp(4.37rem, 18vw, 24rem)
---text-h2:      clamp(2.5rem, 9vw, 11rem)
---text-h3:      clamp(1.25rem, 2.5vw, 3.25rem)
---text-h4:      clamp(0.75rem, 0.85vw, 1rem)
---text-para-lg: clamp(1.75rem, 5vw, 6.56rem)
---text-btn-rg:  clamp(1.25rem, 2.5vw, 3.25rem)
---text-body:    clamp(0.875rem, 0.95vw, 1rem)
+#### Fontsource weight audit
+
+Only the weights below are imported (`src/layouts/Layout.astro`). Re-run the audit before adding more — every extra weight is ~22 KB of woff2 over the wire.
+
+| Family | Weight / style | Where it's used |
+|---|---|---|
+| Bebas Neue | 400 | `.h1`, hero role, FAQ heading, Footer question, Works heading, About HELLO, Marquee, FAQ `__num`, WorkCard placeholder number |
+| Barlow | 400 | Body text, `.h5`, `.overline` |
+| Barlow | 500 | `PrimaryCta` / About CTA labels |
+| Barlow | 600 | FAQ `__question`, WorkCard `<strong>` |
+| Barlow | 700 | `.h4`, `.skip-link`, About `<strong>` |
+| Barlow Condensed | 800 | `.h3`, `.btn-rg` |
+| Cormorant Garamond | 300 italic | `.h2`, `.para-lg`, hero description, footer intro |
+
+```
+--text-h1       clamp(4.37rem, 18vw, 24rem)
+--text-h2       clamp(2.5rem, 9vw, 11rem)
+--text-h3       clamp(1.25rem, 2.5vw, 3.25rem)
+--text-h4       clamp(0.875rem, 0.85vw, 1rem)
+--text-para-lg  clamp(1.75rem, 5vw, 6.56rem)
+--text-btn-rg   clamp(1.25rem, 2.5vw, 3.25rem)
+--text-body     clamp(1rem, 0.95vw, 1.1rem)
 ```
 
 ### Spacing
 
-All spacing tokens use `clamp()`. Always use `--sp-*` tokens, never hardcoded values:
-`--sp-12` through `--sp-360`.
+All spacing tokens are fluid `clamp()` values. Always use `--sp-*` tokens, never hardcoded values:
+`--sp-6`, `--sp-12`, `--sp-24`, `--sp-36`, `--sp-48`, `--sp-60`, `--sp-72`, `--sp-84`, `--sp-96`, `--sp-120`, `--sp-144`, `--sp-180`, `--sp-360`.
 
 ### Layout
 
-- Max width: `120rem` (1920px), centered with `.container` utility
+- Max width: `120rem` (1920px), centered with `.container`
 - Gutter: `var(--sp-12)`
 - Mobile breakpoint: `768px`
 
@@ -87,50 +121,78 @@ All spacing tokens use `clamp()`. Always use `--sp-*` tokens, never hardcoded va
 
 | Component | Purpose |
 |---|---|
-| `Loader.astro` | Full-screen intro animation. Fires `loader:done` custom event when complete |
-| `Nav.astro` | Fixed navbar + full-screen overlay menu with ARIA support |
-| `Hero.astro` | Above-the-fold section, animates in after loader |
-| `Works.astro` | Featured projects grid (2-col desktop, 1-col mobile) |
-| `WorkCard.astro` | Individual project card with hover effects |
-| `FAQ.astro` | 3-column table layout FAQ (collapses to 2-col on mobile) |
-| `Footer.astro` | CTA + nav + social links |
-| `About.astro` | About section (built but not currently in page flow) |
-| `Message.astro` | Centered message section (built but currently unused) |
+| `Loader.astro` | Full-screen intro animation. Fires `loader:done` event when complete |
+| `Nav.astro` | Fixed navbar — logo, links, theme toggle, scroll progress bar |
+| `Hero.astro` | Above-the-fold, sticky-top, kinetic distortion on role text |
+| `About.astro` | Intro section with parallax photo + star, CTAs |
+| `Marquee.astro` | Velocity-modulated marquee between Hero and About |
+| `Works.astro` | Selected works grid (2-col desktop, 1-col mobile) |
+| `WorkCard.astro` | Individual project card with hover + tech-stack pills |
+| `FAQ.astro` | 3-col Q&A grid with scroll-driven row halo |
+| `Footer.astro` | CTA + back-to-top + social bar |
+| `PrimaryCta.astro` | Filled CTA button (ink → paper hover flip) |
+| `SectionMeta.astro` | Section index strip (eyebrow + spinning star) |
+| `StarIcon.astro` | Shared asterisk SVG — used by Marquee, About, Footer, SectionMeta |
 
-## Animations
+## Shared scripts (`src/scripts/`)
 
-- **Loader**: Two-halves (`top` / `bottom`) slide off screen, then fires `loader:done`
-- **Scroll reveal**: `Intersection Observer` in `Layout.astro` — adds `.is-visible` class; elements use `[data-reveal]` attribute
-- **Hero**: Animates via `body.hero-ready` class set after loader completes
-- **Hover**: WorkCard scales to `1.04`, overlay fades in
-- **Reduced motion**: All animations respect `prefers-reduced-motion`
+| Module | Responsibility |
+|---|---|
+| `SmoothScroll.ts` | Lenis init + anchor-click hijack |
+| `PageScrim.ts` | Scroll-driven dark overlay between hero and overlay content |
+| `Reveal.ts` | `[data-reveal]` + mask-reveal + line-draw IO fallbacks |
+| `GrainCanvas.ts` | Animated film grain |
+| `CustomCursor.ts` | Mix-blend-difference cursor |
+| `FitText.ts` | Canvas + DOM helpers to size headings to container width |
+| `StarSpin.ts` | RAF-driven star rotation with scroll-velocity boost |
+| `PixelDrift.ts` | Pixelated bg drift factory (Hero bg + FAQ row glow) |
+| `TextDistortion.ts` | WebGL water-distortion overlay on selected text |
+| `HeroKineticEffect.ts` | Hero-specific subclass — scroll-driven horizontal stretch |
+| `ScrambleHover.ts` | Split-flap-style hover effect on links |
 
-## Content & Owner Info
+## Animations & motion
 
-- **Owner**: Rodrigo Lago
-- **Role**: UI/UX Developer & Front End Engineer (4+ years)
+- **Loader**: Two halves slide off the screen, then fires `loader:done`
+- **Scroll reveal**: Modern path uses CSS `animation-timeline: view()`; fallback is `IntersectionObserver` toggling `.is-visible`
+- **Hero**: Animates via `body.hero-ready` set after loader completes
+- **Mask reveal**: Words split into spans, slide up from below a clip
+- **`prefers-reduced-motion`** is respected throughout — Lenis disables, RAF loops skip, transitions collapse
+
+## Content & owner info
+
+- **Name**: Rodrigo Lago (`Rodrigo` / `Lago`)
+- **Role**: UX Engineer
+- **Location**: Mar del Plata, Buenos Aires, Argentina
+- **Language**: English (`<html lang="en">`)
 - **Email**: rodrigo.n.lago@gmail.com
-- **LinkedIn**: linkedin.com/in/rodrigolago
-- **GitHub**: github.com/rodrigolago
-- **Language**: Spanish (HTML `lang="es"`, FAQ content in Spanish)
-- **Projects**: 4 placeholder cards with `href="#"` — need real data
-- **OG image**: Referenced as `/images/og.png` — file does not exist yet
+- **LinkedIn**: linkedin.com/in/rnlago (handle displayed: `rodrigolago`)
+- **GitHub**: github.com/rodrigolagodev
+- **Site URL**: https://rlago.com
+- **OG image**: `/public/images/og.png` (1200×630)
+- **Avatar**: `/public/images/photo.webp`
 
-## Coding Conventions
+Site identity, contact, and social handles are centralised in `src/config/site.ts`. Use `fillTokens()` to expand `{{contactEmail}}`, `{{linkedinUrl}}`, etc. inside JSON content strings.
 
-- Component styles go in scoped `<style>` blocks within `.astro` files
+## Coding conventions
+
+- Component styles live in scoped `<style>` blocks
 - Global / shared styles go in `src/styles/`
 - New design tokens go in `tokens.css`, not inline
-- Hard-coded data (projects, FAQs) lives inside the component as a TypeScript array
-- No comments unless the WHY is non-obvious
-- Semantic HTML and ARIA attributes are required — do not regress accessibility
-- Sections use `id` attributes for anchor navigation: `#works`, `#faq`, `#about`
+- Copy lives in `src/content/*.json` — components import it via static `import`
+- One vanilla-TS module per concern in `src/scripts/`
+- Semantic HTML + ARIA required — do not regress accessibility (skip-link, focus-visible, aria-pressed on theme toggle, `aria-labelledby`/`aria-label` on sections)
+- Sections use `id` for anchor nav: `#about`, `#works`, `#faq`, `#contact`
+- `set:html` is used in About/FAQ for inline `<strong>` and `<a>` — source is the JSON files we own; **do not** wire this to an untrusted CMS without sanitising
 
-## What Needs Work
+## SEO / metadata
 
-- Project cards have placeholder data and `href="#"` links — need real images and URLs
-- `About.astro` is complete but not rendered in `index.astro`
-- `Message.astro` is unused
-- OG image (`/public/images/og.png`) is missing
-- No contact form — email link only
-- `README.md` is the default Astro boilerplate, not project-specific
+- JSON-LD Person + WebSite + FAQPage
+- `<link rel="canonical">`, OG, robots, sitemap (`@astrojs/sitemap`)
+- `rel="me"` on LinkedIn / GitHub / mailto
+- `<link rel="alternate icon">` for legacy + SVG favicon
+
+## What still needs work
+
+- Twitter Card meta tags (`twitter:card`, `twitter:image`) — not yet added
+- `cv.pdf` referenced by About — file not yet in `/public`
+- Project portfolio has 2 real cards; more to be added over time

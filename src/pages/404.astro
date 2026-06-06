@@ -1,0 +1,94 @@
+---
+import Layout from '../layouts/Layout.astro';
+import { site } from '../config/site';
+---
+
+<Layout title={`Not found — ${site.name}`} description="The page you are looking for does not exist.">
+  <main id="main-content" class="nf" tabindex="-1">
+    <div class="nf__inner container">
+      <p class="nf__eyebrow overline">Error · 404</p>
+      <h1 class="nf__title">Lost in the grid.</h1>
+      <p class="nf__body">
+        This page does not exist — or it moved while you were not looking.
+      </p>
+      <a href="/" class="nf__cta" data-scroll-top>
+        <span class="nf__cta-label">Back home</span>
+        <span class="nf__cta-arrow" aria-hidden="true">&larr;</span>
+      </a>
+    </div>
+  </main>
+</Layout>
+
+<style>
+  .nf {
+    min-height: 100svh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding-block: var(--sp-144);
+  }
+
+  .nf__inner {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--sp-36);
+    max-width: 60ch;
+  }
+
+  .nf__eyebrow {
+    color: var(--c-text-muted);
+  }
+
+  .nf__title {
+    font-family: var(--font-display);
+    font-size: clamp(3rem, 12vw, 12rem);
+    line-height: 0.9;
+    letter-spacing: -0.02em;
+    text-transform: uppercase;
+    color: var(--c-text);
+    margin: 0;
+  }
+
+  .nf__body {
+    font-family: var(--font-serif);
+    font-style: italic;
+    font-weight: 300;
+    font-size: clamp(1.25rem, 2vw, 1.75rem);
+    line-height: 1.4;
+    color: var(--c-text-muted);
+    margin: 0;
+  }
+
+  .nf__cta {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5em;
+    color: var(--c-text);
+    text-decoration: none;
+    font-family: var(--font-ui);
+    font-size: 1rem;
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    padding: 1em 1.6em;
+    border: 1px solid var(--c-line);
+    background: var(--c-bg);
+    transition: background-color 240ms var(--ease), transform 240ms var(--ease);
+  }
+
+  .nf__cta:hover,
+  .nf__cta:focus-visible {
+    background-color: var(--c-surface-tint);
+    transform: translateY(-4px);
+  }
+
+  .nf__cta-arrow {
+    display: inline-block;
+    transition: transform 240ms var(--ease);
+  }
+
+  .nf__cta:hover .nf__cta-arrow {
+    transform: translateX(-4px);
+  }
+</style>
