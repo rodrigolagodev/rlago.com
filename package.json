@@ -1,7 +1,19 @@
 {
-  "name": "portfolio",
+  "name": "rlago.com",
   "type": "module",
   "version": "0.0.1",
+  "private": true,
+  "description": "Single-page portfolio for Rodrigo Lago, UX Engineer",
+  "author": "Rodrigo Lago",
+  "license": "MIT",
+  "homepage": "https://rlago.com",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/rodrigolagodev/rlago.com.git"
+  },
+  "bugs": {
+    "url": "https://github.com/rodrigolagodev/rlago.com/issues"
+  },
   "engines": {
     "node": ">=22.12.0"
   },
