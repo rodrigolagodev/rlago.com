@@ -107,7 +107,7 @@ const copyright = footer.copyrightTemplate
        --star-spin (rotation, JS — same envelope as About) */
   /* :global() because the SVG is rendered by <StarIcon/> — its own
      scope doesn't see Footer's astro-cid, so the rule has to be unscoped. */
-  :global(.footer__star) {
+  :global(svg.footer__star) {
     position: absolute;
     top: 32%;
     right: clamp(-8rem, -6vw, -3rem);
@@ -125,7 +125,7 @@ const copyright = footer.copyrightTemplate
   }
 
   @media (prefers-reduced-motion: reduce) {
-    :global(.footer__star) { transform: translateY(-50%); }
+    :global(svg.footer__star) { transform: translateY(-50%); }
   }
 
   /* ── Foreground content ─────────────────────────────── */
@@ -317,7 +317,7 @@ const copyright = footer.copyrightTemplate
     .footer__main {
       padding-block: clamp(0.25rem, 0.6vh, 0.5rem);
     }
-    :global(.footer__star) {
+    :global(svg.footer__star) {
       width: clamp(16rem, 50vw, 24rem);
       opacity: 0.06;
       right: clamp(-6rem, -8vw, -2rem);

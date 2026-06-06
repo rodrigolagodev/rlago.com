@@ -78,7 +78,7 @@ import about from '../content/about.json';
      (translateY, JS-controlled). transform composes both.
      :global() because the SVG is rendered by <StarIcon/> — its own scope
      doesn't see About's astro-cid, so the rule has to be unscoped. */
-  :global(.about__star) {
+  :global(svg.about__star) {
     position: absolute;
     /* Anchored near the bottom of the section so on first entry the star
        sits low and rises through the section as you scroll. */
@@ -98,7 +98,7 @@ import about from '../content/about.json';
   }
 
   @media (prefers-reduced-motion: reduce) {
-    :global(.about__star) {
+    :global(svg.about__star) {
       transform: translateY(-50%);
     }
   }

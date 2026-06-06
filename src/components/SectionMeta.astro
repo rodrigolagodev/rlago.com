@@ -76,8 +76,12 @@ const showIcon = rightIcon !== 'none';
      setting --star-rotate on the element. :global() because the SVG is
      rendered by <StarIcon/> — its own scope doesn't see SectionMeta's
      astro-cid, so the rule has to be unscoped. */
-  :global(.section-meta__star) {
-    width: 1em;
+  /* Fixed glyph size — not 1em (would scale with parent font-size) and
+     not a vw clamp (would balloon on wide viewports, beating the eyebrow
+     copy beside it). svg.{class} bumps specificity so the global
+     `.svg-star` default doesn't win on cascade order. */
+  :global(svg.section-meta__star) {
+    width: 0.95rem;
     height: auto;
     color: var(--c-text);
     display: inline-block;
@@ -89,7 +93,7 @@ const showIcon = rightIcon !== 'none';
   }
 
   @media (prefers-reduced-motion: reduce) {
-    :global(.section-meta__star) {
+    :global(svg.section-meta__star) {
       transition: none;
       transform: none;
     }

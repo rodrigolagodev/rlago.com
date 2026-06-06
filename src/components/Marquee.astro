@@ -46,7 +46,7 @@ const allItems = [...marquee.items, ...marquee.items];
 
   /* :global() because the SVG is rendered by <StarIcon/> — its own
      scope doesn't see Marquee's astro-cid, so the rule has to be unscoped. */
-  :global(.marquee__star) {
+  :global(svg.marquee__star) {
     width: clamp(1.5rem, 2.8vw, 2.5rem);
     height: auto;
     color: var(--c-text-muted);
