@@ -1,6 +1,6 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
-  "name": "rlago-com",
+  "name": "rlago",
   "compatibility_date": "2026-06-06",
   "assets": {
     "directory": "./dist",
