@@ -1,10 +1,6 @@
-/* ================================================
-   Theme — light / dark via CSS light-dark().
-   The OS preference wins until the user picks a theme; the theme-init
-   inline script in Layout.astro sets [data-theme] on <html> before
-   first paint, which swaps `color-scheme` and so flips every token
-   below in lockstep without re-declaring anything.
-================================================ */
+/* Light / dark themes via CSS light-dark(). The inline theme-init script
+   in Layout.astro sets [data-theme] on <html> before first paint; the
+   color-scheme override below flips every token below it in lockstep. */
 :root {
   color-scheme: light dark;
 
@@ -21,7 +17,6 @@
   --c-overlay-hover:    light-dark(rgba(31, 28, 29, 0.25), rgba(0, 0, 0, 0.35));
   --c-logo:             light-dark(#1F1C1D, #F0F0EB);
 
-  /* Theme-invariant — "paper" used as the white over dark imagery. */
   --c-white: #F0F0EB;
 }
 

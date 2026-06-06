@@ -1,8 +1,7 @@
-// Reusable water-distortion text effect.
-// Adapted from Codrops "Creating a Water-like Distortion Effect with Three.js"
-// (Jesper Landberg, 2019). Reimplemented in raw WebGL — no Three.js dep.
+// Water-distortion text effect. Adapted from Codrops "Creating a Water-like
+// Distortion Effect with Three.js" (Jesper Landberg, 2019), reimplemented
+// in raw WebGL.
 
-// ─── easings ──────────────────────────────────────────────
 const easeOutSine = (t: number, b: number, c: number, d: number) =>
   c * Math.sin((t / d) * (Math.PI / 2)) + b;
 
@@ -11,7 +10,6 @@ const easeOutQuad = (t: number, b: number, c: number, d: number) => {
   return -c * t * (t - 2) + b;
 };
 
-// ─── WaterTexture: 2D canvas trail driven by mouse ────────
 type WaterPoint = {
   x: number;
   y: number;
@@ -100,8 +98,8 @@ class WaterTexture {
     const green = ((p.vy + 1) / 2) * 255;
     const blue = intensity * 255;
 
-    // Shadow offset trick: draws circle far off-canvas, its shadow lands on-canvas
-    // giving a soft falloff in the encoded RG/B channels.
+    // Shadow-offset trick: draws the circle off-canvas, its shadow lands
+    // on-canvas — gives a soft falloff in the encoded RG/B channels.
     const offset = this.size * 5;
     ctx.shadowOffsetX = offset;
     ctx.shadowOffsetY = offset;
@@ -115,7 +113,6 @@ class WaterTexture {
   }
 }
 
-// ─── Shaders ─────────────────────────────────────────────
 const VERTEX_SHADER = /* glsl */ `
   attribute vec2 a_position;
   varying vec2 vUv;
@@ -146,7 +143,6 @@ const FRAGMENT_SHADER = /* glsl */ `
   }
 `;
 
-// ─── GL helpers ──────────────────────────────────────────
 function compileShader(
   gl: WebGLRenderingContext,
   type: number,
@@ -190,17 +186,16 @@ function createGlTexture(gl: WebGLRenderingContext): WebGLTexture {
   return tex;
 }
 
-// ─── TextDistortion: glues it all together ──────────────
 export class TextDistortion {
-  // protected: subclasses (e.g. hero kinetic variant) need to read/replace these
+  // protected: subclasses (e.g. HeroKineticEffect) read/replace these.
   protected container: HTMLElement;
   protected canvas: HTMLCanvasElement;
   protected lines: string[];
   protected dpr: number;
 
   protected textCanvas: HTMLCanvasElement;
-  // Dirty-flag wrapper preserves the THREE.Texture-shaped API that
-  // subclasses use (`this.textTexture.needsUpdate = true`).
+  // Dirty-flag wrapper preserves the THREE.Texture-shaped API subclasses
+  // already use (`this.textTexture.needsUpdate = true`).
   protected textTexture: { needsUpdate: boolean };
   protected waterTexture: WaterTexture;
 
@@ -247,7 +242,6 @@ export class TextDistortion {
     this.uTextLoc = gl.getUniformLocation(this.program, 'uText')!;
     this.uWaterLoc = gl.getUniformLocation(this.program, 'uWater')!;
 
-    // Fullscreen quad as TRIANGLE_STRIP.
     this.positionBuffer = gl.createBuffer()!;
     gl.bindBuffer(gl.ARRAY_BUFFER, this.positionBuffer);
     gl.bufferData(
@@ -259,8 +253,8 @@ export class TextDistortion {
     this.glTextTex = createGlTexture(gl);
     this.glWaterTex = createGlTexture(gl);
 
-    // Premultiplied alpha blending — text canvas has transparent BG with
-    // opaque text strokes, blend over the page background cleanly.
+    // Premultiplied-alpha blending: text canvas is transparent BG with
+    // opaque text — blend over the page bg cleanly.
     gl.enable(gl.BLEND);
     gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
 
@@ -291,8 +285,8 @@ export class TextDistortion {
     }
     this.resize();
     this.renderText();
-    // Signal to CSS that the WebGL effect is live — the global rule keys
-    // off this to make the underlying DOM text transparent.
+    // Signal to CSS that the WebGL effect is live — global rule keys off
+    // this to make the underlying DOM text transparent.
     this.container.classList.add('is-distortion-ready');
     window.addEventListener('mousemove', this.handleMouseMove, { passive: true });
     this.resizeObserver.observe(this.container);
@@ -329,8 +323,8 @@ export class TextDistortion {
     this.renderText();
   }
 
-  // Hook called from the tick loop before the GL render.
-  // Subclasses can use it to refresh the text texture (e.g. on scroll).
+  /** Hook called from the tick loop before the GL render — subclasses can
+      refresh the text texture (e.g. on scroll). */
   protected beforeRender(): void {}
 
   protected renderText() {
@@ -445,7 +439,6 @@ export class TextDistortion {
       this.uploadTexture(this.glTextTex, this.textCanvas);
       this.textTexture.needsUpdate = false;
     }
-    // Water canvas changes every frame — always upload.
     this.uploadTexture(this.glWaterTex, this.waterTexture.canvas);
 
     gl.clearColor(0, 0, 0, 0);
@@ -474,28 +467,32 @@ export class TextDistortion {
   }
 }
 
+// `body` has `transition: color 350ms`, so reading its computed color
+// during a theme toggle returns the interpolated mid-animation value. The
+// probe inherits the new --c-text instantly because it has its own
+// `transition: none`.
+let _colorProbe: HTMLSpanElement | null = null;
+
 export function readTextColor() {
-  // Read the body's computed color rather than the raw --c-text custom
-  // property: the property may hold a `light-dark()` value as its literal
-  // unresolved string, but `color` is always returned as a resolved rgb()
-  // so we get the real theme-aware ink colour.
-  const value = getComputedStyle(document.body).color.trim();
+  if (!_colorProbe) {
+    _colorProbe = document.createElement('span');
+    _colorProbe.setAttribute('aria-hidden', 'true');
+    _colorProbe.style.cssText =
+      'color: var(--c-text); transition: none; position: absolute; visibility: hidden; pointer-events: none;';
+    document.body.appendChild(_colorProbe);
+  }
+  const value = getComputedStyle(_colorProbe).color.trim();
   return value || '#1F1C1D';
 }
 
-// ─── Auto-init: scan DOM for [data-text-distortion] ──────
-//
 // Markup contract:
 //   <wrapper data-text-distortion>
 //     <text-element data-text-distortion-text>Some text</text-element>
 //     <canvas aria-hidden="true"></canvas>
 //   </wrapper>
-//
 // Multi-line text uses <br/> inside the text element.
 export function initTextDistortions(root: ParentNode = document) {
-  // The water effect depends on a fine pointer to feel right and adds GPU
-  // weight that we don't want on phones. Skip on coarse pointers and narrow
-  // viewports — CSS keeps the underlying text visible in those cases.
+  // GPU-heavy and tied to a fine pointer — skip on phones.
   const isMobileLike = window.matchMedia(
     '(hover: none), (pointer: coarse), (max-width: 768px)'
   ).matches;
@@ -519,8 +516,8 @@ export function initTextDistortions(root: ParentNode = document) {
 }
 
 function extractLines(el: HTMLElement): string[] {
-  // Match <br>, <br/>, <br /> AND <br data-foo="...">
-  // (Astro injects scope attributes onto <br> tags in scoped components)
+  // Match <br>, <br/>, <br /> AND <br data-foo="..."> — Astro injects
+  // scope attributes onto <br> tags in scoped components.
   const BR_RE = /<br\b[^>]*>/gi;
   const html = el.innerHTML;
   if (BR_RE.test(html)) {

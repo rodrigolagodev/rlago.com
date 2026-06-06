@@ -1,9 +1,3 @@
-// Custom cursor — fixed-position white circle that uses mix-blend-mode:
-// difference to invert under it. Scales up over interactive elements.
-//
-// Disabled on touch / coarse pointers and when prefers-reduced-motion is
-// set — the OS cursor handling is restored in CSS (see Layout.astro).
-
 export function initCustomCursor(): void {
   const cursor = document.getElementById('cursor');
   if (!cursor) return;

@@ -1,34 +1,27 @@
-// Pixelated drifting background effect.
+// Pixelated drifting background.
 //
-// Renders a source image into a tiny canvas (PIXEL_W × PIXEL_H). CSS stretches
-// the canvas to fit its parent with `image-rendering: pixelated`, so each
-// internal pixel becomes a visible block. JS animates the source offset so
-// the blocks drift slowly. Two-axis spring chase with random retargeting +
-// small jitter.
-//
-// Used by the Hero background and the FAQ row glow.
+// Renders an image into a tiny (PIXEL_W × PIXEL_H) canvas; CSS stretches it
+// to fit its parent with `image-rendering: pixelated`, so each internal
+// pixel becomes a visible block. JS animates the source offset via a
+// two-axis spring chase with random retargeting + jitter.
 
 export interface PixelDriftOpts {
-  /** Source-canvas width in CSS pixels (default 12). */
   pixelW?: number;
-  /** Target aspect of each block on screen (default 1.78 — wider than tall). */
+  /** Target on-screen aspect of each block — wider than tall by default. */
   targetPixelAspect?: number;
-  /** How much larger the draw rect is than the source (default 3). */
+  /** Source-rect overscan factor: how much wider than PIXEL_W to draw. */
   srcOverscan?: number;
-  /** Horizontal bias for the target — negative pulls left (default -0.55). */
+  /** Horizontal bias for retargeting — negative pulls left. */
   xBias?: number;
-  /** Random horizontal range around the bias (default 0.4). */
+  /** Random horizontal range around the bias. */
   xRange?: number;
 }
 
 export interface PixelDrift {
-  /** Start the RAF loop. */
   start(): void;
-  /** Stop the RAF loop. Existing frame remains. */
   stop(): void;
-  /** Recompute internal dimensions after a container resize. */
   resize(): void;
-  /** Recompute + paint a single static frame (use for reduced-motion). */
+  /** Paint a single static frame — use for reduced-motion. */
   renderOnce(): void;
 }
 

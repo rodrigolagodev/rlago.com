@@ -1,17 +1,13 @@
 ---
 import { site, contact, social } from '../config/site';
 
-// Self-hosted fonts via Fontsource. Latin subset only (site is in English
-// with occasional Spanish accents). Bundled and fingerprinted by Vite.
-// Only weights actually used by the design system are imported — see
-// the audit table in CLAUDE.md before adding more.
-import '@fontsource/bebas-neue/latin-400.css';        // h1, display
-import '@fontsource/barlow/latin-400.css';            // body
-import '@fontsource/barlow/latin-500.css';            // CTA labels
-import '@fontsource/barlow/latin-600.css';            // FAQ question, WorkCard strong
-import '@fontsource/barlow/latin-700.css';            // h4, skip-link, About strong
-import '@fontsource/barlow-condensed/latin-800.css';  // h3, btn-rg
-import '@fontsource/cormorant-garamond/latin-300-italic.css'; // h2, para-lg, intro
+import '@fontsource/bebas-neue/latin-400.css';
+import '@fontsource/barlow/latin-400.css';
+import '@fontsource/barlow/latin-500.css';
+import '@fontsource/barlow/latin-600.css';
+import '@fontsource/barlow/latin-700.css';
+import '@fontsource/barlow-condensed/latin-800.css';
+import '@fontsource/cormorant-garamond/latin-300-italic.css';
 
 interface Props {
   title?: string;
@@ -24,8 +20,6 @@ const {
 } = Astro.props;
 
 const url = Astro.url;
-// Absolute URL so social crawlers resolve the asset regardless of where
-// the page is served from. Asset still has to exist in /public/images/.
 const ogImage = new URL(site.ogImage, url).toString();
 const avatarUrl = new URL(site.avatar, url).toString();
 
@@ -75,7 +69,6 @@ const websiteSchema = {
     <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1" />
     <meta name="generator" content={Astro.generator} />
 
-    <!-- OG / Social -->
     <meta property="og:site_name" content={site.name} />
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
@@ -88,27 +81,19 @@ const websiteSchema = {
     <meta property="og:image:alt" content={site.ogImageAlt} />
     <link rel="canonical" href={url} />
 
-    <!-- Fonts are self-hosted via @fontsource imports in the frontmatter.
-         No third-party font CDN is hit at runtime. -->
-
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="alternate icon" href="/favicon.ico" />
 
-    <!-- IndieWeb / Mastodon-style identity confirmation. Search engines and
-         IndieAuth use rel="me" links to verify that profiles belong to the
-         same person as the canonical site. -->
     <link rel="me" href={social.linkedin.url} />
     <link rel="me" href={social.github.url} />
     <link rel="me" href={contact.mailto} />
 
     <title>{title}</title>
 
-    <!-- Structured data: Person + WebSite schemas, linked by @id so search
-         engines treat them as a single knowledge-graph entity. -->
     <script type="application/ld+json" set:html={JSON.stringify(personSchema)} />
     <script type="application/ld+json" set:html={JSON.stringify(websiteSchema)} />
 
-    <!-- Theme init: runs before first paint to avoid flash -->
+    <!-- Runs before first paint to avoid FOUC. -->
     <script is:inline>
       (function () {
         const stored = localStorage.getItem('theme');
@@ -132,8 +117,6 @@ const websiteSchema = {
   @import '../styles/typography.css';
   @import '../styles/global.css';
 
-  /* Scroll-driven dark overlay — sits between hero (z-index 0) and
-     overlay-stack content (z-index 1) at root level */
   #page-scrim {
     position: fixed;
     inset: 0;
@@ -144,7 +127,6 @@ const websiteSchema = {
     will-change: opacity;
   }
 
-  /* Grain noise overlay */
   #grain-canvas {
     position: fixed;
     inset: 0;
@@ -155,9 +137,6 @@ const websiteSchema = {
     opacity: 0.04;
   }
 
-  /* ================================================
-     Custom cursor — white circle, invert via difference
-  ================================================ */
   .cursor {
     position: fixed;
     top: 0;
@@ -189,21 +168,12 @@ const websiteSchema = {
     a, button, [role="button"], label { cursor: none; }
   }
 
-  /* Restore the system cursor when motion is reduced or input is coarse —
-     low-vision users, screen-magnifier users, and touch devices all rely
-     on it. The custom cursor itself is also hidden below. */
   @media (hover: none), (pointer: coarse), (prefers-reduced-motion: reduce) {
     html, body { cursor: auto; }
     a, button, [role="button"], label { cursor: pointer; }
     .cursor { display: none; }
   }
 
-  /* ================================================
-     Scroll reveal
-     ─ Modern path: CSS scroll-driven animations
-       (animation-timeline: view()) — scrub-tied to viewport entry
-     ─ Fallback: IntersectionObserver toggles .is-visible
-  ================================================ */
   [data-reveal] {
     opacity: 0;
     transform: translateY(28px);
@@ -218,7 +188,7 @@ const websiteSchema = {
     transform: translateY(0);
   }
 
-  /* Stagger delays (1–6) — only the IO fallback uses these */
+  /* Only the IO fallback uses these. */
   [data-reveal][data-reveal-delay="1"] { transition-delay: 80ms; }
   [data-reveal][data-reveal-delay="2"] { transition-delay: 160ms; }
   [data-reveal][data-reveal-delay="3"] { transition-delay: 240ms; }
@@ -226,8 +196,7 @@ const websiteSchema = {
   [data-reveal][data-reveal-delay="5"] { transition-delay: 400ms; }
   [data-reveal][data-reveal-delay="6"] { transition-delay: 480ms; }
 
-  /* Native scroll-driven animations — scrubbed by viewport position.
-     Gated on body.reveals-ready so the loader can hold them off. */
+  /* Gated on body.reveals-ready so the loader can hold reveals off. */
   @supports (animation-timeline: view()) {
     body.reveals-ready [data-reveal] {
       opacity: 1;
@@ -244,7 +213,6 @@ const websiteSchema = {
     }
   }
 
-  /* Respect prefers-reduced-motion */
   @media (prefers-reduced-motion: reduce) {
     [data-reveal] {
       opacity: 1;
@@ -254,14 +222,11 @@ const websiteSchema = {
     }
   }
 
-  /* ================================================
-     Mask reveal — words slide up from behind a clip
-  ================================================ */
   .mask-reveal__word {
     display: inline-block;
     overflow: hidden;
     vertical-align: top;
-    /* extra room so descenders (g, p, y) aren't clipped */
+    /* Extra room so descenders (g, p, y) aren't clipped. */
     padding-block: 0.15em;
     margin-block: -0.15em;
   }
@@ -285,9 +250,6 @@ const websiteSchema = {
     }
   }
 
-  /* ================================================
-     Lenis smooth scroll
-  ================================================ */
   html.lenis, html.lenis body { height: auto; }
   .lenis.lenis-smooth { scroll-behavior: auto !important; }
   .lenis.lenis-smooth [data-lenis-prevent] { overscroll-behavior: contain; }
@@ -296,8 +258,6 @@ const websiteSchema = {
 </style>
 
 <script>
-  // Site-wide wiring. Each concern lives in its own module under
-  // src/scripts/ so this file stays an orchestrator, not a god-file.
   import { initSmoothScroll } from '../scripts/SmoothScroll';
   import { initPageScrim } from '../scripts/PageScrim';
   import { initReveal, setupMaskReveals } from '../scripts/Reveal';
@@ -309,7 +269,6 @@ const websiteSchema = {
   initGrain();
   initCustomCursor();
 
-  // Lazy-load the heavier effects so the critical-path bundle stays small.
   import('../scripts/TextDistortion').then(({ initTextDistortions }) => {
     initTextDistortions();
   });
@@ -317,12 +276,10 @@ const websiteSchema = {
     initScrambleHover();
   });
 
-  // Split words immediately so they're hidden before loader:done fires.
   setupMaskReveals();
 
-  // Guard against double-init: if the loader fires AFTER the 4s fallback
-  // already ran, both paths would call initReveal() and leave behind a
-  // duplicate set of IntersectionObservers.
+  // Guard against the loader event firing AFTER the 4s fallback already ran,
+  // which would double-init and leak a second set of IntersectionObservers.
   let revealed = false;
   const safeInitReveal = () => {
     if (revealed) return;

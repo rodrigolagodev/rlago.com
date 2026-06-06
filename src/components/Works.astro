@@ -145,9 +145,8 @@ const metaRightLabel = works.metaRightLabelTemplate.replace('{count}', projectCo
 </style>
 
 <script>
-  // Fit "SELECTED" + "WORKS" to exactly 100% of the heading-group width.
-  // Both texts get the same font-size (computed). On mobile the layout
-  // stacks; CSS clamp handles sizing there and JS clears its overrides.
+  // Fit "SELECTED" + "WORKS" to the heading-group width. On mobile the
+  // layout stacks; CSS clamp handles sizing there and JS clears overrides.
   function fitWorksHeading() {
     const heading = document.querySelector('.works__heading-group');
     if (!(heading instanceof HTMLElement)) return;

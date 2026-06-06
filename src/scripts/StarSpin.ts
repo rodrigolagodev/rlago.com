@@ -1,20 +1,11 @@
-// Continuous rotation of a star/asterisk element, accelerated by scroll
-// velocity. Writes the current angle into a CSS custom property so the
-// element's `transform` can compose it with other transforms.
-//
-// Used by About and Footer for their oversized decorative asterisks.
-// No-op when the user prefers reduced motion.
+// Continuous rotation accelerated by scroll velocity. Writes the angle into
+// a CSS custom property so callers can compose it with other transforms.
 
 export interface StarSpinOpts {
-  /** Continuous idle rotation in deg/s (default 6). */
   baseDegPerSec?: number;
-  /** Multiplier from scroll-velocity (px/s) to boost (deg/s). */
   boostFactor?: number;
-  /** Cap on the boost contribution (deg/s). */
   maxBoost?: number;
-  /** Per-60fps-frame exponential decay of boost when input stops. */
   decay?: number;
-  /** CSS custom property to write the angle into (default `--star-spin`). */
   cssVar?: string;
 }
 

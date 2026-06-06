@@ -103,7 +103,6 @@ import about from '../content/about.json';
     }
   }
 
-  /* All direct children of .about sit above the star. */
   .about > *:not(.about__star) {
     position: relative;
     z-index: 1;
@@ -113,7 +112,6 @@ import about from '../content/about.json';
     margin-bottom: var(--sp-48);
   }
 
-  /* ── HERO row: HELLO full-bleed + photo overlay ──────── */
   .about__hero {
     position: relative;
     width: 100%;
@@ -176,11 +174,6 @@ import about from '../content/about.json';
     -webkit-user-drag: none;
   }
 
-  /* ── Bottom block — paragraph (left) + CTA (right) ──────
-     The section's decorative star anchors bottom-right; the CTA sits
-     in the same area but reads on top (the star is opacity 0.07).
-     Together they balance the left-weighted paragraph against the
-     right edge — closing the section as a two-beat editorial spread. */
   .about__bottom {
     display: flex;
     flex-direction: column;
@@ -206,7 +199,6 @@ import about from '../content/about.json';
     letter-spacing: -0.005em;
   }
 
-  /* ── CTA group ── primary (filled) + ghost (text-only) ────── */
   .about__ctas {
     display: inline-flex;
     align-items: center;
@@ -224,11 +216,6 @@ import about from '../content/about.json';
     .about__ctas { transform: none; }
   }
 
-  /* ── CTA base ─────────────────────────────────────────────
-     Shared structure: rectangular (no border-radius — crisp,
-     editorial), Barlow uppercase tracking label, hairline arrow.
-     Variants below decorate it as primary (filled) or ghost
-     (text-only). */
   .about__cta {
     --cta-duration: 520ms;
     --cta-ease: cubic-bezier(0.65, 0, 0.35, 1);
@@ -313,11 +300,6 @@ import about from '../content/about.json';
     display: block;
   }
 
-  /* ── Ghost arrow: vertical swap-loop ─────────────────────
-     Same pattern as the primary but on the Y axis only — one
-     arrow exits at the bottom, another enters from the top.
-     Reads as continuous downward motion, matching the
-     "download" semantics of the action. */
   .about__cta--ghost .about__cta-arrow {
     position: relative;
     overflow: hidden;
@@ -415,7 +397,6 @@ import about from '../content/about.json';
 
   if (section && hero && hello && photo) {
 
-    // Fit HELLO to its container's full width.
     function fitHello() {
       hello!.style.whiteSpace = 'nowrap';
       const cs = window.getComputedStyle(hero!);

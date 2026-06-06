@@ -1,7 +1,3 @@
-// Animated film grain on a fullscreen canvas. Repaints every 3rd RAF
-// frame to keep the perceived flicker without burning the CPU. No-op
-// when the user prefers reduced motion or the target canvas is absent.
-
 export function initGrain(): void {
   if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
 
@@ -14,6 +10,8 @@ export function initGrain(): void {
     canvas.height = window.innerHeight;
   };
 
+  // Repaint every 3rd RAF frame — enough to read as flicker without
+  // burning the CPU at full 60Hz.
   let frame = 0;
   const draw = () => {
     frame++;

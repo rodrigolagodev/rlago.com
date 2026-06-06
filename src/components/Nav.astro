@@ -11,7 +11,6 @@ import nav from '../content/nav.json';
 
     <div class="navbar__layout">
 
-      <!-- LEFT: logo + status badge -->
       <div class="navbar__col is-left">
         <a href="#" data-scroll-top class="navbar__logo" aria-label={nav.logoAriaLabel}>
           <svg class="navbar__logo-svg" viewBox="0 0 359.9 344.7" width="29" height="28" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
@@ -46,7 +45,6 @@ import nav from '../content/nav.json';
         </a>
       </div>
 
-      <!-- CENTER: nav links -->
       <div class="navbar__col is-center">
         <nav class="navbar__links h4" aria-label={nav.linksAriaLabel}>
           {nav.links.map((link) => (
@@ -58,7 +56,6 @@ import nav from '../content/nav.json';
         </nav>
       </div>
 
-      <!-- RIGHT: theme toggle -->
       <div class="navbar__col is-right">
         <button
           type="button"
@@ -79,7 +76,6 @@ import nav from '../content/nav.json';
 
 
 <style>
-  /* ======= NAVBAR ======= */
   .navbar {
     position: fixed;
     top: 0;
@@ -89,12 +85,8 @@ import nav from '../content/nav.json';
     padding-top: var(--sp-12);
     backdrop-filter: blur(14px) saturate(140%);
     -webkit-backdrop-filter: blur(14px) saturate(140%);
-    /* Safety net: position: fixed escapes the body's overflow-x: clip
-       (because its containing block is the viewport, not the body).
-       Any child whose intrinsic size exceeds the viewport — long words,
-       SVGs without explicit dimensions, etc. — would otherwise leak out
-       and trigger a horizontal scrollbar. Clipping at the navbar itself
-       prevents that. */
+    /* position: fixed escapes body's overflow-x: clip; clip here so a
+       wide child can't push a horizontal scrollbar. */
     overflow-x: clip;
   }
 
@@ -109,9 +101,6 @@ import nav from '../content/nav.json';
     overflow: hidden;
   }
 
-  /* Scroll-progress bar — grows in width as the page scrolls.
-     Sits on top of the existing 1px navbar line, painted with the
-     primary ink color so it reads as the same line "filling up". */
   .navbar__progress {
     position: absolute;
     top: 0;
@@ -137,10 +126,8 @@ import nav from '../content/nav.json';
     display: flex;
     flex-direction: column;
     gap: var(--sp-12);
-    /* Allow grid items to shrink below their intrinsic content size.
-       Without this, content like the long Contact link could push its
-       column wider than the available grid track, expanding the navbar
-       beyond the viewport. */
+    /* min-width: 0 lets grid items shrink below intrinsic size — otherwise
+       a long link could push the navbar past viewport width. */
     min-width: 0;
   }
 
@@ -159,10 +146,8 @@ import nav from '../content/nav.json';
 
   .navbar__logo {
     display: inline-flex;
-    /* The parent column is a flex container with default align-items: stretch,
-       which was stretching the anchor to the full column width — making the
-       focus-visible outline span the whole left navbar slot. Pin the anchor
-       to its content size so the ring hugs the SVG only. */
+    /* align-self: flex-start so the focus ring hugs the SVG instead of
+       stretching to the column width. */
     align-self: flex-start;
     width: fit-content;
     transition: opacity 200ms;
@@ -170,8 +155,7 @@ import nav from '../content/nav.json';
 
   .navbar__logo:hover { opacity: 0.6; }
 
-  /* Tighter focus ring for the logo — the global 4 px offset reads as
-     too much air around a 20 px-tall glyph. 2 px hugs the icon. */
+  /* 2px hugs the icon — global 4px ring reads as too much air around a 20px glyph. */
   .navbar__logo:focus-visible {
     outline: 2px solid var(--c-text);
     outline-offset: 2px;
@@ -191,9 +175,7 @@ import nav from '../content/nav.json';
   .navbar__links a {
     color: var(--c-text);
     transition: opacity 200ms;
-    /* Expand the hit area to ≥ 24 px tall without changing visual size
-       (WCAG 2.5.8). The visible glyph stays at h4, but the click/tap
-       target now meets minimum target-size guidance. */
+    /* WCAG 2.5.8 — ≥24px hit target without changing visual size. */
     padding-block: 0.6rem;
     display: inline-block;
   }
@@ -201,10 +183,7 @@ import nav from '../content/nav.json';
   .navbar__links a:hover { opacity: 0.5; }
 
   .navbar__logo {
-    /* Anchor stays at icon size so the focus ring hugs the glyph; the
-       hit area is expanded via an invisible ::before that sits behind
-       the icon. The ::before doesn't affect outline or layout, so the
-       focus-visible outline still draws around the SVG only. */
+    /* Hit area expanded via ::before so the focus ring still hugs the SVG. */
     position: relative;
   }
 
@@ -215,9 +194,7 @@ import nav from '../content/nav.json';
   }
 
   .theme-toggle {
-    /* 44 × 44 hit target with a 13 px visible swatch centred inside.
-       The padding-based padding keeps the visual identical to before
-       while satisfying WCAG 2.5.5. */
+    /* WCAG 2.5.5 — 44×44 hit target with 13px visible swatch centred. */
     width: 44px;
     height: 44px;
     margin: -0.7rem;
@@ -247,11 +224,8 @@ import nav from '../content/nav.json';
 
   @media (max-width: 768px) {
     .navbar__layout {
-      /* minmax(0, 1fr) instead of 1fr: the default 1fr has an implicit
-         min-width: auto that lets the column expand past its allotted
-         space when the inner content (the 4 nav links + gaps) is wider
-         than what's available, pushing the navbar wider than the
-         viewport. minmax(0, 1fr) caps it. */
+      /* minmax(0, 1fr): default 1fr has min-width: auto and lets the centre
+         track expand past the viewport when the 4 links + gaps don't fit. */
       grid-template-columns: auto minmax(0, 1fr) auto;
       column-gap: var(--sp-12);
     }
@@ -262,12 +236,8 @@ import nav from '../content/nav.json';
 
     .navbar__links {
       justify-content: center;
-      /* Smaller link gap that scales down on narrow viewports.
-         At 320 px: ~5 px gap; at 768 px: 12 px. */
       gap: clamp(0.3rem, 1.5vw, 0.75rem);
-      /* Last-resort: wrap to a second row if even the small gap +
-         minmax can't fit the four links. Better than horizontal
-         overflow / clip. */
+      /* Wrap to a second row at the smallest viewports rather than overflow. */
       flex-wrap: wrap;
       row-gap: 4px;
     }
@@ -287,9 +257,6 @@ import nav from '../content/nav.json';
 
   function syncToggleA11y() {
     const isDark = getTheme() === 'dark';
-    // aria-pressed reflects the on/off nature of the toggle; the label
-    // describes the action that would happen on activation, so screen
-    // readers say "Switch to <opposite> theme, toggle button, pressed".
     toggle.setAttribute('aria-pressed', String(isDark));
     const labelToDark = toggle.dataset.labelToDark || 'Switch to dark theme';
     const labelToLight = toggle.dataset.labelToLight || 'Switch to light theme';
@@ -304,7 +271,6 @@ import nav from '../content/nav.json';
     syncToggleA11y();
   });
 
-  // ── Scroll progress (top navbar line fills left → right) ──
   const progress = document.getElementById('navbar-progress');
   if (progress) {
     const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -320,7 +286,6 @@ import nav from '../content/nav.json';
     window.addEventListener('scroll', update, { passive: true });
     window.addEventListener('resize', update, { passive: true });
     if (reduced) {
-      // Reduced motion: jump instead of smooth-transition between scrolls
       progress.style.transition = 'none';
     }
   }

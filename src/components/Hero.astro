@@ -5,14 +5,12 @@ import hero from '../content/hero.json';
 
 <section class="hero" aria-label={hero.ariaLabel}>
 
-  <!-- Pixelated background canvas — same effect as Footer -->
   <div class="hero__bg" aria-hidden="true">
     <canvas id="hero-bg-canvas" width="9" height="9"></canvas>
   </div>
 
   <div class="hero__inner container">
 
-    <!-- Center: massive role + italic description -->
     <div class="hero__center">
       <div
         class="hero__role hero-anim"
@@ -28,7 +26,6 @@ import hero from '../content/hero.json';
       </p>
     </div>
 
-    <!-- Bottom row: email click-to-copy + socials -->
     <div class="hero__bottom hero-anim" style="--delay:320ms">
       <button
         type="button"
@@ -67,7 +64,6 @@ import hero from '../content/hero.json';
 </section>
 
 <style>
-  /* ── Hero entry animations ───────────────────────────── */
   .hero-anim {
     opacity: 0;
     transform: translateY(24px);
@@ -85,7 +81,6 @@ import hero from '../content/hero.json';
     .hero-anim { opacity: 1; transform: none; transition: none; }
   }
 
-  /* ── Layout ──────────────────────────────────────────── */
   .hero {
     height: 100svh;
     display: flex;
@@ -96,12 +91,6 @@ import hero from '../content/hero.json';
     z-index: 0;
   }
 
-  /* Pixelated background canvas, same approach as the Footer.
-     - .hero__bg fills the section, paints at z-index 0
-     - the canvas is stretched up with image-rendering: pixelated so
-       every internal pixel becomes a visible block
-     - opacity 0.2 keeps the .hero__bg base colour (var(--c-bg)) as the
-       dominant tone, so the hero feels light, with subtle pixel hints. */
   .hero__bg {
     position: absolute;
     inset: 0;
@@ -131,15 +120,11 @@ import hero from '../content/hero.json';
     flex-direction: column;
     justify-content: space-between;
     padding-top: clamp(5rem, 7vh, 7rem);
-    /* Bottom padding intentionally matches the lateral gutter
-       (var(--gutter) → 8–12 px). This pulls the bottom row close
-       to the viewport edge, giving the hero a tight, minimal frame
-       that mirrors the gutter rhythm on the sides. */
+    /* Match the lateral gutter so the bottom row mirrors the side rhythm. */
     padding-bottom: var(--gutter);
     gap: var(--sp-36);
   }
 
-  /* ── Bottom row ──────────────────────────────────────── */
   .hero__bottom {
     display: flex;
     justify-content: space-between;
@@ -148,7 +133,6 @@ import hero from '../content/hero.json';
     width: 100%;
   }
 
-  /* ── Center: massive role + description ──────────────── */
   .hero__center {
     flex: 1;
     min-height: 0;
@@ -159,23 +143,17 @@ import hero from '../content/hero.json';
     text-align: center;
   }
 
-  /* The role wrapper takes the .container content width (= body width
-     minus the container's gutter padding on each side). That way the
-     role text aligns with every other section's content (bottom row,
-     marquee, works, etc.) and leaves the same gutter padding on the
-     edges instead of running flush against the viewport. */
   .hero__role {
     display: block;
     width: 100%;
   }
 
   .hero__role-text {
-    /* inline-block so the wrapper height collapses to the text's height
-       (instead of the parent line-box) and the canvas overlay sits flush. */
+    /* inline-block so the wrapper collapses to text height and the canvas
+       overlay sits flush. font-weight: 400 because h1 defaults to 700 but
+       Bebas only ships 400 — synthetic bold would drift DOM width from
+       canvas width. */
     display: inline-block;
-    /* h1 defaults to bold (700); Bebas Neue only ships 400, so the browser
-       fakes synthetic bold and the DOM width drifts from the canvas width.
-       Force 400 so both measurements agree. */
     font-weight: 400;
     /* Pre-JS fallback. fitHeroRole() overrides with an exact-fit size. */
     font-size: clamp(3rem, 14vw, 26rem);
@@ -198,11 +176,10 @@ import hero from '../content/hero.json';
     margin: 0;
   }
 
-  /* ── Bottom row: email + socials ─────────────────────── */
   .hero__scroll {
     background: none;
     border: none;
-    /* Padded hit area (WCAG 2.5.8) without growing the visible glyph. */
+    /* WCAG 2.5.8 — padded hit area without growing the visible glyph. */
     padding: 0.5rem 0.25rem;
     margin: -0.5rem -0.25rem;
     color: var(--c-text);
@@ -211,9 +188,8 @@ import hero from '../content/hero.json';
     transition: color 200ms;
   }
 
-  /* The inner .overline span sets its own color via the .overline rule
-     in typography.css, which beats inheritance from the parent button.
-     Target the span directly so the hover swap actually shows. */
+  /* Target the inner span so the .overline rule's own color doesn't beat
+     the parent button's hover swap. */
   .hero__scroll .hero__scroll-text {
     transition: color 200ms;
   }
@@ -245,7 +221,7 @@ import hero from '../content/hero.json';
 
   .hero__socials a {
     transition: color 200ms;
-    /* WCAG 2.5.8: ≥ 24 px hit target without changing visual size. */
+    /* WCAG 2.5.8 hit target. */
     padding-block: 0.6rem;
     display: inline-block;
   }
@@ -259,11 +235,9 @@ import hero from '../content/hero.json';
     color: var(--c-text-muted);
   }
 
-  /* ── Mobile ──────────────────────────────────────────── */
   @media (max-width: 768px) {
     .hero__inner {
       padding-top: 7.5rem;
-      /* Same gutter-matched bottom on mobile. */
       padding-bottom: var(--gutter);
     }
 
@@ -298,8 +272,8 @@ import hero from '../content/hero.json';
     });
   }
 
-  // Hero's kinetic variant: scroll stretches the dash and the "O".
-  // Opts out of the generic auto-init via data-text-distortion-skip.
+  // Hero opts out of the auto-init scan via data-text-distortion-skip
+  // because it uses the kinetic subclass.
   const wrapper = document.querySelector<HTMLElement>('.hero__role');
   const canvas = document.getElementById('hero-role-canvas') as HTMLCanvasElement | null;
   const heroSection = document.querySelector<HTMLElement>('.hero');
@@ -311,20 +285,17 @@ import hero from '../content/hero.json';
     effect.start();
   }
 
-  // Fit the role text so the longest visible line spans the wrapper's full
-  // width, BUT cap the font-size so 2 lines × fs × 0.85 (line-height) fits
-  // in the height available inside .hero__center after .hero__desc is
-  // accounted for. Otherwise the role overflows the viewport vertically on
-  // shorter screens.
   const roleText = document.querySelector<HTMLElement>('.hero__role-text');
   const roleWrap = document.querySelector<HTMLElement>('.hero__role');
   const roleCenter = document.querySelector<HTMLElement>('.hero__center');
   const roleDesc = document.querySelector<HTMLElement>('.hero__desc');
+
+  // Width-fit to the wrapper, then cap by height so two lines + desc fit
+  // inside .hero__center on short viewports.
   function fitHeroRole() {
     if (!roleText || !roleWrap) return;
     const containerW = roleWrap.getBoundingClientRect().width;
 
-    // Width-fit: fontSize at which the longest line equals the wrapper width.
     const widthFs = fitByCanvas(
       ['RODRIGO LAGO', 'UX ENGINEER'],
       containerW,
@@ -336,10 +307,6 @@ import hero from '../content/hero.json';
     );
     if (widthFs <= 0) return;
 
-    // Height-cap: largest fontSize that still lets 2 lines fit inside
-    // .hero__center alongside .hero__desc and the column gap. centerH is
-    // independent of role fontSize (.hero__center is flex: 1, sized by
-    // the parent), so this is a stable upper bound per resize.
     let heightFs = Infinity;
     if (roleCenter && roleDesc) {
       const centerH = roleCenter.getBoundingClientRect().height;
@@ -348,7 +315,7 @@ import hero from '../content/hero.json';
       const gap = parseFloat(cs.rowGap || cs.gap || '0') || 0;
       const availableForRole = centerH - descH - gap;
       if (availableForRole > 0) {
-        // 2 lines × line-height 0.85 = role-text height per fontSize unit
+        // 2 lines × line-height 0.85.
         heightFs = availableForRole / (2 * 0.85);
       }
     }
@@ -362,10 +329,6 @@ import hero from '../content/hero.json';
   }
   window.addEventListener('resize', fitHeroRole, { passive: true });
 
-  // Pixelated background canvas — shared makePixelDrift factory (same as
-  // FAQ row glow). Renders a tiny canvas that CSS stretches with
-  // image-rendering: pixelated so each internal pixel becomes a chunky
-  // block; the source offset drifts via a spring chase.
   const heroBgCanvas = document.getElementById('hero-bg-canvas') as HTMLCanvasElement | null;
   const heroBg = heroBgCanvas?.parentElement as HTMLElement | null;
   if (heroBgCanvas && heroBg) {

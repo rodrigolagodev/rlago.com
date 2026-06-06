@@ -1,13 +1,3 @@
-// Reveal helpers — three related effects:
-//
-// 1. setupMaskReveals: splits text into per-word spans wrapped in masks so
-//    they can slide up from behind a clip. Runs *before* loader:done so
-//    words are hidden the moment the loader clears.
-// 2. observeMaskReveals: IntersectionObserver that adds .is-mask-revealed
-//    when the element enters the viewport.
-// 3. initReveal: orchestrates the above plus the generic [data-reveal] and
-//    [data-line-draw] fallbacks for browsers without scroll-driven CSS.
-
 export function setupMaskReveals(): void {
   document.querySelectorAll<HTMLElement>('[data-mask-reveal]').forEach((el) => {
     if (el.dataset.maskReady === 'true') return;
@@ -39,10 +29,9 @@ function observeMaskReveals(): void {
     },
     { threshold: 0.2 },
   );
-  // Elements marked with data-mask-reveal-manual opt out of this default
-  // viewport-based trigger — they're driven from their own component
-  // (e.g. the Footer triggers its reveals when the sticky cover slides
-  // away to expose it, not when the element first intersects).
+  // [data-mask-reveal-manual] opts out — those components fire their own
+  // reveal at a non-viewport-based moment (e.g. Footer reveal when the
+  // sticky cover slides away).
   document.querySelectorAll('[data-mask-reveal]:not([data-mask-reveal-manual])')
     .forEach((el) => observer.observe(el));
 }
@@ -68,9 +57,6 @@ export function initReveal(): void {
   );
   document.querySelectorAll('[data-reveal]').forEach((el) => observer.observe(el));
 
-  // Line-draw fallback: when scroll-timeline is unsupported, a dedicated
-  // IO toggles .is-drawn on every [data-line-draw] as it enters. Modern
-  // browsers use the CSS @supports path in global.css and skip this.
   const lineObserver = new IntersectionObserver(
     (entries) => {
       entries.forEach((entry) => {

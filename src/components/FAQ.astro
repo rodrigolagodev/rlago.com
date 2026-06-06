@@ -104,13 +104,14 @@ const faqSchema = {
     display: flex;
     flex-direction: column;
     justify-content: safe center;
-    padding-block: var(--sp-144);
+    padding-block: var(--sp-144) var(--sp-36);
+    background-color: var(--c-bg);
   }
 
   .faq__layout {
     display: flex;
     flex-direction: column;
-    gap: var(--sp-144);
+    gap: var(--sp-36);
   }
 
   /* ---- Heading: FAQ + Information, same font-size, fitted to 100% by JS ---- */
@@ -389,7 +390,7 @@ const faqSchema = {
 <script>
   import { makePixelDrift } from '../scripts/PixelDrift';
 
-  // ── Fit "FAQ" + "Information" to exactly 100% of the heading-row width ──
+  // Fit "FAQ" + "Information" to exactly 100% of the heading-row width.
   function fitFaqHeading() {
     const row = document.querySelector('.faq__heading-row');
     if (!(row instanceof HTMLElement)) return;
@@ -419,11 +420,9 @@ const faqSchema = {
   }
   window.addEventListener('resize', fitFaqHeading, { passive: true });
 
-  // ── Per-row pixelated drift, scroll-triggered ───────────────────────
-  // Same drift effect as the hero canvas (shared makePixelDrift factory),
-  // but allocated per row and only running while that row is the "active"
-  // one (= currently crossing the viewport centre). Skipped when the user
-  // prefers reduced motion — the rest of the row's hover stack stays static.
+  // Per-row pixelated drift (same factory as hero canvas). Runs while
+  // the row is the "active" one (= crossing viewport centre). Skipped
+  // when prefers-reduced-motion is set.
   const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   // Scroll-only activation: each FAQ row lights up (inverted fill +

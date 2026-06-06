@@ -1,15 +1,9 @@
-/* Modern CSS reset */
 *, *::before, *::after { box-sizing: border-box; }
 * { margin: 0; padding: 0; }
 html {
   scroll-behavior: smooth;
-  /* Clip the html element itself, not just body. body's clip is supposed
-     to propagate to the viewport, but browser support for that
-     propagation with the `clip` keyword (vs `hidden`) is inconsistent —
-     Safari notably leaks. Clipping html directly guarantees no
-     horizontal page scroll no matter what any descendant does. We use
-     `clip` rather than `hidden` so we don't create a scroll container,
-     which would break the Hero (sticky top) and Footer (sticky bottom). */
+  /* `clip` (not `hidden`) so no scroll container is created — sticky Hero
+     and sticky Footer rely on the viewport being the scroll root. */
   overflow-x: clip;
 }
 body {
@@ -24,11 +18,6 @@ input, button, textarea, select { font: inherit; }
 ul, ol { list-style: none; }
 button { cursor: pointer; background: none; border: none; }
 
-/* ================================================
-   Focus styles — visible, theme-aware ring for keyboard users.
-   :focus-visible only paints when the browser detects keyboard
-   navigation, so mouse clicks stay clean.
-================================================ */
 :focus { outline: none; }
 
 :focus-visible {
@@ -44,9 +33,6 @@ button:focus-visible,
   outline-offset: 4px;
 }
 
-/* ================================================
-   Skip link — first tab stop, jumps over the fixed nav.
-================================================ */
 .skip-link {
   position: absolute;
   top: 0;
@@ -70,23 +56,16 @@ button:focus-visible,
   outline-offset: -6px;
 }
 
-/* Selection */
 ::selection {
   background: var(--c-text);
   color: var(--c-bg);
 }
 
-/* ================================================
-   Layout utilities
-================================================ */
-
-/* Cover for the sticky Hero — wraps every section that follows it in
-   index.astro and paints over the hero as the page scrolls past. */
+/* Wrapper that covers the sticky Hero from below as the page scrolls past. */
 .hero-cover {
   position: relative;
   z-index: 1;
   background-color: var(--c-bg);
-  border-bottom: 1px solid var(--c-line);
 }
 
 .container {
@@ -96,30 +75,21 @@ button:focus-visible,
   padding-inline: var(--gutter);
 }
 
-/* Horizontal line — thin solid */
 .line {
   width: 100%;
   height: 1px;
   background-color: var(--c-line);
 }
 
-/* Horizontal line — dashed */
 .line-dashed {
   width: 100%;
   height: 0;
   border-top: 1px dashed var(--c-line-dash);
 }
 
-/* ================================================
-   Line-draw — divider lines that scrub from left → right as they
-   enter the viewport. Mark a .line / .line-dashed with .line--draw
-   (or .line-dashed--draw) AND data-line-draw, and they will animate.
-
-   - Modern browsers: animation-timeline: view() scrubs scaleX with scroll.
-   - Fallback: IntersectionObserver in Layout.astro adds .is-drawn.
-   - Lines nested inside a [data-reveal] block also fire when the parent
-     reveal trips, so they stay in sync with cascading section reveals.
-================================================ */
+/* Line-draw — divider lines that scrub from left → right on viewport entry.
+   Modern browsers use animation-timeline: view(); fallback toggles .is-drawn
+   via IntersectionObserver in Reveal.ts. */
 .line--draw,
 .line-dashed--draw {
   transform: scaleX(0);
@@ -159,7 +129,6 @@ button:focus-visible,
   }
 }
 
-/* Decorative dot */
 .dot {
   display: inline-block;
   width: var(--dot-size);
@@ -178,7 +147,6 @@ button:focus-visible,
   color: var(--c-white);
 }
 
-/* Spacer utilities */
 .u-spacer-24  { height: var(--sp-24); }
 .u-spacer-36  { height: var(--sp-36); }
 .u-spacer-48  { height: var(--sp-48); }
@@ -187,28 +155,20 @@ button:focus-visible,
 .u-spacer-120 { height: var(--sp-120); }
 .u-spacer-360 { height: var(--sp-360); }
 
-/* ================================================
-   Scramble hover — per-char slot styling. The script in
-   ScrambleHover.ts splits text into <span class="scramble-char">
-   spans on init so each glyph can be swapped independently.
-   inline-block keeps reflows local to the marked node.
-================================================ */
 .scramble-char {
   display: inline-block;
 }
 
-/* SVG star icon */
 .svg-star {
   width: clamp(1rem, 2vw, 2rem);
   height: auto;
   flex-shrink: 0;
 }
 
-/* ================================================
-   Text distortion effect — wrapper + canvas pattern
-   The text element is kept in the DOM for SEO/a11y
-   but painted transparent; the canvas overlays it.
-================================================ */
+/* Text-distortion wrapper + canvas. The text stays in the DOM for SEO/a11y
+   but is painted transparent once .is-distortion-ready lands; the canvas
+   overlay carries the visible glyphs. On mobile / coarse pointers the
+   canvas hides and the text falls back to its normal colour. */
 [data-text-distortion] {
   position: relative;
   display: inline-block;
@@ -223,18 +183,10 @@ button:focus-visible,
   pointer-events: none;
 }
 
-/* The text is kept in the DOM for SEO/a11y but hidden visually when the
-   WebGL distortion is active (the canvas overlay paints the visible glyphs).
-   The transparent rule is gated on .is-distortion-ready, which the runtime
-   adds to the wrapper once WebGL init succeeds — on mobile or when WebGL is
-   unavailable, the text falls back to its normal color so nothing disappears. */
 [data-text-distortion].is-distortion-ready [data-text-distortion-text] {
   color: transparent;
 }
 
-/* Hide the canvas on coarse-pointer / narrow viewports — the water effect
-   depends on a fine pointer to feel right, and shows ugly empty rectangles
-   otherwise. */
 @media (hover: none), (pointer: coarse), (max-width: 768px) {
   [data-text-distortion] > canvas { display: none; }
 }

@@ -94,7 +94,6 @@ const copyright = footer.copyrightTemplate
     z-index: 1;
     background-color: var(--c-bg);
     color: var(--c-text);
-    min-height: clamp(58svh, 75vh, 85vh);
     display: flex;
     flex-direction: column;
     overflow-x: clip;
@@ -128,14 +127,12 @@ const copyright = footer.copyrightTemplate
     :global(svg.footer__star) { transform: translateY(-50%); }
   }
 
-  /* ── Foreground content ─────────────────────────────── */
   .footer__content {
     position: relative;
     z-index: 1;
     flex: 1;
     display: flex;
     flex-direction: column;
-    padding-block: var(--sp-144);
   }
 
   .footer__main {
@@ -143,7 +140,6 @@ const copyright = footer.copyrightTemplate
     min-height: 0;
     display: flex;
     align-items: center;
-    padding-block: clamp(1rem, 2.5vh, 2rem);
   }
 
   .footer__block {
@@ -152,6 +148,7 @@ const copyright = footer.copyrightTemplate
     align-items: flex-start;
     gap: clamp(0.25rem, 0.8vw, 0.6rem);
     max-width: 75rem;
+    padding-block: var(--sp-144);
   }
 
   /* Staggered entry — applied on a wrapper around the CTA so we don't
@@ -179,7 +176,6 @@ const copyright = footer.copyrightTemplate
     margin-top: clamp(0.5rem, 1vh, 1.5rem);
   }
 
-  /* ── Intro — Cormorant italic eyebrow, mid-scale ─────── */
   .footer__intro {
     margin: 0;
     font-family: var(--font-serif);
@@ -192,10 +188,6 @@ const copyright = footer.copyrightTemplate
     max-width: 38ch;
   }
 
-  /* ── Question — Bebas Neue, fit-to-90vw with text-distortion ────
-     The wrap is 90vw wide. JS (fitQuestion) fits the font-size so the
-     longest line spans the wrap's width. The wrap stays in its natural
-     flex position (block's left) — no margin-left repositioning. */
   .footer__question-wrap {
     display: block;
     width: 90vw;
@@ -227,8 +219,6 @@ const copyright = footer.copyrightTemplate
     position: relative;
   }
 
-  /* ── Back-to-top: circle + arrow, anchored above the bar's hairline
-     with equal padding to the right edge. */
   .footer__top {
     --top-offset: clamp(1.5rem, 3vw, 3rem);
     position: absolute;
@@ -272,7 +262,6 @@ const copyright = footer.copyrightTemplate
     transform: translateY(-3px);
   }
 
-  /* ── Bottom bar ──────────────────────────────────────── */
   .footer__bar-line {
     background-color: var(--c-line);
     margin-bottom: var(--sp-12);
@@ -311,12 +300,6 @@ const copyright = footer.copyrightTemplate
   .footer__social a:focus-visible { color: var(--c-text); }
 
   @media (max-width: 768px) {
-    .footer {
-      min-height: clamp(68svh, 82vh, 92vh);
-    }
-    .footer__main {
-      padding-block: clamp(0.25rem, 0.6vh, 0.5rem);
-    }
     :global(svg.footer__star) {
       width: clamp(16rem, 50vw, 24rem);
       opacity: 0.06;
@@ -353,11 +336,7 @@ const copyright = footer.copyrightTemplate
   import { fitByCanvas } from '../scripts/FitText';
   import { startStarSpin } from '../scripts/StarSpin';
 
-  // ──────────────────────────────────────────────────────────
-  // Fit the question text so the longest line spans the wrap's
-  // full width (which CSS pins to 90vw). Same recipe as Hero's
-  // role text. Re-runs on font load and resize.
-  // ──────────────────────────────────────────────────────────
+  // Fit question text to wrap width (90vw). Re-runs on font load and resize.
   const questionEl = document.querySelector<HTMLElement>('.footer__question');
   const wrapEl = document.querySelector<HTMLElement>('.footer__question-wrap');
 
@@ -382,9 +361,7 @@ const copyright = footer.copyrightTemplate
   }
   window.addEventListener('resize', fitQuestion, { passive: true });
 
-  // ──────────────────────────────────────────────────────────
   // Block reveal cascade
-  // ──────────────────────────────────────────────────────────
   const block = document.querySelector<HTMLElement>('.footer__block');
   if (block) {
     const obs = new IntersectionObserver(
@@ -399,9 +376,7 @@ const copyright = footer.copyrightTemplate
     obs.observe(block);
   }
 
-  // ──────────────────────────────────────────────────────────
-  // Back-to-top button: hook into Lenis if present, else native.
-  // ──────────────────────────────────────────────────────────
+  // Back-to-top: hook into Lenis if present, else native.
   const topBtn = document.getElementById('footer-top');
   if (topBtn) {
     topBtn.addEventListener('click', () => {
@@ -416,10 +391,7 @@ const copyright = footer.copyrightTemplate
     });
   }
 
-  // ──────────────────────────────────────────────────────────
-  // Asterisk: parallax (section-centered) + base rotation
-  // that accelerates with scroll velocity. Same envelope as About.
-  // ──────────────────────────────────────────────────────────
+  // Asterisk: parallax + scroll-velocity rotation. Same envelope as About.
   const footerEl = document.querySelector<HTMLElement>('.footer');
   const star = document.getElementById('footer-star');
 

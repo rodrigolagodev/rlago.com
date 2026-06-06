@@ -1,10 +1,7 @@
-// Scroll-driven dark overlay between the sticky hero and the overlay-stack
-// content below it. Tied to the Marquee's top edge — as the Marquee enters
-// the viewport, the overlay fades in; once the Marquee scrolls past the
-// top, the overlay clears (otherwise it would tint everything below).
-//
-// Listens to native `scroll` events — Lenis emits these on every step too,
-// so a single subscription covers both paths.
+// Scroll-driven dark overlay between the sticky Hero and overlay-stack
+// content. Driven by the Marquee's top edge: enters as the Marquee crosses
+// into the viewport, clears once it scrolls past the top (otherwise the
+// fixed scrim would tint every section that follows).
 
 const MAX_SCRIM = 0.65;
 

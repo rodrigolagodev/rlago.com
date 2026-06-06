@@ -1,12 +1,3 @@
-// Helpers to size text to a container's width.
-//
-// Two strategies:
-//  - measureCanvas / fitByCanvas: measure with a 2D canvas context. Used for
-//    elements that are visually obscured (e.g. a WebGL canvas overlay sits on
-//    top) or where we need a reference width before the element is rendered.
-//  - fitByDom: set the element to a base font-size, measure its rendered
-//    width, return the size that scales it to the container.
-
 export interface CanvasFontOpts {
   weight: number | string;
   family: string;
@@ -25,11 +16,6 @@ export function measureCanvas(text: string, fs: number, opts: CanvasFontOpts): n
   return tmp.measureText(text).width;
 }
 
-/**
- * Returns the font-size at which the longest of `lines` exactly fills
- * `containerWidth`, given the supplied font options.
- * Returns 0 if measurement fails (caller should skip applying).
- */
 export function fitByCanvas(
   lines: string[],
   containerWidth: number,
@@ -45,14 +31,9 @@ export function fitByCanvas(
 }
 
 /**
- * DOM-based fit: temporarily sets `el` to `baseFs`, measures its rendered
- * width, returns the size that scales it to `containerWidth`. The caller
- * is expected to apply the returned value back as `el.style.fontSize`.
- *
- * Trade-off vs `fitByCanvas`: this triggers a synchronous reflow on every
- * call (cheap, but real). Use it when font rendering matters — e.g.
- * Cormorant italic with letter-spacing, where canvas measurement drifts
- * from the live render. Otherwise prefer `fitByCanvas`.
+ * DOM-based fit. Triggers a sync reflow — prefer `fitByCanvas` unless the
+ * font rendering matters (e.g. Cormorant italic with letter-spacing, where
+ * canvas measurement drifts from the live render).
  */
 export function fitByDom(
   el: HTMLElement,
