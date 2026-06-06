@@ -1,0 +1,481 @@
+---
+---
+
+<section class="hero" aria-label="Introduction">
+
+  <!-- Pixelated background canvas — same effect as Footer -->
+  <div class="hero__bg" aria-hidden="true">
+    <canvas id="hero-bg-canvas" width="9" height="9"></canvas>
+  </div>
+
+  <div class="hero__inner container">
+
+    <!-- Center: massive role + italic description -->
+    <div class="hero__center">
+      <div
+        class="hero__role hero-anim"
+        style="--delay:160ms"
+        data-text-distortion
+        data-text-distortion-skip
+      >
+        <h1 class="hero__role-text h1" data-text-distortion-text>RODRIGO LAGO<br>UX ENGINEER</h1>
+        <canvas id="hero-role-canvas" aria-hidden="true"></canvas>
+      </div>
+      <p class="hero__desc hero-anim" style="--delay:240ms">
+        Building refined digital products at the intersection of design and code.
+      </p>
+    </div>
+
+    <!-- Bottom row: email click-to-copy + socials -->
+    <div class="hero__bottom hero-anim" style="--delay:320ms">
+      <button
+        type="button"
+        class="hero__scroll"
+        id="hero-scroll"
+        aria-label="Scroll to next section"
+      >
+        <span class="overline hero__scroll-text">
+          <span data-scramble>Scroll</span>
+          <span class="hero__scroll-arrow" aria-hidden="true">&darr;</span>
+        </span>
+      </button>
+
+      <nav class="hero__socials" aria-label="Social links">
+        <a
+          class="overline"
+          href="https://linkedin.com/in/rodrigolago"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          <span data-scramble>LinkedIn</span><span class="sr-only"> (opens in a new tab)</span>
+        </a>
+        <span class="overline hero__socials-sep" aria-hidden="true">·</span>
+        <a
+          class="overline"
+          href="https://github.com/rodrigolagodev"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          <span data-scramble>GitHub</span><span class="sr-only"> (opens in a new tab)</span>
+        </a>
+      </nav>
+    </div>
+
+  </div>
+</section>
+
+<style>
+  /* ── Hero entry animations ───────────────────────────── */
+  .hero-anim {
+    opacity: 0;
+    transform: translateY(24px);
+    transition:
+      opacity  700ms cubic-bezier(0.4, 0, 0.2, 1) var(--delay, 0ms),
+      transform 700ms cubic-bezier(0.4, 0, 0.2, 1) var(--delay, 0ms);
+  }
+
+  :global(body.hero-ready) .hero-anim {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .hero-anim { opacity: 1; transform: none; transition: none; }
+  }
+
+  /* ── Layout ──────────────────────────────────────────── */
+  .hero {
+    height: 100svh;
+    display: flex;
+    flex-direction: column;
+    overflow-x: clip;
+    position: sticky;
+    top: 0;
+    z-index: 0;
+  }
+
+  /* Pixelated background canvas, same approach as the Footer.
+     - .hero__bg fills the section, paints at z-index 0
+     - the canvas is stretched up with image-rendering: pixelated so
+       every internal pixel becomes a visible block
+     - opacity 0.2 keeps the .hero__bg base colour (var(--c-bg)) as the
+       dominant tone, so the hero feels light, with subtle pixel hints. */
+  .hero__bg {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    overflow: hidden;
+    background-color: var(--c-bg);
+  }
+
+  .hero__bg canvas {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    display: block;
+    image-rendering: pixelated;
+    image-rendering: crisp-edges;
+    filter: grayscale(1) contrast(2.15);
+    opacity: 0.1;
+  }
+
+  .hero__inner {
+    position: relative;
+    z-index: 2;
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding-top: clamp(5rem, 7vh, 7rem);
+    /* Bottom padding intentionally matches the lateral gutter
+       (var(--gutter) → 8–12 px). This pulls the bottom row close
+       to the viewport edge, giving the hero a tight, minimal frame
+       that mirrors the gutter rhythm on the sides. */
+    padding-bottom: var(--gutter);
+    gap: var(--sp-36);
+  }
+
+  /* ── Bottom row ──────────────────────────────────────── */
+  .hero__bottom {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: var(--sp-24);
+    width: 100%;
+  }
+
+  /* ── Center: massive role + description ──────────────── */
+  .hero__center {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: safe center;
+    text-align: center;
+  }
+
+  /* The role wrapper takes the .container content width (= body width
+     minus the container's gutter padding on each side). That way the
+     role text aligns with every other section's content (bottom row,
+     marquee, works, etc.) and leaves the same gutter padding on the
+     edges instead of running flush against the viewport. */
+  .hero__role {
+    display: block;
+    width: 100%;
+  }
+
+  .hero__role-text {
+    /* inline-block so the wrapper height collapses to the text's height
+       (instead of the parent line-box) and the canvas overlay sits flush. */
+    display: inline-block;
+    /* h1 defaults to bold (700); Bebas Neue only ships 400, so the browser
+       fakes synthetic bold and the DOM width drifts from the canvas width.
+       Force 400 so both measurements agree. */
+    font-weight: 400;
+    /* Pre-JS fallback. fitHeroRole() overrides with an exact-fit size. */
+    font-size: clamp(3rem, 14vw, 26rem);
+    line-height: 0.85;
+    letter-spacing: -0.02em;
+    text-transform: uppercase;
+    margin: 0;
+    white-space: nowrap;
+  }
+
+  .hero__desc {
+    font-family: var(--font-serif);
+    font-size: clamp(1.75rem, 2.75vw, 3rem);
+    font-style: italic;
+    font-weight: 300;
+    line-height: 1.3;
+    letter-spacing: -0.01em;
+    color: var(--c-text);
+    max-width: 36ch;
+    margin: 0;
+  }
+
+  /* ── Bottom row: email + socials ─────────────────────── */
+  .hero__scroll {
+    background: none;
+    border: none;
+    /* Padded hit area (WCAG 2.5.8) without growing the visible glyph. */
+    padding: 0.5rem 0.25rem;
+    margin: -0.5rem -0.25rem;
+    color: var(--c-text);
+    cursor: pointer;
+    font: inherit;
+    transition: color 200ms;
+  }
+
+  /* The inner .overline span sets its own color via the .overline rule
+     in typography.css, which beats inheritance from the parent button.
+     Target the span directly so the hover swap actually shows. */
+  .hero__scroll .hero__scroll-text {
+    transition: color 200ms;
+  }
+
+  .hero__scroll:hover .hero__scroll-text,
+  .hero__scroll:focus-visible .hero__scroll-text {
+    color: var(--c-white);
+  }
+
+  .hero__scroll-arrow {
+    display: inline-block;
+    animation: scroll-bounce 1.6s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  }
+
+  @keyframes scroll-bounce {
+    0%, 100% { transform: translateY(0); }
+    50%      { transform: translateY(0.25em); }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .hero__scroll-arrow { animation: none; }
+  }
+
+  .hero__socials {
+    display: flex;
+    gap: var(--sp-12);
+    align-items: baseline;
+  }
+
+  .hero__socials a {
+    transition: color 200ms;
+    /* WCAG 2.5.8: ≥ 24 px hit target without changing visual size. */
+    padding-block: 0.6rem;
+    display: inline-block;
+  }
+
+  .hero__socials a:hover,
+  .hero__socials a:focus-visible {
+    color: var(--c-white);
+  }
+
+  .hero__socials-sep {
+    color: var(--c-text-muted);
+  }
+
+  /* ── Mobile ──────────────────────────────────────────── */
+  @media (max-width: 768px) {
+    .hero__inner {
+      padding-top: 7.5rem;
+      /* Same gutter-matched bottom on mobile. */
+      padding-bottom: var(--gutter);
+    }
+
+    .hero__role-text {
+      font-size: clamp(3rem, 16vw, 6rem);
+    }
+
+    .hero__desc {
+      font-size: clamp(1.25rem, 4.5vw, 1.75rem);
+    }
+  }
+</style>
+
+<script>
+  import { HeroKineticEffect } from '../scripts/HeroKineticEffect';
+
+  const scrollBtn = document.getElementById('hero-scroll');
+  if (scrollBtn) {
+    scrollBtn.addEventListener('click', () => {
+      const target = document.getElementById('about');
+      const lenis = (window as unknown as { __lenis?: { scrollTo: (t: HTMLElement | number) => void } }).__lenis;
+      if (target && lenis) {
+        lenis.scrollTo(target);
+      } else {
+        window.scrollTo({
+          top: target ? target.getBoundingClientRect().top + window.scrollY : window.innerHeight,
+          behavior: 'smooth',
+        });
+      }
+    });
+  }
+
+  // Hero's kinetic variant: scroll stretches the dash and the "O".
+  // Opts out of the generic auto-init via data-text-distortion-skip.
+  const wrapper = document.querySelector<HTMLElement>('.hero__role');
+  const canvas = document.getElementById('hero-role-canvas') as HTMLCanvasElement | null;
+  const heroSection = document.querySelector<HTMLElement>('.hero');
+  const isMobileLike = window.matchMedia(
+    '(hover: none), (pointer: coarse), (max-width: 768px)'
+  ).matches;
+  if (wrapper && canvas && heroSection && !isMobileLike) {
+    const effect = new HeroKineticEffect(wrapper, canvas, heroSection);
+    effect.start();
+  }
+
+  // Fit the role text so the longest visible line spans the wrapper's full
+  // width, BUT cap the font-size so 2 lines × fs × 0.85 (line-height) fits
+  // in the height available inside .hero__center after .hero__desc is
+  // accounted for. Otherwise the role overflows the viewport vertically on
+  // shorter screens.
+  const roleText = document.querySelector<HTMLElement>('.hero__role-text');
+  const roleWrap = document.querySelector<HTMLElement>('.hero__role');
+  const roleCenter = document.querySelector<HTMLElement>('.hero__center');
+  const roleDesc = document.querySelector<HTMLElement>('.hero__desc');
+  function fitHeroRole() {
+    if (!roleText || !roleWrap) return;
+    const containerW = roleWrap.getBoundingClientRect().width;
+    if (containerW <= 0) return;
+    const tmp = document.createElement('canvas').getContext('2d');
+    if (!tmp) return;
+    const baseFs = 100;
+    tmp.font = `400 ${baseFs}px "Bebas Neue", Impact, sans-serif`;
+    if ('letterSpacing' in tmp) {
+      (tmp as CanvasRenderingContext2D & { letterSpacing: string }).letterSpacing =
+        `${-0.02 * baseFs}px`;
+    }
+    const longest = Math.max(
+      tmp.measureText('RODRIGO LAGO').width,
+      tmp.measureText('UX ENGINEER').width,
+    );
+    if (longest <= 0) return;
+
+    // Width-fit: fontSize at which the longest line equals the wrapper width.
+    const widthFs = (baseFs * containerW) / longest;
+
+    // Height-cap: largest fontSize that still lets 2 lines fit inside
+    // .hero__center alongside .hero__desc and the column gap. centerH is
+    // independent of role fontSize (.hero__center is flex: 1, sized by
+    // the parent), so this is a stable upper bound per resize.
+    let heightFs = Infinity;
+    if (roleCenter && roleDesc) {
+      const centerH = roleCenter.getBoundingClientRect().height;
+      const descH = roleDesc.getBoundingClientRect().height;
+      const cs = window.getComputedStyle(roleCenter);
+      const gap = parseFloat(cs.rowGap || cs.gap || '0') || 0;
+      const availableForRole = centerH - descH - gap;
+      if (availableForRole > 0) {
+        // 2 lines × line-height 0.85 = role-text height per fontSize unit
+        heightFs = availableForRole / (2 * 0.85);
+      }
+    }
+
+    roleText.style.fontSize = `${Math.min(widthFs, heightFs)}px`;
+  }
+  if (document.fonts && document.fonts.ready) {
+    document.fonts.ready.then(fitHeroRole);
+  } else {
+    fitHeroRole();
+  }
+  window.addEventListener('resize', fitHeroRole, { passive: true });
+
+  // Pixelated background canvas — same effect as Footer. Renders the
+  // source image into a tiny canvas (PIXEL_W × PIXEL_H), CSS stretches
+  // it up with image-rendering: pixelated so every internal pixel
+  // becomes a chunky block. JS animates the source offset so the
+  // blocks drift slowly across the right side of the source image.
+  // PIXEL_H is derived from the hero's actual size so each CSS pixel
+  // stays at TARGET_PIXEL_ASPECT (horizontal) on every viewport.
+  const heroBgCanvas = document.getElementById('hero-bg-canvas') as HTMLCanvasElement | null;
+  const heroBg = heroBgCanvas?.parentElement as HTMLElement | null;
+  if (heroBgCanvas && heroBg) {
+    const heroBgCtx = heroBgCanvas.getContext('2d');
+    if (heroBgCtx) {
+      const PIXEL_W = 12;
+      const TARGET_PIXEL_ASPECT = 1.78;
+      const SRC_OVERSCAN = 3;
+      const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+      let PIXEL_H = PIXEL_W;
+      let drawW = PIXEL_W * SRC_OVERSCAN;
+      let drawH = PIXEL_H * SRC_OVERSCAN;
+      let MAX_DX = PIXEL_W * (SRC_OVERSCAN - 1) / 2;
+      let MAX_DY = PIXEL_H * (SRC_OVERSCAN - 1) / 2;
+
+      const recomputeBgDims = () => {
+        const { width: vw, height: vh } = heroBg.getBoundingClientRect();
+        if (vw <= 0 || vh <= 0) return;
+        PIXEL_H = Math.max(3, Math.round(PIXEL_W * (vh / vw) * TARGET_PIXEL_ASPECT));
+        heroBgCanvas.width = PIXEL_W;
+        heroBgCanvas.height = PIXEL_H;
+        drawW = PIXEL_W * SRC_OVERSCAN;
+        drawH = PIXEL_H * SRC_OVERSCAN;
+        MAX_DX = PIXEL_W * (SRC_OVERSCAN - 1) / 2;
+        MAX_DY = PIXEL_H * (SRC_OVERSCAN - 1) / 2;
+        heroBgCtx.imageSmoothingEnabled = false;
+      };
+      recomputeBgDims();
+      window.addEventListener('resize', recomputeBgDims, { passive: true });
+
+      const bgImg = new Image();
+      bgImg.decoding = 'async';
+      bgImg.src = '/images/background.png';
+
+      bgImg.onload = () => {
+        const X_BIAS = -0.55;
+        const X_RANGE = 0.4;
+
+        let dx = 0;
+        let dy = 0;
+        let vx = 0;
+        let vy = 0;
+        let targetX = 0;
+        let targetY = 0;
+        let nextRetargetAt = 0;
+
+        const pickNewTarget = () => {
+          targetX = (X_BIAS + (Math.random() * 2 - 1) * X_RANGE) * MAX_DX;
+          targetY = (Math.random() * 2 - 1) * MAX_DY;
+        };
+        pickNewTarget();
+
+        const TARGET_INTERVAL_MIN = 3600;
+        const TARGET_INTERVAL_MAX = 7200;
+        const CHASE = 0.0017;
+        const DAMPING = 0.93;
+        const JITTER = 0.006;
+
+        const drawBgFrame = (t: number) => {
+          if (t >= nextRetargetAt) {
+            pickNewTarget();
+            nextRetargetAt = t + TARGET_INTERVAL_MIN +
+              Math.random() * (TARGET_INTERVAL_MAX - TARGET_INTERVAL_MIN);
+          }
+
+          vx += (targetX - dx) * CHASE;
+          vy += (targetY - dy) * CHASE;
+          const jitterAngle = Math.random() * Math.PI * 2;
+          vx += Math.cos(jitterAngle) * JITTER;
+          vy += Math.sin(jitterAngle) * JITTER;
+
+          vx *= DAMPING;
+          vy *= DAMPING;
+          dx += vx;
+          dy += vy;
+
+          if (dx > MAX_DX) { dx = MAX_DX; vx = -Math.abs(vx) * 0.3; }
+          else if (dx < -MAX_DX) { dx = -MAX_DX; vx = Math.abs(vx) * 0.3; }
+          if (dy > MAX_DY) { dy = MAX_DY; vy = -Math.abs(vy) * 0.3; }
+          else if (dy < -MAX_DY) { dy = -MAX_DY; vy = Math.abs(vy) * 0.3; }
+
+          heroBgCtx.clearRect(0, 0, PIXEL_W, PIXEL_H);
+          heroBgCtx.drawImage(
+            bgImg,
+            -PIXEL_W * (SRC_OVERSCAN - 1) / 2 + dx,
+            -PIXEL_H * (SRC_OVERSCAN - 1) / 2 + dy,
+            drawW,
+            drawH,
+          );
+          if (!reduced) requestAnimationFrame(drawBgFrame);
+        };
+
+        if (reduced) {
+          heroBgCtx.clearRect(0, 0, PIXEL_W, PIXEL_H);
+          heroBgCtx.drawImage(
+            bgImg,
+            -PIXEL_W * (SRC_OVERSCAN - 1) / 2,
+            -PIXEL_H * (SRC_OVERSCAN - 1) / 2,
+            drawW,
+            drawH,
+          );
+        } else {
+          requestAnimationFrame(drawBgFrame);
+        }
+      };
+    }
+  }
+</script>

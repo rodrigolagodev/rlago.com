@@ -1,0 +1,143 @@
+---
+interface Props {
+  index: string;
+  rightLabel?: string;
+  /** Kept for API stability; both values render the marquee star SVG now. */
+  rightIcon?: 'asterisk' | 'star' | 'none';
+}
+const { index, rightLabel, rightIcon = 'asterisk' } = Astro.props;
+const showIcon = rightIcon !== 'none';
+---
+
+<div class="section-meta" data-reveal>
+  <span class="section-meta__item overline">
+    <span class="section-meta__dot" aria-hidden="true"></span>
+    Section &middot; {index}
+  </span>
+  {rightLabel && (
+    <span class="section-meta__item overline">
+      {showIcon && (
+        <svg class="svg-star section-meta__star" viewBox="0 0 44 49" fill="none" aria-hidden="true">
+          <path d="M19.139 48.5C21.1121 35.7531 21.3094 30.7739 21.3094 25.5954C16.574 28.3838 10.2601 32.1681 2.76233 38.7407L0 33.9606C9.66816 30.5747 16.1794 26.9896 20.9148 24.4004C16.1794 21.8112 9.66816 18.027 0 14.8403L2.76233 10.0602C10.2601 16.6328 16.574 20.2178 21.3094 23.2054C21.3094 18.027 21.1121 13.0477 19.139 0.5H24.6637C22.8879 13.0477 22.6906 18.027 22.4933 23.4046C27.0314 20.417 33.3453 16.6328 41.0404 10.0602L44 14.8403C34.5292 18.2261 28.0179 22.0104 23.0852 24.4004C28.0179 26.9896 34.5292 30.5747 44 33.9606L41.0404 38.7407C33.3453 32.1681 27.0314 28.1846 22.4933 25.3963C22.6906 30.7739 22.8879 35.7531 24.6637 48.5H19.139Z" fill="currentColor"/>
+        </svg>
+      )}
+      {rightLabel}
+    </span>
+  )}
+</div>
+<div class="line line--draw" data-line-draw></div>
+
+<style>
+  .section-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    color: var(--c-text-muted);
+    /* Breathing room above the meta line that sits right beneath it. */
+    padding-bottom: var(--sp-6);
+  }
+
+  /* The hairline that follows the meta strip — push it a touch further
+     down so the eye reads meta-text and line as two beats, not one. */
+  .section-meta + .line {
+    margin-top: var(--sp-12);
+  }
+
+  .section-meta__item {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6em;
+  }
+
+  .section-meta__dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--c-text);
+    display: inline-block;
+    /* Slow tonal fade between ink and muted-ink — reads as a soft
+       titillation; never goes dim enough to disappear. No size change. */
+    animation: section-meta-dot-tint 3.2s ease-in-out infinite;
+    will-change: background-color;
+  }
+
+  @keyframes section-meta-dot-tint {
+    0%, 100% { opacity: 1; }
+    60%      { opacity: 0.2; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .section-meta__dot {
+      animation: none;
+      background: var(--c-text);
+    }
+  }
+
+  /* Marquee-matching star. Rotation is driven by page scroll via JS
+     setting --star-rotate on the element. Inline-block ensures the
+     transform applies on every browser; transform-origin pins the
+     rotation to the visual centre of the glyph. */
+  .section-meta__star {
+    width: 1em;
+    height: auto;
+    color: var(--c-text);
+    display: inline-block;
+    vertical-align: middle;
+    transform-origin: 50% 50%;
+    transform: rotate(var(--star-rotate, 0deg));
+    will-change: transform;
+    transition: transform 60ms linear;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .section-meta__star {
+      transition: none;
+      transform: none;
+    }
+  }
+
+  @media (max-width: 768px) {
+    .section-meta {
+      gap: var(--sp-12);
+    }
+  }
+</style>
+
+<script>
+  // Scroll-driven star spin. One RAF per scroll event, shared across all
+  // section-meta stars on the page. Mapping: 0 → max scroll = 0 → 720°.
+  // The scroll-timeline CSS path was dropped because it had no visible
+  // effect under Lenis smooth scroll; the JS path is bulletproof.
+  const reduced =
+    typeof window !== 'undefined' &&
+    window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  if (!reduced) {
+    const stars = Array.from(
+      document.querySelectorAll<HTMLElement>('.section-meta__star'),
+    );
+    if (stars.length > 0) {
+      const ROTATIONS = 720; // total degrees over the full page scroll
+      let raf = 0;
+      const update = () => {
+        raf = 0;
+        const doc = document.documentElement;
+        const max = doc.scrollHeight - window.innerHeight;
+        const ratio = max > 0 ? Math.min(1, Math.max(0, window.scrollY / max)) : 0;
+        const deg = ratio * ROTATIONS;
+        stars.forEach((s) => s.style.setProperty('--star-rotate', `${deg}deg`));
+      };
+      const onScroll = () => {
+        if (raf) return;
+        raf = requestAnimationFrame(update);
+      };
+      update();
+      window.addEventListener('scroll', onScroll, { passive: true });
+      window.addEventListener('resize', onScroll, { passive: true });
+      // Lenis emits native scroll events, but on first paint scrollY may
+      // be 0 before fonts/images settle the layout. Re-run after load.
+      window.addEventListener('load', update);
+    }
+  }
+</script>

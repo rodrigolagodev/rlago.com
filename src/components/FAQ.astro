@@ -1,0 +1,720 @@
+---
+import SectionMeta from './SectionMeta.astro';
+const faqs = [
+  {
+    cat: 'Stack',
+    q: 'What tools and technologies do you use day to day?',
+    a: '<strong>React, TypeScript, HTML, SCSS, vanilla JavaScript, Figma, design systems, Playwright, Vitest, GSAP</strong>. I pick what fits the project — the goal is shipping quality interfaces, not ticking boxes on a tech stack.',
+  },
+  {
+    cat: 'AI',
+    q: 'How do you use AI in your workflow?',
+    a: 'Across several layers. I generate UI components from written <strong>specs</strong> — consistent, editable, no manual repetition. I <strong>automate</strong> repetitive workflows: pipelines, code generation, documentation. I use AI to maintain <strong>design token systems</strong> and audit UI consistency across surfaces. And at the team level, I analyze processes to find where <strong>AI</strong> can reduce friction. The goal is not to replace the work, but to remove the overhead.',
+  },
+  {
+    cat: 'AI Tools',
+    q: 'Which AI tools do you use day to day?',
+    a: '<strong>Claude, Gemini, and GitHub Copilot</strong> are my daily drivers. But I also build my own tools — custom <strong>MCP servers</strong>, tailored workflows for specific use cases, and <strong>automation pipelines</strong> that connect AI output directly into <strong>production code</strong>. The real leverage is not the tool itself, but how you configure it for your context.',
+  },
+  {
+    cat: 'Collaboration',
+    q: 'How do you collaborate with designers, developers, and stakeholders?',
+    a: 'I sit at the <strong>intersection of design and engineering</strong> — translating concepts into production code while feeding technical insight back into the design process. It is a <strong>continuous dialogue, not a handoff</strong>.',
+  },
+  {
+    cat: 'Experience',
+    q: 'What kind of products and industries have you worked in?',
+    a: '<strong>B2B SaaS, e-commerce, and end-user products</strong> across different verticals — mostly with <strong>US-based clients</strong>. The common thread is interfaces where people need to get things done efficiently.',
+  },
+  {
+    cat: 'Remote',
+    q: "What's your experience with remote work?",
+    a: 'Years working remotely with teams across the <strong>US and Latin America</strong>. Async communication, timezone management, <strong>remote-first</strong> tools — it is how I work every day and I am comfortable with it.',
+  },
+  {
+    cat: 'Team',
+    q: 'What size teams have you worked with?',
+    a: '<strong>Cross-functional</strong> teams of various sizes — from small squads to larger product orgs. I am used to collaborating closely with <strong>designers, product managers, and engineers</strong> in the same cycle.',
+  },
+  {
+    cat: 'English',
+    q: "What's your English level?",
+    a: '<strong>Professional proficiency</strong>. I have daily conversations with <strong>US-based clients</strong>, write <strong>technical documentation</strong>, and participate in product meetings in English.',
+  },
+  {
+    cat: 'Availability',
+    q: 'Are you available for freelance or contract work?',
+    a: 'I am open to <strong>remote opportunities</strong>. Comfortable working across time zones and with asynchronous collaboration.',
+  },
+  {
+    cat: 'Contact',
+    q: 'How can I reach you?',
+    a: 'Reach out through <a href="https://linkedin.com/in/rodrigolago" target="_blank" rel="noopener noreferrer"><strong>LinkedIn</strong></a> or use the <a href="mailto:rodrigo.n.lago@gmail.com"><strong>contact link</strong></a> on this site.',
+  },
+];
+const totalQ = String(faqs.length).padStart(2, '0');
+---
+
+<section class="faq" id="faq" aria-labelledby="faq-heading">
+  <div class="faq__wrapper container">
+
+    <div class="faq__layout">
+
+      <!-- Heading: FAQ (left, display) + INFORMATION (right, italic serif) edge-to-edge -->
+      <div class="faq__heading-group" data-reveal>
+        <SectionMeta index="03" rightLabel={`${totalQ} questions`} rightIcon="asterisk" />
+        <div class="u-spacer-48"></div>
+        <div class="faq__heading-row">
+          <div class="faq__title-wrap" data-text-distortion>
+            <h2 id="faq-heading" class="faq__title h1" data-text-distortion-text>FAQ</h2>
+            <canvas aria-hidden="true"></canvas>
+          </div>
+          <span class="faq__info-label h2" data-mask-reveal aria-hidden="true">Information</span>
+        </div>
+        <div class="u-spacer-48"></div>
+        <div class="line line--draw" data-line-draw></div>
+      </div>
+
+      <!-- Q&A list: each row is an <article> with an <h3> for the
+           question, so AT users can navigate question-by-question via
+           the heading list and the answer is announced right after. -->
+      <div class="faq__accordion">
+
+        <!-- Visual header row — hidden from AT (the article/h3 structure
+             already conveys what each column is). -->
+        <div class="faq__header-row" aria-hidden="true">
+          <div class="faq__col-num"></div>
+          <div class="faq__col-q">
+            <span class="h3">Question</span>
+          </div>
+          <div class="faq__col-a">
+            <span class="h3">Answer</span>
+          </div>
+        </div>
+
+        <div class="u-spacer-24" aria-hidden="true"></div>
+
+        {faqs.map((item, i) => {
+          const num = String(i + 1).padStart(2, '0');
+          const qId = `faq-q-${i + 1}`;
+          return (
+            <article class="faq__item-wrap" data-reveal aria-labelledby={qId}>
+              <div class="line-dashed line-dashed--draw" data-line-draw aria-hidden="true"></div>
+              <div class="faq__row">
+                <canvas class="faq__item-bg" aria-hidden="true"></canvas>
+                <div class="faq__col-num" aria-hidden="true">
+                  <span class="faq__num">{num}</span>
+                </div>
+                <div class="faq__col-q">
+                  <span class="faq__cat overline">{item.cat}</span>
+                  <h3 id={qId} class="faq__question">{item.q}</h3>
+                </div>
+                <div class="faq__col-a">
+                  <p class="faq__answer" set:html={item.a}></p>
+                </div>
+              </div>
+            </article>
+          );
+        })}
+
+        <!-- Solid line closing off the accordion -->
+        <div class="line line--draw" data-line-draw aria-hidden="true"></div>
+
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  .faq {
+    overflow: hidden;
+    min-height: 100svh;
+    display: flex;
+    flex-direction: column;
+    justify-content: safe center;
+    padding-block: var(--sp-144);
+  }
+
+  .faq__layout {
+    display: flex;
+    flex-direction: column;
+    gap: var(--sp-144);
+  }
+
+  /* ---- Heading: FAQ + Information, same font-size, fitted to 100% by JS ---- */
+  .faq__heading-row {
+    display: flex;
+    justify-content: space-between;
+    /* flex-end so the bottom of each word's line-box matches — baseline
+       alignment with mismatched line-heights left the italic appearing
+       to float relative to the display caps on the left. */
+    align-items: flex-end;
+    gap: clamp(1rem, 2vw, 3rem);
+    width: 100%;
+  }
+
+  .faq__title,
+  .faq__info-label {
+    flex-shrink: 0;
+    font-size: clamp(2.5rem, 14vw, 22rem);
+    /* Matched line-height so flex-end pins the same descender line on
+       both — different line-heights produced different box bottoms. */
+    line-height: 0.85;
+  }
+
+  /* ---- Accordion ---- */
+  .faq__accordion {
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* 3-column grid: number / question / answer
+     align-items: start so the number, category-label-stack and answer all
+     hang from the same top edge. baseline-align doesn't work here because
+     Bebas Neue's ascent is taller than the body text's cap height, so the
+     visual tops drift apart even when the baselines match. */
+  .faq__header-row,
+  .faq__row {
+    display: grid;
+    grid-template-columns: clamp(7rem, 14vw, 17rem) 1.1fr 1fr;
+    gap: clamp(1rem, 3vw, 3rem);
+    width: 100%;
+    align-items: start;
+  }
+
+  .faq__col-num {
+    color: var(--c-text-muted);
+  }
+
+  .faq__col-q {
+    padding-right: var(--sp-24);
+  }
+
+  /* Item */
+  .faq__item-wrap {
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* The row is the hover target AND the positioning context for the
+     pixelated bg canvas, so the canvas covers only the row content
+     (not the dashed divider above it). */
+  .faq__row {
+    /* Shared timing for every FAQ-row transition. A smooth, expressive
+       out-curve (slow start, faster middle, soft landing) makes the
+       state changes feel layered instead of clipped. Three durations
+       so the layers don't move in lockstep — fast for type (legibility
+       beats motion), slow for the heavy fill, mid for everything else. */
+    --faq-ease: cubic-bezier(0.32, 0.72, 0.16, 1);
+    --faq-dur-fast: 260ms;
+    --faq-dur-mid: 440ms;
+    --faq-dur-slow: 560ms;
+
+    position: relative;
+    padding-block: var(--sp-36);
+    padding-inline: clamp(0.25rem, 0.5vw, 0.75rem);
+    /* Override the implicit grid baseline so the canvas sits at z:0
+       and the columns sit above. */
+    isolation: isolate;
+    color: var(--c-text);
+    will-change: transform;
+    transition:
+      color var(--faq-dur-fast) var(--faq-ease),
+      transform var(--faq-dur-mid) var(--faq-ease);
+  }
+
+  /* Subtle scale on the active row so the activation reads as a
+     small "lift" out of the surrounding rows in addition to the
+     tonal flip. */
+  .faq__item-wrap.is-active .faq__row {
+    transform: scale(1.012);
+  }
+
+  /* Solid fill — inverts the row tonally: in light mode the row
+     becomes ink (text colour) on activation; in dark mode it becomes
+     paper. The canvas above adds the pixelated texture on top.
+     Fast exit (base) so the glow clears quickly when scroll stops.
+     Slow entry (is-neighbor / is-active) for a smooth appearance. */
+  .faq__row::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-color: var(--c-bg);
+    opacity: 0;
+    transition: opacity 200ms var(--faq-ease);
+    z-index: 0;
+    pointer-events: none;
+  }
+
+  /* Halo around the active item — neighbours get a hint of the
+     inverted fill, just enough to register as "starting to show"
+     before the gradient fades to nothing on rows beyond them. */
+  .faq__item-wrap.is-neighbor .faq__row::before {
+    opacity: 0.2;
+    transition: opacity var(--faq-dur-slow) var(--faq-ease);
+  }
+
+  /* Active rule comes AFTER neighbour so source order makes it win
+     in the (forbidden but defensive) case both classes coexist on
+     the same element. */
+  .faq__item-wrap.is-active .faq__row::before {
+    opacity: 0.2;
+    transition: opacity var(--faq-dur-slow) var(--faq-ease);
+  }
+
+  /* Pixelated hover background — drift recipe shared with hero/footer
+     canvases. The grayscale + contrast recipe gives chunky high-key
+     pixels; over the inverted dark row fill they paint as bright
+     highlights without needing any blend-mode tricks (which were
+     diluting the effect previously). */
+  .faq__item-bg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    display: block;
+    image-rendering: pixelated;
+    image-rendering: crisp-edges;
+    /* invert(1) maps the source's dark pixels to bright values, so
+       on the now-dark inverted row they read as light highlights
+       instead of black blotches (which is what `brightness` alone
+       can't fix — it scales channels and 0 × anything is still 0). */
+    filter: grayscale(1) invert(1) contrast(1.2) brightness(2);
+    opacity: 0;
+    z-index: 1;
+    pointer-events: none;
+    transition: opacity 200ms var(--faq-ease);
+  }
+
+  .faq__item-wrap.is-neighbor .faq__item-bg {
+    opacity: 0.01;
+    transition: opacity 100ms var(--ease);
+  }
+
+  /* Same source-order trick as the fill: active rule sits after
+     neighbour so it wins in any case both classes coexist. */
+  .faq__item-wrap.is-active .faq__item-bg {
+    opacity: 0.1;
+    transition: opacity 380ms var(--ease);
+  }
+
+  /* Flip text colours only on the active row — neighbours keep the
+     default colour because their fill is light enough that ink text
+     still reads cleanly. */
+  .faq__item-wrap.is-active .faq__row {
+    color: var(--c-text);
+  }
+
+  /* Make sure the text columns sit above the canvas + fill layer. */
+  .faq__row > .faq__col-num,
+  .faq__row > .faq__col-q,
+  .faq__row > .faq__col-a {
+    position: relative;
+    z-index: 2;
+  }
+
+  /* Activation-time colour overrides for the elements that set their
+     own `color` and so don't inherit the row-level flip alone. The
+     IntersectionObserver in the script adds .is-active when an item
+     passes through the viewport centre — scroll is the only trigger. */
+  .faq__item-wrap.is-active .faq__num,
+  .faq__item-wrap.is-active .faq__cat,
+  .faq__item-wrap.is-active .faq__question,
+  .faq__item-wrap.is-active .faq__answer,
+  .faq__item-wrap.is-active .faq__col-num {
+    color: var(--c-text);
+    transition: color 380ms var(--ease);
+  }
+
+  /* Number — bigger, display font for editorial weight */
+  .faq__num {
+    font-family: var(--font-display);
+    font-size: clamp(1.5rem, 2.2vw, 2.5rem);
+    line-height: 1;
+    letter-spacing: -0.02em;
+    color: var(--c-text);
+    display: inline-block;
+    transition: transform 320ms var(--ease), color 320ms var(--ease);
+  }
+
+  .faq__item-wrap.is-active .faq__num {
+    transform: translateX(2px);
+  }
+
+  /* Category label — eyebrow above the question. Uses the canonical
+     overline language (Barlow uppercase + tracking) that the rest of
+     the site uses for eyebrows (SectionMeta, footer copy, socials),
+     so it's both legible at small sizes and visually coherent.
+     The `.overline` class on the span supplies font-family/weight/
+     tracking; this rule only overrides size + the bottom margin. */
+  .faq__cat {
+    display: block;
+    color: var(--c-text-muted);
+    font-size: clamp(0.9375rem, 1vw, 1.125rem);
+    line-height: 1.2;
+    margin-bottom: 0.65em;
+  }
+
+  /* The question is the heading — the dominant text in the row.
+     Floor at 1.0625rem (17 px) so it never drops below the body floor,
+     and scale up generously on wide viewports for clear hierarchy
+     against the answer. */
+  .faq__question {
+    font-family: var(--font-ui);
+    font-size: clamp(1.0625rem, 1.65vw, 1.875rem);
+    line-height: 1.3;
+    color: var(--c-text);
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    margin: 0;
+  }
+
+  /* Answer reads as long-form body. Floor at 1 rem, slightly bigger
+     ceiling than the global --text-body so the column doesn't feel
+     starved on large screens. Looser leading aids long-form readability. */
+  .faq__answer {
+    font-family: var(--font-ui);
+    font-size: clamp(1rem, 1.05vw, 1.25rem);
+    line-height: 1.65;
+    color: var(--c-text-muted);
+    margin: 0;
+  }
+
+  @media (max-width: 768px) {
+    .faq__layout {
+      gap: 0;
+    }
+    .faq__header-row {
+      display: none;
+    }
+    .faq__header-row,
+    .faq__row {
+      grid-template-columns: clamp(2rem, 7vw, 3rem) 1fr;
+      gap: var(--sp-12);
+    }
+
+    .faq__col-a {
+      grid-column: 2;
+      padding-top: var(--sp-12);
+      border-top: 1px dashed var(--c-line-dash);
+    }
+
+    .faq__col-q {
+      padding-right: 0;
+    }
+
+    .faq__header-row .faq__col-a {
+      display: none;
+    }
+
+    .faq__num {
+      font-size: clamp(1.25rem, 5vw, 1.75rem);
+    }
+  }
+
+</style>
+
+<script>
+  // ── Fit "FAQ" + "Information" to exactly 100% of the heading-row width ──
+  function fitFaqHeading() {
+    const row = document.querySelector('.faq__heading-row');
+    if (!(row instanceof HTMLElement)) return;
+    const title = row.querySelector('.faq__title');
+    const info = row.querySelector('.faq__info-label');
+    if (!(title instanceof HTMLElement) || !(info instanceof HTMLElement)) return;
+
+    const baseFs = 100;
+    title.style.fontSize = `${baseFs}px`;
+    info.style.fontSize = `${baseFs}px`;
+
+    const cs = window.getComputedStyle(row);
+    const gap = parseFloat(cs.columnGap) || 0;
+    const containerW = row.getBoundingClientRect().width;
+    const titleW = title.getBoundingClientRect().width;
+    const infoW = info.getBoundingClientRect().width;
+    const totalW = titleW + infoW;
+
+    if (totalW > 0 && containerW > 0) {
+      const newFs = baseFs * ((containerW - gap) / totalW);
+      title.style.fontSize = `${newFs}px`;
+      info.style.fontSize = `${newFs}px`;
+    }
+  }
+
+  if (document.fonts && document.fonts.ready) {
+    document.fonts.ready.then(fitFaqHeading);
+  } else {
+    fitFaqHeading();
+  }
+  window.addEventListener('resize', fitFaqHeading, { passive: true });
+
+  // ── Per-row pixelated drift, scroll-triggered ───────────────────────
+  // Same drift effect as the hero/footer canvases, but allocated per row
+  // and only running while that row is the "active" one (= currently
+  // crossing the viewport centre). Skipped when the user prefers
+  // reduced motion — the rest of the row's hover stack stays static.
+  const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  type Drift = {
+    start: () => void;
+    stop: () => void;
+    resize: () => void;
+    renderOnce: () => void;
+  };
+
+  function makePixelDrift(
+    canvas: HTMLCanvasElement,
+    container: HTMLElement,
+    img: HTMLImageElement,
+  ): Drift {
+    const ctx = canvas.getContext('2d');
+    if (!ctx) {
+      return { start() {}, stop() {}, resize() {}, renderOnce() {} };
+    }
+
+    const PIXEL_W = 12;
+    const TARGET_PIXEL_ASPECT = 1.78;
+    const SRC_OVERSCAN = 3;
+    let PIXEL_H = PIXEL_W;
+    let drawW = PIXEL_W * SRC_OVERSCAN;
+    let drawH = PIXEL_H * SRC_OVERSCAN;
+    let MAX_DX = (PIXEL_W * (SRC_OVERSCAN - 1)) / 2;
+    let MAX_DY = (PIXEL_H * (SRC_OVERSCAN - 1)) / 2;
+
+    function recomputeDims() {
+      const { width: vw, height: vh } = container.getBoundingClientRect();
+      if (vw <= 0 || vh <= 0) return;
+      PIXEL_H = Math.max(3, Math.round(PIXEL_W * (vh / vw) * TARGET_PIXEL_ASPECT));
+      canvas.width = PIXEL_W;
+      canvas.height = PIXEL_H;
+      drawW = PIXEL_W * SRC_OVERSCAN;
+      drawH = PIXEL_H * SRC_OVERSCAN;
+      MAX_DX = (PIXEL_W * (SRC_OVERSCAN - 1)) / 2;
+      MAX_DY = (PIXEL_H * (SRC_OVERSCAN - 1)) / 2;
+      ctx!.imageSmoothingEnabled = false;
+    }
+    recomputeDims();
+
+    const X_BIAS = -0.55;
+    const X_RANGE = 0.4;
+    let dx = 0;
+    let dy = 0;
+    let vx = 0;
+    let vy = 0;
+    let targetX = 0;
+    let targetY = 0;
+    let nextRetargetAt = 0;
+
+    const pickTarget = () => {
+      targetX = (X_BIAS + (Math.random() * 2 - 1) * X_RANGE) * MAX_DX;
+      targetY = (Math.random() * 2 - 1) * MAX_DY;
+    };
+    pickTarget();
+
+    const TARGET_INTERVAL_MIN = 3600;
+    const TARGET_INTERVAL_MAX = 7200;
+    const CHASE = 0.0017;
+    const DAMPING = 0.93;
+    const JITTER = 0.006;
+
+    let rafId = 0;
+    let running = false;
+
+    const paint = () => {
+      ctx!.clearRect(0, 0, PIXEL_W, PIXEL_H);
+      ctx!.drawImage(
+        img,
+        -PIXEL_W * (SRC_OVERSCAN - 1) / 2 + dx,
+        -PIXEL_H * (SRC_OVERSCAN - 1) / 2 + dy,
+        drawW,
+        drawH,
+      );
+    };
+
+    const step = (t: number) => {
+      if (!running) return;
+      if (t >= nextRetargetAt) {
+        pickTarget();
+        nextRetargetAt =
+          t + TARGET_INTERVAL_MIN +
+          Math.random() * (TARGET_INTERVAL_MAX - TARGET_INTERVAL_MIN);
+      }
+      vx += (targetX - dx) * CHASE;
+      vy += (targetY - dy) * CHASE;
+      const angle = Math.random() * Math.PI * 2;
+      vx += Math.cos(angle) * JITTER;
+      vy += Math.sin(angle) * JITTER;
+      vx *= DAMPING;
+      vy *= DAMPING;
+      dx += vx;
+      dy += vy;
+      if (dx > MAX_DX) { dx = MAX_DX; vx = -Math.abs(vx) * 0.3; }
+      else if (dx < -MAX_DX) { dx = -MAX_DX; vx = Math.abs(vx) * 0.3; }
+      if (dy > MAX_DY) { dy = MAX_DY; vy = -Math.abs(vy) * 0.3; }
+      else if (dy < -MAX_DY) { dy = -MAX_DY; vy = Math.abs(vy) * 0.3; }
+      paint();
+      rafId = requestAnimationFrame(step);
+    };
+
+    return {
+      start() {
+        if (running) return;
+        running = true;
+        recomputeDims();
+        rafId = requestAnimationFrame(step);
+      },
+      stop() {
+        running = false;
+        cancelAnimationFrame(rafId);
+      },
+      resize: recomputeDims,
+      renderOnce() {
+        recomputeDims();
+        paint();
+      },
+    };
+  }
+
+  // Scroll-only activation: each FAQ row lights up (inverted fill +
+  // pixel drift) while it's passing through the vertical centre of
+  // the viewport. No hover trigger by design — the effect is purely
+  // tied to reading position.
+  const img = new Image();
+  img.decoding = 'async';
+  img.src = '/images/background.png';
+  img.onload = () => {
+    const wraps = document.querySelectorAll<HTMLElement>('.faq__item-wrap');
+    const drifts = new WeakMap<HTMLElement, ReturnType<typeof makePixelDrift>>();
+
+    wraps.forEach((wrap) => {
+      const row = wrap.querySelector<HTMLElement>('.faq__row');
+      const canvas = wrap.querySelector<HTMLCanvasElement>('.faq__item-bg');
+      if (!row || !canvas) return;
+
+      const drift = makePixelDrift(canvas, row, img);
+      drift.renderOnce();
+      drifts.set(wrap, drift);
+
+      if (!reduced) {
+        window.addEventListener('resize', drift.resize, { passive: true });
+      }
+    });
+
+    if (reduced) return;
+
+    // rootMargin -50% top / -50% bottom collapses the IO root to a 0-px
+    // band at the viewport centre. Any item whose box crosses that band
+    // is "active" (full inverted fill + texture). The immediate prev /
+    // next siblings get marked as "neighbour" — softer fill + dimmer
+    // texture — so the visual reads as a gradient halo around the
+    // active row rather than a hard cut at its edges.
+    const findSiblingItem = (
+      el: Element | null,
+      dir: 'previousElementSibling' | 'nextElementSibling',
+    ): HTMLElement | null => {
+      // Walk siblings until we find another .faq__item-wrap (between
+      // articles there's only other articles, but guard against the
+      // header row / spacer / closing line that sit in the accordion).
+      let cur = el?.[dir] ?? null;
+      while (cur && !(cur as HTMLElement).classList?.contains('faq__item-wrap')) {
+        cur = cur[dir];
+      }
+      return cur as HTMLElement | null;
+    };
+
+    // Track scroll direction so the halo only paints the side the
+    // user is scrolling AWAY from — a wake left behind the active row.
+    //   scrolling DOWN → trail is the previous (above) sibling
+    //   scrolling UP   → trail is the next (below) sibling
+    // Default 'down' covers the very first activation on page load.
+    let lastScrollY = window.scrollY;
+    let scrollDir: 'down' | 'up' = 'down';
+    // The trail only exists WHILE the user is scrolling. When scroll
+    // goes idle, the neighbour clears and only the active row stays
+    // lit — the wake "settles" into stillness.
+    let isScrolling = false;
+    let scrollIdleTimer: number | null = null;
+    const SCROLL_IDLE_MS = 0;
+
+    const recomputeHalo = () => {
+      // Wipe the neighbour mark from EVERY row first. Stripping
+      // unconditionally avoids two bugs: (a) the new active row could
+      // arrive carrying a stale `.is-neighbor` from before it was
+      // promoted — and `.is-neighbor`'s rules sit after `.is-active`'s
+      // in source order, so they'd visually pin it to the dim
+      // treatment; (b) when scroll direction flips, the old trail
+      // sibling must be cleared so the new one can take over.
+      wraps.forEach((wrap) => {
+        if (!wrap.classList.contains('is-neighbor')) return;
+        wrap.classList.remove('is-neighbor');
+        if (!wrap.classList.contains('is-active')) {
+          drifts.get(wrap)?.stop();
+        }
+      });
+
+      // Trail only paints while scrolling. At rest, only the active
+      // row stays lit; everything else clears back to default.
+      if (!isScrolling) return;
+
+      const trailDir =
+        scrollDir === 'down' ? 'previousElementSibling' : 'nextElementSibling';
+
+      const actives = document.querySelectorAll<HTMLElement>(
+        '.faq__item-wrap.is-active',
+      );
+      actives.forEach((active) => {
+        const sib = findSiblingItem(active, trailDir);
+        if (!sib || sib.classList.contains('is-active')) return;
+        sib.classList.add('is-neighbor');
+        drifts.get(sib)?.start();
+      });
+    };
+
+    // Scroll listener: tracks direction, maintains the isScrolling
+    // gate, and recomputes the halo on:
+    //   · transitions from idle → scrolling (need to paint the trail)
+    //   · direction flips (trail jumps to the opposite sibling)
+    //   · transitions from scrolling → idle (trail clears)
+    window.addEventListener(
+      'scroll',
+      () => {
+        const y = window.scrollY;
+        if (y === lastScrollY) return;
+        const next: 'down' | 'up' = y > lastScrollY ? 'down' : 'up';
+        lastScrollY = y;
+
+        const wasScrolling = isScrolling;
+        isScrolling = true;
+        const dirChanged = next !== scrollDir;
+        scrollDir = next;
+        if (!wasScrolling || dirChanged) recomputeHalo();
+
+        if (scrollIdleTimer !== null) window.clearTimeout(scrollIdleTimer);
+        scrollIdleTimer = window.setTimeout(() => {
+          isScrolling = false;
+          recomputeHalo();
+          scrollIdleTimer = null;
+        }, SCROLL_IDLE_MS);
+      },
+      { passive: true },
+    );
+
+    const activeObserver = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          const wrap = entry.target as HTMLElement;
+          const drift = drifts.get(wrap);
+          if (entry.isIntersecting) {
+            wrap.classList.add('is-active');
+            drift?.start();
+          } else {
+            wrap.classList.remove('is-active');
+          }
+        });
+        recomputeHalo();
+      },
+      { rootMargin: '-50% 0px -50% 0px', threshold: 0 },
+    );
+    wraps.forEach((wrap) => activeObserver.observe(wrap));
+  };
+</script>

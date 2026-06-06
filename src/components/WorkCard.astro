@@ -1,0 +1,349 @@
+---
+interface TechItem {
+  name: string;
+  url: string;
+}
+
+interface Props {
+  title: string;
+  year: string;
+  category: string;
+  image?: string;
+  href?: string;
+  comingSoon?: boolean;
+  cardIndex: number;
+  role?: string;
+  description?: string;
+  techStack?: TechItem[];
+}
+
+const { title, year, category, image, href = '#', comingSoon = false, cardIndex, role, description, techStack } = Astro.props;
+const descDelay = cardIndex + 2;
+const techDelay = cardIndex + 3;
+---
+
+<div class="project-card-wrap">
+<div class={`project-card card-${cardIndex} ${image ? 'has-image' : 'is-placeholder'}`}>
+  {/* Clickable link overlay */}
+  {!comingSoon && (
+    <a href={href} class="project-card__link" aria-label={title}></a>
+  )}
+
+  {/* Text group — absolutely positioned over the card */}
+  <div class="project-card__text-group">
+    <div class="project-card__text-top h4">
+      {year}
+    </div>
+    <div class="project-card__text-bottom h4">
+      <div>{title}</div>
+      <div>{category}</div>
+    </div>
+  </div>
+
+  {/* Image (or placeholder) */}
+  <div class="project-card__image-wrap">
+    {image ? (
+      <img
+        src={image}
+        alt={title}
+        class="project-card__img"
+        loading="lazy"
+      />
+    ) : (
+      <div class="project-card__placeholder">
+        <span class="project-card__placeholder-num">{String(cardIndex).padStart(2, '0')}</span>
+        {comingSoon && <span class="project-card__placeholder-tag overline">In progress</span>}
+      </div>
+    )}
+  </div>
+
+  {/* Overlay that darkens on hover */}
+  <div class="project-card__overlay"></div>
+</div>
+
+{role && (
+  <p class="project-card__role" data-reveal data-reveal-delay={descDelay}>{role}</p>
+)}
+
+{description && (
+  <p class="project-card__description" data-reveal data-reveal-delay={descDelay} set:html={description}></p>
+)}
+
+{techStack && techStack.length > 0 && (
+  <ul class="project-card__tech" data-reveal data-reveal-delay={techDelay} aria-label="Technologies used">
+    {techStack.map((tech) => (
+      <li class="project-card__tech-item">
+        <a href={tech.url} target="_blank" rel="noopener noreferrer">{tech.name}</a>
+      </li>
+    ))}
+  </ul>
+)}
+</div>
+
+<style>
+  .project-card-wrap {
+    display: flex;
+    flex-direction: column;
+    gap: var(--sp-24);
+  }
+
+  .project-card__description {
+    font-family: var(--font-ui);
+    font-size: var(--text-body);
+    line-height: 1.6;
+    color: var(--c-text-muted);
+    max-width: 90%;
+  }
+
+  .project-card__role {
+    font-family: var(--font-ui);
+    font-size: var(--text-body);
+    line-height: 1.6;
+    color: var(--c-text-muted);
+    max-width: 75%;
+    margin: 0;
+  }
+
+  .project-card__role::before {
+    content: 'Role: ';
+    opacity: 0.5;
+  }
+
+  .project-card__description :global(strong) {
+    color: var(--c-text);
+    font-weight: 600;
+  }
+
+  .project-card__tech {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--sp-12);
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    max-width: 75%;
+  }
+
+  .project-card__tech-item {
+    font-family: var(--font-ui);
+    font-size: clamp(0.8rem, 0.85vw, 0.9rem);
+    line-height: 1;
+    border: 1px solid var(--c-line);
+    border-radius: 100px;
+    padding: 0;
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
+    transition:
+      border-color 240ms var(--ease),
+      transform 240ms var(--ease);
+    height: 2.2em;
+    display: flex;
+    align-items: center;
+  }
+
+  .project-card__tech-item::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background: var(--c-text);
+    transform: translateY(101%);
+    transition: transform 300ms var(--ease);
+  }
+
+  .project-card__tech-item:hover::before {
+    transform: translateY(0);
+  }
+
+  .project-card__tech-item a {
+    color: var(--c-text-muted);
+    text-decoration: none;
+    transition: color 300ms var(--ease);
+    display: block;
+    padding: 0.35em 0.7em;
+  }
+
+  .project-card__tech-item:hover,
+  .project-card__tech-item:focus-within {
+    border-color: var(--c-text);
+    transform: translateY(-4px);
+  }
+
+  .project-card__tech-item:hover a,
+  .project-card__tech-item:focus-within a {
+    color: var(--c-bg);
+  }
+
+  @media (max-width: 768px) {
+    .project-card__description,
+    .project-card__role,
+    .project-card__tech {
+      max-width: 100%;
+    }
+  }
+
+  .project-card {
+    width: 100%;
+    aspect-ratio: 5 / 4;
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: var(--c-surface-tint);
+  }
+
+  /* Full-card clickable area */
+  .project-card__link {
+    position: absolute;
+    inset: 0;
+    z-index: 10;
+  }
+
+  /* Text overlay — top: year, bottom: name + category */
+  .project-card__text-group {
+    position: absolute;
+    inset: 0;
+    z-index: 5;
+    pointer-events: none;
+  }
+
+  .project-card__text-top {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    inset-block-start: 0;
+    display: flex;
+    justify-content: center;
+    padding-top: var(--sp-12);
+  }
+
+  .project-card__text-bottom {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding-bottom: var(--sp-12);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.15em;
+  }
+
+  /* Cards with imagery: text reads white over the picture. */
+  .project-card.has-image .project-card__text-top,
+  .project-card.has-image .project-card__text-bottom {
+    color: var(--c-white);
+  }
+
+  /* Placeholder cards: no dark image to anchor white text, so use the
+     theme's ink color for readable contrast on the surface tint. */
+  .project-card.is-placeholder .project-card__text-top,
+  .project-card.is-placeholder .project-card__text-bottom {
+    color: var(--c-text);
+  }
+
+  /* Image fills the card */
+  .project-card__image-wrap {
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    inset: 0;
+  }
+
+  .project-card__img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 600ms var(--ease);
+  }
+
+  .project-card:hover .project-card__img {
+    transform: scale(1.04);
+  }
+
+  .project-card__placeholder {
+    width: 100%;
+    height: 100%;
+    background-color: var(--c-surface-tint-soft);
+    background-image:
+      repeating-linear-gradient(
+        135deg,
+        transparent 0,
+        transparent 14px,
+        var(--c-stripe-line) 14px,
+        var(--c-stripe-line) 15px
+      );
+    border: 1px solid var(--c-line);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    transition: background-color 400ms var(--ease);
+  }
+
+  .project-card:hover .project-card__placeholder {
+    background-color: var(--c-surface-tint-strong);
+  }
+
+  .project-card__placeholder-num {
+    font-family: var(--font-display);
+    font-size: clamp(4rem, 10vw, 9rem);
+    line-height: 1;
+    letter-spacing: -0.02em;
+    color: var(--c-text);
+    opacity: 0.10;
+    user-select: none;
+    transition: opacity 400ms var(--ease);
+  }
+
+  .project-card:hover .project-card__placeholder-num {
+    opacity: 0.18;
+  }
+
+  .project-card__placeholder-tag {
+    position: absolute;
+    top: var(--sp-12);
+    right: var(--sp-12);
+    color: var(--c-text-muted);
+    /* Status dot before the label */
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5em;
+  }
+
+  .project-card__placeholder-tag::before {
+    content: '';
+    display: inline-block;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: currentColor;
+    animation: card-pulse 2.4s ease-in-out infinite;
+  }
+
+  @keyframes card-pulse {
+    0%, 100% { opacity: 0.4; }
+    50%      { opacity: 1; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .project-card__placeholder-tag::before { animation: none; opacity: 1; }
+  }
+
+  /* Dark overlay on hover */
+  .project-card__overlay {
+    position: absolute;
+    inset: 0;
+    z-index: 3;
+    background-color: transparent;
+    transition: background-color 400ms var(--ease);
+    pointer-events: none;
+  }
+
+  .project-card:hover .project-card__overlay {
+    background-color: var(--c-overlay-hover);
+  }
+</style>

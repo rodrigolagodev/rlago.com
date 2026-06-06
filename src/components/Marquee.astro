@@ -1,0 +1,158 @@
+---
+const items = [
+  'Open to opportunities',
+  'Mar del Plata, Argentina',
+  'UX Engineer',
+  'Product UI · Design Systems · Front-end',
+  'B2B · SaaS',
+];
+// Duplicate so we can translate -50% for a seamless loop
+const allItems = [...items, ...items];
+---
+
+<div class="marquee" aria-hidden="true">
+  <div class="marquee__track">
+    {allItems.map((item, i) => (
+      <>
+        <span class="marquee__item">{item}</span>
+        <svg class="marquee__star svg-star" viewBox="0 0 44 49" fill="none">
+          <path d="M19.139 48.5C21.1121 35.7531 21.3094 30.7739 21.3094 25.5954C16.574 28.3838 10.2601 32.1681 2.76233 38.7407L0 33.9606C9.66816 30.5747 16.1794 26.9896 20.9148 24.4004C16.1794 21.8112 9.66816 18.027 0 14.8403L2.76233 10.0602C10.2601 16.6328 16.574 20.2178 21.3094 23.2054C21.3094 18.027 21.1121 13.0477 19.139 0.5H24.6637C22.8879 13.0477 22.6906 18.027 22.4933 23.4046C27.0314 20.417 33.3453 16.6328 41.0404 10.0602L44 14.8403C34.5292 18.2261 28.0179 22.0104 23.0852 24.4004C28.0179 26.9896 34.5292 30.5747 44 33.9606L41.0404 38.7407C33.3453 32.1681 27.0314 28.1846 22.4933 25.3963C22.6906 30.7739 22.8879 35.7531 24.6637 48.5H19.139Z" fill="currentColor"/>
+        </svg>
+      </>
+    ))}
+  </div>
+</div>
+
+<style>
+  .marquee {
+    width: 100%;
+    overflow: hidden;
+    border-top: 1px solid var(--c-line);
+    border-bottom: 1px solid var(--c-line);
+    padding-block: clamp(1.5rem, 3vh, 2.5rem);
+  }
+
+  .marquee__track {
+    display: flex;
+    align-items: center;
+    width: max-content;
+    gap: clamp(2rem, 5vw, 5rem);
+    will-change: transform;
+  }
+
+  .marquee__item {
+    font-family: var(--font-display);
+    font-size: clamp(2rem, 5.5vw, 5.5rem);
+    line-height: 1;
+    letter-spacing: -0.02em;
+    text-transform: uppercase;
+    color: var(--c-text);
+    flex-shrink: 0;
+    white-space: nowrap;
+  }
+
+  .marquee__star {
+    width: clamp(1.5rem, 2.8vw, 2.5rem);
+    height: auto;
+    color: var(--c-text-muted);
+    flex-shrink: 0;
+  }
+</style>
+
+<script>
+  // Velocity-modulated marquee: base speed + scroll-velocity boost.
+  // Driven by RAF; Lenis 'scroll' event feeds in the boost.
+  const track = document.querySelector<HTMLElement>('.marquee__track');
+  const motionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+  let rafId = 0;
+  let stopped = motionQuery.matches;
+
+  // Honour mid-session toggles of reduced-motion. Without this the RAF
+  // keeps churning even after the user enables the OS setting.
+  motionQuery.addEventListener('change', (e) => {
+    stopped = e.matches;
+    if (stopped) cancelAnimationFrame(rafId);
+  });
+
+  if (track && !stopped) {
+    const BASE_SPEED = 60;      // px/s baseline
+    const BOOST_FACTOR = 18;    // scroll-velocity → boost multiplier
+    const MAX_BOOST = 2400;     // cap (px/s)
+    const DECAY = 0.92;         // per-60fps-frame exponential decay
+    const SMOOTHING = 8;        // current→target lerp factor
+
+    let translateX = 0;
+    let currentSpeed = BASE_SPEED;
+    let scrollBoost = 0;
+    let lastTime = performance.now();
+    let halfWidth = 0;
+
+    // Native-scroll fallback velocity tracking.
+    let nativeLastY = window.scrollY;
+    let nativeLastT = performance.now();
+    let nativeVelocity = 0;
+    window.addEventListener(
+      'scroll',
+      () => {
+        const now = performance.now();
+        const dt = (now - nativeLastT) / 1000;
+        if (dt > 0) {
+          nativeVelocity = (window.scrollY - nativeLastY) / dt;
+        }
+        nativeLastY = window.scrollY;
+        nativeLastT = now;
+      },
+      { passive: true },
+    );
+
+    const measure = () => {
+      // Track contains duplicated content (built-in on the server).
+      // One cycle wraps at half the total scroll width.
+      halfWidth = track.scrollWidth / 2;
+    };
+
+    type LenisLike = { velocity?: number };
+    const getVelocity = (): number => {
+      const lenis = (window as unknown as { __lenis?: LenisLike }).__lenis;
+      if (lenis && typeof lenis.velocity === 'number') return lenis.velocity;
+      return nativeVelocity;
+    };
+
+    const tick = (now: number) => {
+      const dt = Math.min(0.1, (now - lastTime) / 1000);
+      lastTime = now;
+
+      // Read scroll velocity each frame; asymmetric envelope —
+      // jump up on input, decay slowly when input drops.
+      const inputBoost = Math.min(
+        MAX_BOOST,
+        Math.abs(getVelocity()) * BOOST_FACTOR,
+      );
+      if (inputBoost > scrollBoost) {
+        scrollBoost = inputBoost;
+      } else {
+        scrollBoost *= Math.pow(DECAY, dt * 60);
+      }
+
+      const targetSpeed = BASE_SPEED + scrollBoost;
+      currentSpeed += (targetSpeed - currentSpeed) * Math.min(1, dt * SMOOTHING);
+
+      translateX -= currentSpeed * dt;
+      if (halfWidth > 0 && translateX <= -halfWidth) {
+        translateX += halfWidth;
+      }
+      track.style.transform = `translate3d(${translateX}px, 0, 0)`;
+      if (!stopped) rafId = requestAnimationFrame(tick);
+    };
+
+    if (document.fonts && document.fonts.ready) {
+      document.fonts.ready.then(measure);
+    } else {
+      measure();
+    }
+    window.addEventListener('resize', measure);
+
+    lastTime = performance.now();
+    rafId = requestAnimationFrame(tick);
+  }
+</script>

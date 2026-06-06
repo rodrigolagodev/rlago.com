@@ -1,0 +1,562 @@
+---
+import SectionMeta from './SectionMeta.astro';
+import PrimaryCta from './PrimaryCta.astro';
+---
+
+<section class="about" id="about" aria-labelledby="about-heading">
+  <h2 id="about-heading" class="sr-only">About</h2>
+
+  <!-- Decorative oversized asterisk: lives behind all section content,
+       gets parallax + a continuous base rotation that accelerates with
+       scroll velocity. Mirrors the marquee/section-meta star glyph. -->
+  <svg
+    class="about__star svg-star"
+    id="about-star"
+    viewBox="0 0 44 49"
+    fill="none"
+    aria-hidden="true"
+  >
+    <path d="M19.139 48.5C21.1121 35.7531 21.3094 30.7739 21.3094 25.5954C16.574 28.3838 10.2601 32.1681 2.76233 38.7407L0 33.9606C9.66816 30.5747 16.1794 26.9896 20.9148 24.4004C16.1794 21.8112 9.66816 18.027 0 14.8403L2.76233 10.0602C10.2601 16.6328 16.574 20.2178 21.3094 23.2054C21.3094 18.027 21.1121 13.0477 19.139 0.5H24.6637C22.8879 13.0477 22.6906 18.027 22.4933 23.4046C27.0314 20.417 33.3453 16.6328 41.0404 10.0602L44 14.8403C34.5292 18.2261 28.0179 22.0104 23.0852 24.4004C28.0179 26.9896 34.5292 30.5747 44 33.9606L41.0404 38.7407C33.3453 32.1681 27.0314 28.1846 22.4933 25.3963C22.6906 30.7739 22.8879 35.7531 24.6637 48.5H19.139Z" fill="currentColor"/>
+  </svg>
+
+  <div class="about__meta container">
+    <SectionMeta index="01" rightLabel="UX Engineer" rightIcon="asterisk" />
+  </div>
+
+  <div class="about__hero" id="about-hero">
+    <div class="about__hello-wrap" id="about-hello-wrap" data-text-distortion>
+      <span class="about__hello" id="about-hello" data-text-distortion-text aria-hidden="true">HELLOOOOO!</span>
+      <canvas aria-hidden="true"></canvas>
+    </div>
+    <div class="about__photo" id="about-photo">
+      <img
+        src="/images/photo.webp"
+        alt="Rodrigo Lago — UX Engineer"
+        class="about__photo-img"
+        draggable="false"
+      />
+    </div>
+
+  </div>
+
+  <div class="about__bottom">
+    <p class="about__text">
+      Hey, I'm <strong>Rodrigo</strong>. I'm a <strong>UX Engineer</strong>. I build interfaces for SaaS products, e-commerce, whatever the project needs. Day to day, I work alongside <strong>designers and developers</strong> — turning concepts into <strong>interfaces that actually ship</strong>. I've been doing this for a while now, across different teams, products, and industries. The common thread? Making things that work for <strong>real people</strong>. I'm <strong>open to remote opportunities</strong>.
+    </p>
+
+    <div class="about__ctas">
+      <PrimaryCta href="mailto:rodrigo.n.lago@gmail.com" label="Contact me" />
+
+      <a href="/cv.pdf" download class="about__cta about__cta--ghost">
+        <span class="about__cta-inner">
+          <span class="about__cta-label">Get my résumé</span>
+          <span class="about__cta-arrow" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M12 5V18M12 18L6 12M12 18L18 12" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M12 5V18M12 18L6 12M12 18L18 12" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </span>
+        </span>
+      </a>
+    </div>
+  </div>
+
+</section>
+
+<style>
+  .about {
+    position: relative;
+    min-height: 100svh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding-bottom: var(--sp-144);
+    /* overflow-x clip so the star's negative right offset doesn't trigger
+       a horizontal scrollbar; vertical stays visible so the star can
+       spill above/below the section as parallax travels its full range. */
+    overflow-x: clip;
+  }
+
+  /* Oversized decorative asterisk, anchored to the right edge. z-index 0
+     pins it under all content (meta, hero row, text). Two CSS vars drive
+     it: --star-spin (rotation, JS-controlled) and --about-star-parallax
+     (translateY, JS-controlled). transform composes both. */
+  .about__star {
+    position: absolute;
+    /* Anchored near the bottom of the section so on first entry the star
+       sits low and rises through the section as you scroll. */
+    top: 85%;
+    right: clamp(-4rem, -3vw, -1rem);
+    width: clamp(18rem, 38vw, 38rem);
+    height: auto;
+    color: var(--c-text);
+    opacity: 0.07;
+    z-index: 0;
+    pointer-events: none;
+    will-change: transform;
+    transform:
+      translateY(calc(-50% + var(--about-star-parallax, 0px)))
+      rotate(var(--star-spin, 0deg));
+    transform-origin: 50% 50%;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .about__star {
+      transform: translateY(-50%);
+    }
+  }
+
+  /* All direct children of .about sit above the star. */
+  .about > *:not(.about__star) {
+    position: relative;
+    z-index: 1;
+  }
+
+  .about__meta {
+    margin-bottom: var(--sp-48);
+  }
+
+  /* ── HERO row: HELLO full-bleed + photo overlay ──────── */
+  .about__hero {
+    position: relative;
+    width: 100%;
+    text-align: center;
+  }
+
+  @media (max-width: 768px) {
+    .about__hero {
+      padding-inline: var(--gutter);
+    }
+  }
+
+  .about__hello-wrap {
+    overflow: hidden;
+    max-width: 100%;
+  }
+
+  /* HELLO is fit to exactly 100% of container width by JS — using
+     viewport units alone is unreliable because the character count
+     changes the natural width per font-size.
+     inline-block so it sizes to its text content (needed for the JS
+     measurement to read the actual glyph width, not the parent's). */
+  .about__hello {
+    display: inline-block;
+    font-family: var(--font-display);
+    /* Explicit 400 — h2 defaults to bold (700) and Bebas Neue only ships
+       weight 400, so the browser applies synthetic bold and the measured
+       width ends up wider than what the canvas (which renders at true 400)
+       can match → the visible text was coming out narrower. */
+    font-weight: 400;
+    text-transform: uppercase;
+    line-height: 0.85;
+    letter-spacing: -0.02em;
+    margin: 0;
+    white-space: nowrap;
+    /* No `color` here — the global rule [data-text-distortion-text]
+       sets it to transparent so the canvas overlay is the visible text. */
+  }
+
+  /* Photo floats over the centre of HELLO, 4:3 aspect-ratio.
+     Uses a CSS variable for parallax shift composed with the centring transform. */
+  .about__photo {
+    position: absolute;
+    top: 100%;
+    left: 62%;
+    width: clamp(12rem, 20vw, 20rem);
+    aspect-ratio: 3 / 4;
+    overflow: hidden;
+    z-index: 1;
+    will-change: transform;
+    transform: translate(-50%, calc(-20% + var(--about-parallax, 0px)));
+  }
+
+  .about__photo-img {
+    width: 100%;
+    height: 100%;
+    display: block;
+    object-fit: cover;
+    user-select: none;
+    -webkit-user-drag: none;
+  }
+
+  /* ── Bottom block — paragraph (left) + CTA (right) ──────
+     The section's decorative star anchors bottom-right; the CTA sits
+     in the same area but reads on top (the star is opacity 0.07).
+     Together they balance the left-weighted paragraph against the
+     right edge — closing the section as a two-beat editorial spread. */
+  .about__bottom {
+    display: flex;
+    flex-direction: column;
+    align-items: start;
+    gap: var(--sp-48);
+    padding-left: 12px;
+  }
+
+  .about__text {
+    font-family: var(--font-ui);
+    font-size: clamp(1rem, 1.2vw, 1.4rem);
+    line-height: 1.5;
+    max-width: 50%;
+    color: var(--c-text);
+    text-align: left;
+  }
+
+  /* Editorial accents inside the body copy. Same colour as the
+     surrounding text — the weight contrast alone provides the
+     rhythm; a tonal shift would feel like a typographic siren. */
+  .about__text strong {
+    font-weight: 700;
+    letter-spacing: -0.005em;
+  }
+
+  /* ── CTA group ── primary (filled) + ghost (text-only) ────── */
+  .about__ctas {
+    display: inline-flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: clamp(0.5rem, 2vw, 1.75rem);
+    /* Subtle parallax — JS sets --about-ctas-parallax based on the
+       section's scroll position. Range is intentionally small (a few
+       dozen px) so the drift reads as "things settle as you scroll"
+       rather than an obvious motion gag. */
+    will-change: transform;
+    transform: translateY(var(--about-ctas-parallax, 0px));
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .about__ctas { transform: none; }
+  }
+
+  /* ── CTA base ─────────────────────────────────────────────
+     Shared structure: rectangular (no border-radius — crisp,
+     editorial), Barlow uppercase tracking label, hairline arrow.
+     Variants below decorate it as primary (filled) or ghost
+     (text-only). */
+  .about__cta {
+    --cta-duration: 520ms;
+    --cta-ease: cubic-bezier(0.65, 0, 0.35, 1);
+
+    display: inline-flex;
+    color: var(--c-text);
+    text-decoration: none;
+    width: fit-content;
+    position: relative;
+    isolation: isolate;
+    transition:
+      color var(--cta-duration) var(--cta-ease),
+      transform 240ms var(--ease);
+  }
+
+  /* Shared lift on hover/focus — matches the back-to-top + stack pills */
+  .about__cta:hover,
+  .about__cta:focus-visible {
+    transform: translateY(-4px);
+  }
+
+  /* ── Ghost ── matches primary at rest (paper bg, dark text, border).
+     Hover gets a very transparent gray wash. */
+  .about__cta--ghost {
+    background: var(--c-bg);
+    border: 1px solid var(--c-line);
+    transition:
+      color var(--cta-duration) var(--cta-ease),
+      background-color var(--cta-duration) var(--cta-ease),
+      transform 240ms var(--ease);
+  }
+
+  .about__cta--ghost .about__cta-inner {
+    padding: 1.3em 2.2em;
+  }
+
+  .about__cta--ghost:hover,
+  .about__cta--ghost:focus-visible {
+    color: var(--c-text);
+    background-color: var(--c-surface-tint-soft);
+  }
+
+  /* Inner cluster: label + arrow on one baseline, generous padding so
+     the button reads as a real touch target without ballooning. */
+  .about__cta-inner {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5em;
+    padding: 1.3em 2.2em;
+  }
+
+  .about__cta-label {
+    font-family: var(--font-ui);
+    font-size: clamp(1.0625rem, 1.25vw, 1.375rem);
+    font-weight: 500;
+    line-height: 1;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+
+  /* Arrow — hairline diagonal glyph, sized off the label cap height. */
+  .about__cta-arrow {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 0.95em;
+    height: 0.95em;
+    /* color: inherit makes the explicit chain visible: SVG stroke uses
+       currentColor → arrow container → inner cluster → .about__cta.
+       Combined with a colour transition that matches the label's, the
+       arrows ease through state changes in sync with the text. */
+    color: inherit;
+    transition:
+      transform var(--cta-duration) var(--cta-ease),
+      color var(--cta-duration) var(--cta-ease);
+    will-change: transform;
+  }
+
+  .about__cta-arrow svg {
+    width: 100%;
+    height: 100%;
+    display: block;
+  }
+
+  /* ── Ghost arrow: vertical swap-loop ─────────────────────
+     Same pattern as the primary but on the Y axis only — one
+     arrow exits at the bottom, another enters from the top.
+     Reads as continuous downward motion, matching the
+     "download" semantics of the action. */
+  .about__cta--ghost .about__cta-arrow {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .about__cta--ghost .about__cta-arrow svg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    display: block;
+  }
+
+  .about__cta--ghost .about__cta-arrow svg:nth-child(1) {
+    transform: translateY(0);
+  }
+
+  .about__cta--ghost .about__cta-arrow svg:nth-child(2) {
+    transform: translateY(-100%);
+  }
+
+  @keyframes cta-arrow-down-loop {
+    0%   { transform: translateY(-100%); }
+    100% { transform: translateY(100%); }
+  }
+
+  .about__cta--ghost:hover .about__cta-arrow svg,
+  .about__cta--ghost:focus-visible .about__cta-arrow svg {
+    animation: cta-arrow-down-loop 1.6s linear infinite;
+  }
+
+  /* SVG #1 starts mid-cycle (centre = 50% of keyframe), so its
+     resting position matches its animation start. */
+  .about__cta--ghost:hover .about__cta-arrow svg:nth-child(1),
+  .about__cta--ghost:focus-visible .about__cta-arrow svg:nth-child(1) {
+    animation-delay: -0.8s;
+  }
+
+  .about__cta:focus-visible {
+    outline-offset: 4px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .about__cta,
+    .about__cta::before,
+    .about__cta-arrow {
+      transition: none;
+      animation: none;
+    }
+  }
+
+  @media (max-width: 768px) {
+    .about__photo {
+      top: auto;
+      bottom: -30rem;
+      left: auto;
+      right: 3%;
+      width: 70%;
+      max-width: 12rem;
+      z-index: 2;
+      transform: translateY(var(--about-parallax, 0px));
+    }
+
+    .about__bottom {
+      margin-block-start: var(--sp-12);
+      gap: var(--sp-72);
+    }
+
+    .about__cta--primary .about__cta-inner,
+    .about__cta--ghost .about__cta-inner {
+      padding: 1em 1.5em;
+      gap: 0.7em;
+    }
+
+    .about__ctas {
+      gap: 1.25rem;
+    }
+
+    .about__text {
+      max-width: 80%;
+    }
+  }
+</style>
+
+<script>
+  const section = document.getElementById('about');
+  const hero = document.getElementById('about-hero');
+  const hello = document.getElementById('about-hello');
+  const photo = document.getElementById('about-photo');
+  const star = document.getElementById('about-star');
+  const ctas = document.querySelector<HTMLElement>('.about__ctas');
+
+  if (section && hero && hello && photo) {
+
+    // Fit HELLO to its container's full width.
+    function fitHello() {
+      hello!.style.fontSize = '100px';
+      hello!.style.whiteSpace = 'nowrap';
+      const cs = window.getComputedStyle(hero!);
+      const padLeft = parseFloat(cs.paddingLeft) || 0;
+      const padRight = parseFloat(cs.paddingRight) || 0;
+      const containerWidth = hero!.getBoundingClientRect().width - padLeft - padRight;
+      const naturalWidth = hello!.getBoundingClientRect().width;
+      if (naturalWidth > 0 && containerWidth > 0) {
+        hello!.style.fontSize = `${(100 * containerWidth) / naturalWidth}px`;
+      }
+    }
+
+    // Parallax: offset goes from -1 (section below viewport) to +1
+    // (section above viewport), centred at 0 when the section's middle
+    // is at the viewport's middle. HELLO and photo move at different
+    // speeds AND opposite directions so the desfase is clearly visible.
+    const mobileQuery = window.matchMedia('(max-width: 768px)');
+
+    let ticking = false;
+    function updateParallax() {
+      const rect = section!.getBoundingClientRect();
+      const viewportHeight = window.innerHeight;
+      const sectionCenter = rect.top + rect.height / 2;
+      const offset = (viewportHeight / 2 - sectionCenter) / viewportHeight;
+
+      // Star parallax: starts near the bottom of the section (top: 85% in
+       // CSS) and lifts up as the section scrolls past. Larger range than
+       // the photo so the travel reads clearly across the full section.
+       if (star) {
+         star.style.setProperty('--about-star-parallax', `${offset * -520}px`);
+       }
+
+      // CTA cluster parallax — asymmetric curve:
+      //   Phase 1 (t 0 → 0.5, section entering from bottom): cluster
+      //     starts ~80 px BELOW its rest position and snaps up to 0
+      //     with a quadratic ease-out — fast settle.
+      //   Phase 2 (t 0.5 → 1, section leaving past the top): cluster
+      //     drifts slowly upward from 0 to ~-18 px using a linear
+      //     curve, so the motion past the rest point reads as gentle
+      //     exhale rather than the same speed it arrived at.
+      if (ctas) {
+        const t = Math.max(0, Math.min(1, (offset + 1) / 2));
+        const R_DOWN = 140;
+        const R_UP = 18;
+        let y;
+        if (t <= 0.5) {
+          const u = t * 2;            // 0 → 1 across phase 1
+          y = R_DOWN * Math.pow(1 - u, 2);
+        } else {
+          const u = (t - 0.5) * 2;    // 0 → 1 across phase 2
+          y = -R_UP * u;
+        }
+        ctas.style.setProperty('--about-ctas-parallax', `${y}px`);
+      }
+
+      if (mobileQuery.matches) {
+        // Scroll progress t ∈ [0,1]: 0 = section entering bottom of viewport,
+        // 0.5 = centred, 1 = leaving top. Photo rises fast in the first half
+        // (ease-out: +R → 0) then continues slowly in the second (ease-in: 0 → -R).
+        const t = Math.max(0, Math.min(1, (offset + 1) / 2));
+        const R = 500;
+        const CENTER_OFFSET = 24;
+        let y;
+        if (t <= 0.5) {
+          const u = t * 2;
+          y = R * Math.pow(1 - u, 2);
+        } else {
+          const u = (t - 0.5) * 2;
+          y = -R * 0.7 * (u * u);
+        }
+        photo!.style.setProperty('--about-parallax', `${y + CENTER_OFFSET}px`);
+      } else {
+        photo!.style.setProperty('--about-parallax', `${offset * -800}px`);
+      }
+
+      ticking = false;
+    }
+
+    function onScroll() {
+      if (!ticking) {
+        requestAnimationFrame(updateParallax);
+        ticking = true;
+      }
+    }
+
+    if (document.fonts && document.fonts.ready) {
+      document.fonts.ready.then(() => {
+        fitHello();
+        updateParallax();
+      });
+    } else {
+      fitHello();
+      updateParallax();
+    }
+
+    window.addEventListener('resize', () => {
+      fitHello();
+      updateParallax();
+    }, { passive: true });
+
+    window.addEventListener('scroll', onScroll, { passive: true });
+
+    // Star spin loop: continuous base rotation that accelerates with
+    // scroll velocity. Mirrors the marquee's velocity-boost envelope —
+    // boost jumps up on input, decays smoothly when input stops.
+    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (star && !reduced) {
+      const BASE_DEG_PER_SEC = 6;      // gentle continuous idle rotation
+      const BOOST_FACTOR = 0.08;       // scroll-velocity → deg/s multiplier
+      const MAX_BOOST = 90;            // cap (deg/s) — keep it a nudge, not a spin
+      const DECAY = 0.90;              // per-60fps-frame exponential decay
+
+      let angle = 0;
+      let boost = 0;
+      let prevScrollY = window.scrollY;
+      let prevT = performance.now();
+
+      const spin = (now: number) => {
+        const dt = Math.min(0.1, (now - prevT) / 1000);
+        prevT = now;
+
+        const dy = window.scrollY - prevScrollY;
+        prevScrollY = window.scrollY;
+        const instBoost = dt > 0
+          ? Math.min(MAX_BOOST, Math.abs(dy / dt) * BOOST_FACTOR)
+          : 0;
+        if (instBoost > boost) {
+          boost = instBoost;
+        } else {
+          boost *= Math.pow(DECAY, dt * 60);
+        }
+
+        angle = (angle + (BASE_DEG_PER_SEC + boost) * dt) % 360;
+        star.style.setProperty('--star-spin', `${angle}deg`);
+        requestAnimationFrame(spin);
+      };
+      requestAnimationFrame(spin);
+    }
+
+  }
+</script>
