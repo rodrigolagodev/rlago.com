@@ -1,5 +1,6 @@
 ---
 import SectionMeta from './SectionMeta.astro';
+import { contact, social } from '../config/site';
 const faqs = [
   {
     cat: 'Stack',
@@ -49,7 +50,7 @@ const faqs = [
   {
     cat: 'Contact',
     q: 'How can I reach you?',
-    a: 'Reach out through <a href="https://linkedin.com/in/rodrigolago" target="_blank" rel="noopener noreferrer"><strong>LinkedIn</strong></a> or use the <a href="mailto:rodrigo.n.lago@gmail.com"><strong>contact link</strong></a> on this site.',
+    a: `Reach out through <a href="${social.linkedin.url}" target="_blank" rel="noopener noreferrer"><strong>${social.linkedin.label}</strong></a> or use the <a href="${contact.mailto}"><strong>contact link</strong></a> on this site.`,
   },
 ];
 const totalQ = String(faqs.length).padStart(2, '0');

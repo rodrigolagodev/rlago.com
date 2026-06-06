@@ -1,4 +1,5 @@
 ---
+import { contact } from '../config/site';
 ---
 
 <nav id="navbar" class="navbar">
@@ -50,7 +51,7 @@
           <a href="#" data-scroll-top><span data-scramble>Home</span></a>
           <a href="#works"><span data-scramble>Works</span></a>
           <a href="#faq"><span data-scramble>FAQ</span></a>
-          <a href="mailto:rodrigo.n.lago@gmail.com"><span data-scramble>Contact</span></a>
+          <a href={contact.mailto}><span data-scramble>Contact</span></a>
         </nav>
       </div>
 

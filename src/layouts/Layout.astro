@@ -1,22 +1,24 @@
 ---
+import { site, contact, social } from '../config/site';
+
 interface Props {
   title?: string;
   description?: string;
 }
 
 const {
-  title = 'Rodrigo Lago — UX Engineer',
-  description = "Rodrigo Lago — UX Engineer building interfaces for SaaS and e-commerce. He works alongside designers and developers to ship products that work for real people.",
+  title = site.title,
+  description = site.description,
 } = Astro.props;
 
 const url = Astro.url;
 // Absolute URL so social crawlers resolve the asset regardless of where
 // the page is served from. Asset still has to exist in /public/images/.
-const ogImage = new URL('/images/og.png', url).toString();
+const ogImage = new URL(site.ogImage, url).toString();
 ---
 
 <!doctype html>
-<html lang="en">
+<html lang={site.lang}>
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -54,20 +56,17 @@ const ogImage = new URL('/images/og.png', url).toString();
     <script type="application/ld+json" set:html={JSON.stringify({
       '@context': 'https://schema.org',
       '@type': 'Person',
-      name: 'Rodrigo Lago',
-      jobTitle: 'UX Engineer',
+      name: site.name,
+      jobTitle: site.role,
       description,
       url: url.origin,
-      email: 'mailto:rodrigo.n.lago@gmail.com',
+      email: contact.mailto,
       address: {
         '@type': 'PostalAddress',
-        addressLocality: 'Mar del Plata',
-        addressCountry: 'AR',
+        addressLocality: site.location.city,
+        addressCountry: site.location.country,
       },
-      sameAs: [
-        'https://linkedin.com/in/rodrigolago',
-        'https://github.com/rodrigolagodev',
-      ],
+      sameAs: [social.linkedin.url, social.github.url],
     })} />
 
     <!-- Theme init: runs before first paint to avoid flash -->

@@ -1,5 +1,6 @@
 ---
 import PrimaryCta from './PrimaryCta.astro';
+import { site, contact, social } from '../config/site';
 const year = new Date().getFullYear();
 ---
 
@@ -37,7 +38,7 @@ const year = new Date().getFullYear();
 
         <div class="footer__cta-slot">
           <PrimaryCta
-            href="mailto:rodrigo.n.lago@gmail.com"
+            href={contact.mailto}
             label="Let's talk"
             ariaLabel="Let's talk — opens email client"
           />
@@ -63,24 +64,24 @@ const year = new Date().getFullYear();
       <div class="footer__bar">
 
         <p class="footer__colophon overline">
-          &copy; {year} Rodrigo Lago
+          &copy; {year} {site.name}
         </p>
 
         <nav class="footer__social overline" aria-label="Contact and social links">
-          <a href="mailto:hi@rlago.com"
-            ><span data-scramble>hi@rlago.com</span></a>
+          <a href={contact.mailto}
+            ><span data-scramble>{contact.email}</span></a>
           <span class="footer__bar-sep" aria-hidden="true">·</span>
           <a
-            href="https://linkedin.com/in/rodrigolago"
+            href={social.linkedin.url}
             target="_blank"
             rel="noopener noreferrer"
-          ><span data-scramble>LinkedIn</span><span class="sr-only"> (opens in a new tab)</span></a>
+          ><span data-scramble>{social.linkedin.label}</span><span class="sr-only"> (opens in a new tab)</span></a>
           <span class="footer__bar-sep" aria-hidden="true">·</span>
           <a
-            href="https://github.com/rodrigolagodev"
+            href={social.github.url}
             target="_blank"
             rel="noopener noreferrer"
-          ><span data-scramble>GitHub</span><span class="sr-only"> (opens in a new tab)</span></a>
+          ><span data-scramble>{social.github.label}</span><span class="sr-only"> (opens in a new tab)</span></a>
         </nav>
 
       </div>

@@ -1,6 +1,7 @@
 ---
 import WorkCard from './WorkCard.astro';
 import SectionMeta from './SectionMeta.astro';
+import { social } from '../config/site';
 
 const projects = [
   {
@@ -87,12 +88,12 @@ const projects = [
       <div class="works__cta-inner" data-reveal>
         <div class="line line--draw" data-line-draw></div>
         <a
-          href="https://github.com/rodrigolagodev"
+          href={social.github.url}
           target="_blank"
           rel="noopener noreferrer"
           class="overline works__see-more"
         >
-          See more projects on <strong data-scramble>GitHub</strong><span class="sr-only"> (opens in a new tab)</span>
+          See more projects on <strong data-scramble>{social.github.label}</strong><span class="sr-only"> (opens in a new tab)</span>
         </a>
       </div>
     </div>

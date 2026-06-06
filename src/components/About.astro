@@ -1,6 +1,7 @@
 ---
 import SectionMeta from './SectionMeta.astro';
 import PrimaryCta from './PrimaryCta.astro';
+import { contact } from '../config/site';
 ---
 
 <section class="about" id="about" aria-labelledby="about-heading">
@@ -45,7 +46,7 @@ import PrimaryCta from './PrimaryCta.astro';
     </p>
 
     <div class="about__ctas">
-      <PrimaryCta href="mailto:rodrigo.n.lago@gmail.com" label="Contact me" />
+      <PrimaryCta href={contact.mailto} label="Contact me" />
 
       <a href="/cv.pdf" download class="about__cta about__cta--ghost">
         <span class="about__cta-inner">
