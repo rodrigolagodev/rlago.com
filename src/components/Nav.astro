@@ -1,0 +1,322 @@
+---
+---
+
+<nav id="navbar" class="navbar">
+  <div class="navbar__inner container">
+    <div class="line navbar__top-line">
+      <span class="navbar__progress" id="navbar-progress" aria-hidden="true"></span>
+    </div>
+
+    <div class="navbar__layout">
+
+      <!-- LEFT: logo + status badge -->
+      <div class="navbar__col is-left">
+        <a href="#" data-scroll-top class="navbar__logo" aria-label="Rodrigo Lago — Home">
+          <svg class="navbar__logo-svg" viewBox="0 0 359.9 344.7" width="29" height="28" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <style>.st0{fill:var(--c-logo)}.st1{opacity:.15}.st2{fill:url(#sg1)}.st3{fill:url(#sg2)}.st4{fill:url(#sg3)}</style>
+            <g>
+              <g>
+                <polygon class="st0" points="320.9,0 359.9,67.5 279.9,206.2 202.7,206.2"/>
+                <polygon class="st0" points="320.8,275.4 281.3,341.9 202.7,206.2 241.6,138.6"/>
+                <polygon class="st0" points="359.9,67.5 320.9,0 84.5,0 45.5,67.5"/>
+                <polygon class="st0" points="39,344.7 0,277.2 80,138.6 157.2,138.6"/>
+                <polygon class="st0" points="0,277.2 39,344.7 198.9,344.7 161.3,277.2"/>
+              </g>
+              <g class="st1">
+                <linearGradient id="sg1" gradientUnits="userSpaceOnUse" x1="305.6" y1="115.1" x2="309.5" y2="70.8">
+                  <stop offset="0" style="stop-color:#fff;stop-opacity:0"/>
+                  <stop offset="1" style="stop-color:#000"/>
+                </linearGradient>
+                <polygon class="st2" points="333.1,114 255.5,114 282.2,67.5 359.9,67.5"/>
+                <linearGradient id="sg2" gradientUnits="userSpaceOnUse" x1="243.8" y1="493.2" x2="247.7" y2="448.9" gradientTransform="matrix(-1 0 0 -1 298.8 722.8)">
+                  <stop offset="0" style="stop-color:#fff;stop-opacity:0"/>
+                  <stop offset="1" style="stop-color:#000"/>
+                </linearGradient>
+                <polygon class="st3" points="27.5,230.8 105,230.8 78.4,277.2 0.7,277.2"/>
+                <linearGradient id="sg3" gradientUnits="userSpaceOnUse" x1="5.9" y1="448.2" x2="9.9" y2="403.6" gradientTransform="matrix(.5076 .8616 .8616 -.5076 -95.1 356.9)">
+                  <stop offset="0" style="stop-color:#fff;stop-opacity:0"/>
+                  <stop offset="1" style="stop-color:#000"/>
+                </linearGradient>
+                <polygon class="st4" points="307.8,157.7 268,92.2 241.6,138.6 280.3,205.4"/>
+              </g>
+            </g>
+          </svg>
+        </a>
+      </div>
+
+      <!-- CENTER: nav links -->
+      <div class="navbar__col is-center">
+        <nav class="navbar__links h4" aria-label="Main navigation">
+          <a href="#" data-scroll-top><span data-scramble>Home</span></a>
+          <a href="#works"><span data-scramble>Works</span></a>
+          <a href="#faq"><span data-scramble>FAQ</span></a>
+          <a href="mailto:rodrigo.n.lago@gmail.com"><span data-scramble>Contact</span></a>
+        </nav>
+      </div>
+
+      <!-- RIGHT: theme toggle -->
+      <div class="navbar__col is-right">
+        <button
+          type="button"
+          class="theme-toggle"
+          id="theme-toggle"
+          aria-label="Switch to dark theme"
+          aria-pressed="false"
+        >
+          <span class="theme-toggle__swatch" aria-hidden="true"></span>
+        </button>
+      </div>
+
+    </div>
+  </div>
+</nav>
+
+
+<style>
+  /* ======= NAVBAR ======= */
+  .navbar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 100;
+    padding-top: var(--sp-12);
+    backdrop-filter: blur(14px) saturate(140%);
+    -webkit-backdrop-filter: blur(14px) saturate(140%);
+    /* Safety net: position: fixed escapes the body's overflow-x: clip
+       (because its containing block is the viewport, not the body).
+       Any child whose intrinsic size exceeds the viewport — long words,
+       SVGs without explicit dimensions, etc. — would otherwise leak out
+       and trigger a horizontal scrollbar. Clipping at the navbar itself
+       prevents that. */
+    overflow-x: clip;
+  }
+
+  .navbar__inner {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .navbar__top-line {
+    margin-bottom: var(--sp-12);
+    position: relative;
+    overflow: hidden;
+  }
+
+  /* Scroll-progress bar — grows in width as the page scrolls.
+     Sits on top of the existing 1px navbar line, painted with the
+     primary ink color so it reads as the same line "filling up". */
+  .navbar__progress {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: 100%;
+    background-color: var(--c-text);
+    transform-origin: left center;
+    transform: scaleX(var(--progress, 0));
+    transition: transform 80ms linear;
+    will-change: transform;
+  }
+
+  .navbar__layout {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: start;
+    width: 100%;
+    padding-bottom: 12px;
+  }
+
+  .navbar__col {
+    display: flex;
+    flex-direction: column;
+    gap: var(--sp-12);
+    /* Allow grid items to shrink below their intrinsic content size.
+       Without this, content like the long Contact link could push its
+       column wider than the available grid track, expanding the navbar
+       beyond the viewport. */
+    min-width: 0;
+  }
+
+  .navbar__col.is-center {
+    align-items: center;
+    justify-content: flex-start;
+  }
+
+  .navbar__col.is-right {
+    flex-direction: row;
+    gap: var(--sp-12);
+    align-items: center;
+    justify-self: end;
+  }
+
+
+  .navbar__logo {
+    display: inline-flex;
+    /* The parent column is a flex container with default align-items: stretch,
+       which was stretching the anchor to the full column width — making the
+       focus-visible outline span the whole left navbar slot. Pin the anchor
+       to its content size so the ring hugs the SVG only. */
+    align-self: flex-start;
+    width: fit-content;
+    transition: opacity 200ms;
+  }
+
+  .navbar__logo:hover { opacity: 0.6; }
+
+  /* Tighter focus ring for the logo — the global 4 px offset reads as
+     too much air around a 20 px-tall glyph. 2 px hugs the icon. */
+  .navbar__logo:focus-visible {
+    outline: 2px solid var(--c-text);
+    outline-offset: 2px;
+    border-radius: 2px;
+  }
+
+  .navbar__logo-svg {
+    height: 20px;
+    width: auto;
+  }
+
+.navbar__links {
+    display: flex;
+    gap: var(--sp-24);
+  }
+
+  .navbar__links a {
+    color: var(--c-text);
+    transition: opacity 200ms;
+    /* Expand the hit area to ≥ 24 px tall without changing visual size
+       (WCAG 2.5.8). The visible glyph stays at h4, but the click/tap
+       target now meets minimum target-size guidance. */
+    padding-block: 0.6rem;
+    display: inline-block;
+  }
+
+  .navbar__links a:hover { opacity: 0.5; }
+
+  .navbar__logo {
+    /* Anchor stays at icon size so the focus ring hugs the glyph; the
+       hit area is expanded via an invisible ::before that sits behind
+       the icon. The ::before doesn't affect outline or layout, so the
+       focus-visible outline still draws around the SVG only. */
+    position: relative;
+  }
+
+  .navbar__logo::before {
+    content: '';
+    position: absolute;
+    inset: -0.5rem;
+  }
+
+  .theme-toggle {
+    /* 44 × 44 hit target with a 13 px visible swatch centred inside.
+       The padding-based padding keeps the visual identical to before
+       while satisfying WCAG 2.5.5. */
+    width: 44px;
+    height: 44px;
+    margin: -0.7rem;
+    padding: 0;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: opacity 200ms;
+  }
+
+  .theme-toggle:hover { opacity: 0.5; }
+
+  .theme-toggle__swatch {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    border: 2px solid var(--c-text);
+    background: linear-gradient(to right, var(--c-text) 50%, var(--c-bg) 50%);
+    display: block;
+    transition: border-color 350ms var(--ease);
+  }
+
+  @media (max-width: 768px) {
+    .navbar__layout {
+      /* minmax(0, 1fr) instead of 1fr: the default 1fr has an implicit
+         min-width: auto that lets the column expand past its allotted
+         space when the inner content (the 4 nav links + gaps) is wider
+         than what's available, pushing the navbar wider than the
+         viewport. minmax(0, 1fr) caps it. */
+      grid-template-columns: auto minmax(0, 1fr) auto;
+      column-gap: var(--sp-12);
+    }
+
+    .navbar__logo-svg {
+      height: 1.75rem;
+    }
+
+    .navbar__links {
+      justify-content: center;
+      /* Smaller link gap that scales down on narrow viewports.
+         At 320 px: ~5 px gap; at 768 px: 12 px. */
+      gap: clamp(0.3rem, 1.5vw, 0.75rem);
+      /* Last-resort: wrap to a second row if even the small gap +
+         minmax can't fit the four links. Better than horizontal
+         overflow / clip. */
+      flex-wrap: wrap;
+      row-gap: 4px;
+    }
+
+  }
+
+</style>
+
+<script>
+  const toggle = document.getElementById('theme-toggle')!;
+  const root = document.documentElement;
+
+  function getTheme(): string {
+    return root.getAttribute('data-theme') ||
+      (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+  }
+
+  function syncToggleA11y() {
+    const isDark = getTheme() === 'dark';
+    // aria-pressed reflects the on/off nature of the toggle; the label
+    // describes the action that would happen on activation, so screen
+    // readers say "Switch to <opposite> theme, toggle button, pressed".
+    toggle.setAttribute('aria-pressed', String(isDark));
+    toggle.setAttribute(
+      'aria-label',
+      isDark ? 'Switch to light theme' : 'Switch to dark theme',
+    );
+  }
+  syncToggleA11y();
+
+  toggle.addEventListener('click', () => {
+    const next = getTheme() === 'dark' ? 'light' : 'dark';
+    root.setAttribute('data-theme', next);
+    localStorage.setItem('theme', next);
+    syncToggleA11y();
+  });
+
+  // ── Scroll progress (top navbar line fills left → right) ──
+  const progress = document.getElementById('navbar-progress');
+  if (progress) {
+    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const update = () => {
+      const doc = document.documentElement;
+      const scrollable = Math.max(0, doc.scrollHeight - window.innerHeight);
+      const ratio = scrollable > 0
+        ? Math.min(1, Math.max(0, window.scrollY / scrollable))
+        : 0;
+      progress.style.setProperty('--progress', String(ratio));
+    };
+    update();
+    window.addEventListener('scroll', update, { passive: true });
+    window.addEventListener('resize', update, { passive: true });
+    if (reduced) {
+      // Reduced motion: jump instead of smooth-transition between scrolls
+      progress.style.transition = 'none';
+    }
+  }
+</script>

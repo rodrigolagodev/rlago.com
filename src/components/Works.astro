@@ -1,0 +1,232 @@
+---
+import WorkCard from './WorkCard.astro';
+import SectionMeta from './SectionMeta.astro';
+
+const projects = [
+  {
+    title: 'Sando Design System',
+    year: '2026',
+    category: 'Design System',
+    image: undefined,
+    href: 'https://github.com/rodrigolagodev/SandoDesignSystem',
+    role: 'Creator & Lead Developer',
+    description:
+      'A <strong>three-layer token architecture</strong> — Ingredients, Flavors, Recipes — that brings the same rigor to UI as a crafted Japanese katsu sando. <strong>Framework-agnostic Web Components</strong> (Lit 3), <strong>WCAG 2.1 AA</strong> by default, <strong>multi-theme</strong> out of the box. The monorepo (Turborepo + pnpm) ships with <strong>7 AI agents</strong> that scaffold, test, document, and maintain components autonomously.',
+    techStack: [
+      { name: 'Lit 3', url: 'https://lit.dev' },
+      { name: 'TypeScript', url: 'https://www.typescriptlang.org' },
+      { name: 'Turborepo', url: 'https://turbo.build/repo' },
+      { name: 'pnpm', url: 'https://pnpm.io' },
+      { name: 'Style Dictionary', url: 'https://styledictionary.com' },
+      { name: 'Storybook', url: 'https://storybook.js.org' },
+      { name: 'VitePress', url: 'https://vitepress.dev' },
+      { name: 'Vitest', url: 'https://vitest.dev' },
+      { name: 'Playwright', url: 'https://playwright.dev' },
+    ],
+    comingSoon: false,
+  },
+  {
+    title: 'Stack Overflow Teams MCP',
+    year: '2025',
+    category: 'Developer Tooling',
+    image: undefined,
+    href: 'https://github.com/rodrigolagodev/StackOverflowTeams-MCP',
+    role: 'Creator & Lead Developer',
+    description:
+      'An <strong>MCP server</strong> that plugs your Stack Overflow for Teams knowledge base directly into <strong>Copilot</strong>, <strong>Claude</strong>, and any MCP-compatible IDE. <strong>21 tools</strong> across search, discovery, articles, and personal queries — with <strong>smart caching</strong>, exponential-backoff retries, structured logging, and real-time health metrics.',
+    techStack: [
+      { name: 'TypeScript', url: 'https://www.typescriptlang.org' },
+      { name: 'Node.js', url: 'https://nodejs.org' },
+      { name: 'MCP SDK', url: 'https://github.com/modelcontextprotocol/typescript-sdk' },
+      { name: 'Vitest', url: 'https://vitest.dev' },
+      { name: 'GitHub Actions', url: 'https://github.com/features/actions' },
+    ],
+    comingSoon: false,
+  },
+];
+---
+
+<section class="works" id="works" aria-label="Selected works">
+  <div class="works__wrapper container">
+
+    <SectionMeta index="02" rightLabel={`${String(projects.length).padStart(2, '0')} projects`} rightIcon="asterisk" />
+    <div class="u-spacer-48"></div>
+
+    <!-- Heading: SELECTED (display, distorted) + WORKS (italic serif) edge-to-edge -->
+    <div class="works__heading-group" data-reveal>
+      <div class="works__selected-wrap" data-text-distortion>
+        <span class="works__selected h1" data-text-distortion-text>Selected</span>
+        <canvas aria-hidden="true"></canvas>
+      </div>
+      <h2 id="works-heading" class="works__title h2" data-mask-reveal>Works</h2>
+    </div>
+
+    <!-- 2-column project grid -->
+    <div class="works__grid">
+      {projects.map((p, i) => (
+        <div data-reveal data-reveal-delay={String(i % 2 + 1)}>
+        <WorkCard
+          title={p.title}
+          year={p.year}
+          category={p.category}
+          image={p.image}
+          href={p.href}
+          role={p.role}
+          comingSoon={p.comingSoon}
+          cardIndex={i + 1}
+          description={p.description}
+          techStack={p.techStack}
+        />
+        </div>
+      ))}
+    </div>
+
+    <!-- Section close: hairline + GitHub link bottom-right. -->
+    <div class="works__cta">
+      <div class="u-spacer-36"></div>
+      <div class="works__cta-inner" data-reveal>
+        <div class="line line--draw" data-line-draw></div>
+        <a
+          href="https://github.com/rodrigolagodev"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="overline works__see-more"
+        >
+          See more projects on <strong data-scramble>GitHub</strong><span class="sr-only"> (opens in a new tab)</span>
+        </a>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<style>
+  .works {
+    min-height: 100svh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .works__wrapper {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: safe center;
+    padding-block: var(--sp-144);
+  }
+
+  /* Heading group: SELECTED (left, italic serif) + WORKS (right, display).
+     Same font-size on both, fitted to container width by JS for exact 100% fill. */
+  .works__heading-group {
+    width: 100%;
+    padding-bottom: var(--sp-48);
+    display: flex;
+    justify-content: space-between;
+    /* flex-end so the bottom of each word's line-box lines up — baseline
+       alignment with mismatched line-heights left the italic appearing
+       to float relative to the display caps on the left. */
+    align-items: flex-end;
+    gap: clamp(1rem, 2vw, 3rem);
+    border-bottom: 1px solid var(--c-line);
+    margin-bottom: var(--sp-36);
+  }
+
+  /* Same font-size clamp on both as fallback (mobile + pre-JS).
+     The fit script overrides with an exact-fit inline font-size on desktop. */
+  .works__selected,
+  .works__title {
+    flex-shrink: 0;
+    font-size: clamp(2.5rem, 14vw, 22rem);
+    /* Matched line-height so flex-end pins the same descender line on
+       both — different line-heights produced different box bottoms. */
+    line-height: 0.85;
+  }
+
+  /* 2-column grid */
+  .works__grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--sp-12);
+  }
+
+  /* Section close: full-width hairline + right-aligned overline link
+     under it — same rhythm as the FAQ closing strip. */
+  .works__cta-inner {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .works__cta-inner .line {
+    width: 100%;
+    will-change: transform;
+  }
+
+  .works__see-more {
+    align-self: flex-end;
+    color: var(--c-text-muted);
+    /* margin instead of padding so the focus-visible outline hugs the
+       text instead of expanding into the gap above the link. */
+    margin-top: var(--sp-24);
+    transition: color 200ms;
+  }
+
+  .works__see-more:hover {
+    color: var(--c-text);
+  }
+
+  @media (max-width: 768px) {
+    .works__grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
+
+<script>
+  // Fit "SELECTED" + "WORKS" to exactly 100% of the heading-group width.
+  // Both texts get the same font-size (computed). On mobile the layout
+  // stacks; CSS clamp handles sizing there and JS clears its overrides.
+  function fitWorksHeading() {
+    const heading = document.querySelector('.works__heading-group');
+    if (!(heading instanceof HTMLElement)) return;
+    const selected = heading.querySelector('.works__selected');
+    const titleEl = heading.querySelector('.works__title');
+    if (!(selected instanceof HTMLElement) || !(titleEl instanceof HTMLElement)) return;
+
+    // Measure natural widths at a base font-size
+    const baseFs = 100;
+    selected.style.fontSize = `${baseFs}px`;
+    titleEl.style.fontSize = `${baseFs}px`;
+
+    const cs = window.getComputedStyle(heading);
+    const gap = parseFloat(cs.columnGap) || 0;
+    const containerW = heading.getBoundingClientRect().width;
+    const selectedW = selected.getBoundingClientRect().width;
+    const titleW = titleEl.getBoundingClientRect().width;
+    const totalW = selectedW + titleW;
+
+    // Optical compensation: Cormorant italic looks visually larger than
+    // Bebas Neue at the same point size due to wider letterforms.
+    // Shrink the italic side so both feel matched.
+    const TITLE_VISUAL_SCALE = 1;
+
+    if (totalW > 0 && containerW > 0) {
+      // Solve for newFs so that:
+      //   selectedW × (newFs / baseFs)
+      // + titleW    × (newFs × scale / baseFs)
+      // + gap = containerW
+      const newFs =
+        (baseFs * (containerW - gap)) /
+        (selectedW + TITLE_VISUAL_SCALE * titleW);
+      selected.style.fontSize = `${newFs}px`;
+      titleEl.style.fontSize = `${newFs * TITLE_VISUAL_SCALE}px`;
+    }
+  }
+
+  if (document.fonts && document.fonts.ready) {
+    document.fonts.ready.then(fitWorksHeading);
+  } else {
+    fitWorksHeading();
+  }
+  window.addEventListener('resize', fitWorksHeading, { passive: true });
+</script>

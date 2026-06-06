@@ -1,0 +1,16 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "rlago",
+  "compatibility_date": "2026-06-06",
+  "assets": {
+    "directory": "./dist",
+    "not_found_handling": "404-page"
+  },
+  "routes": [
+    { "pattern": "rlago.com", "custom_domain": true },
+    { "pattern": "www.rlago.com", "custom_domain": true }
+  ],
+  "observability": {
+    "enabled": true
+  }
+}

@@ -1,0 +1,73 @@
+:root {
+  /* =====================
+     Fonts
+     — H1/btn-xl: Bebas Neue (condensed display)
+     — H2/para-lg: Cormorant Garamond italic (elegant serif)
+     — H3/H4/UI: Barlow Condensed + Barlow (grotesque)
+  ===================== */
+  --font-display:  'Bebas Neue', Impact, sans-serif;
+  --font-serif:    'Cormorant Garamond', Georgia, serif;
+  --font-ui:       'Barlow', system-ui, sans-serif;
+  --font-condensed:'Barlow Condensed', Impact, sans-serif;
+
+  /* =====================
+     Type scale — mirroring original clamp formulas
+  ===================== */
+
+  /* H1: ultra-large condensed display (hero name, button-xl) */
+  --text-h1:      clamp(4.37rem, 18vw, 24rem);
+
+  /* H2: large italic serif (FAQ "Information", footer heading) */
+  --text-h2:      clamp(2.5rem, 9vw, 11rem);
+
+  /* H3: medium condensed bold (FAQ column headers) */
+  --text-h3:      clamp(1.25rem, 2.5vw, 3.25rem);
+
+  /* H4: small bold uppercase (nav links, card text, year) */
+  --text-h4:      clamp(0.875rem, 0.85vw, 1rem);
+
+  /* Paragraph large: big italic serif (about/message text) */
+  --text-para-lg: clamp(1.75rem, 5vw, 6.56rem);
+
+  /* Button regular: medium condensed (nav "menu", CTA links) */
+  --text-btn-rg:  clamp(1.25rem, 2.5vw, 3.25rem);
+
+  /* Small body text */
+  --text-body:    clamp(1rem, 0.95vw, 1.1rem);
+
+  /* =====================
+     Spacers — fluid, named by max px value
+  ===================== */
+  --sp-12:  clamp(0.5rem,  0.6vw,  0.75rem);  /* nav padding */
+  --sp-24:  clamp(1rem,    1.5vw,  1.5rem);
+  --sp-36:  clamp(1rem,    2.25vw, 2.25rem);
+  --sp-48:  clamp(1.5rem,  3vw,    3rem);
+  --sp-60:  clamp(1.5rem,  3.75vw, 3.75rem);
+  --sp-72:  clamp(1.5rem,  4.5vw,  4.5rem);
+  --sp-84:  clamp(1.5rem,  5.25vw, 5.25rem);
+  --sp-96:  clamp(2.25rem, 6vw,    6rem);
+  --sp-120: clamp(3rem,    7.5vw,  7.5rem);
+  --sp-144: clamp(2.25rem, 9vw,    9rem);
+  --sp-180: clamp(7.5rem,  11.25vw,11.25rem);
+  --sp-360: clamp(7.5rem,  22.5vw, 22.5rem);
+
+  /* =====================
+     Layout
+  ===================== */
+  --max-w:  120rem;    /* 1920px */
+  --gutter: var(--sp-12);
+
+  /* =====================
+     Palette constants — theme-invariant brand colours.
+     Use these where the visual must stay the same across themes
+     (e.g. theme toggle swatch, "white" text over dark imagery).
+  ===================== */
+  --c-ink:   #1F1C1D;
+  --c-paper: #F0F0EB;
+
+  /* =====================
+     Misc
+  ===================== */
+  --ease: cubic-bezier(0.4, 0, 0.2, 1);
+  --dot-size: 6px;
+}

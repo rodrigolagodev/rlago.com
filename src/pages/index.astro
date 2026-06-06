@@ -1,0 +1,43 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Loader from '../components/Loader.astro';
+import Nav from '../components/Nav.astro';
+import Hero from '../components/Hero.astro';
+import Works from '../components/Works.astro';
+import FAQ from '../components/FAQ.astro';
+import Footer from '../components/Footer.astro';
+import Marquee from '../components/Marquee.astro';
+import About from '../components/About.astro';
+---
+
+<Layout>
+  <Loader />
+  <Nav />
+  <main id="main-content" tabindex="-1">
+    <Hero />
+    <div class="hero-cover">
+      <Marquee />
+      <About />
+      <Works />
+      <FAQ />
+    </div>
+    <Footer />
+  </main>
+</Layout>
+
+<style is:global>
+  /* The hero is sticky-top (Hero.astro), so this wrapper covers it from
+     below as the page scrolls past. Solid background keeps the hero
+     hidden behind everything that follows. The footer no longer hides
+     under this cover — it sits in normal flow after it.
+     Marked global because Astro's scoped-style hash on a wrapper that
+     contains other components occasionally fails to attach (cache /
+     HMR race), leaving the cover transparent and revealing the sticky
+     hero behind every section. Going global is the simplest guarantee. */
+  .hero-cover {
+    position: relative;
+    z-index: 1;
+    background-color: var(--c-bg);
+    border-bottom: 1px solid var(--c-line);
+  }
+</style>

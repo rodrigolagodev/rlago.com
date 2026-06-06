@@ -1,0 +1,185 @@
+---
+---
+
+<!--
+  Page loader — Rodrigo Lago logo centered on a dark screen.
+  Behaviour:
+    1. While loading: logo polygons pulse in a staggered wave (suggesting
+       activity / "as if loading"), each polygon offset by 100 ms.
+    2. On complete: the screen splits horizontally at the logo's
+       vertical centre — top half (with the upper half of the logo)
+       slides up, bottom half (with the lower half) slides down.
+  Both halves render the FULL logo absolutely positioned so its centre
+  sits at the half boundary (= viewport centre). Each half's overflow
+  hides the off-half portion, so visually it reads as one logo.
+-->
+<div class="loader" id="page-loader" aria-hidden="true">
+
+  <!-- Top half (slides up on exit) -->
+  <div class="loader__half is-top" id="loader-half-top">
+    <svg class="loader__logo" viewBox="0 0 359.9 344.7" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <g>
+        <polygon points="320.9,0 359.9,67.5 279.9,206.2 202.7,206.2"/>
+        <polygon points="320.8,275.4 281.3,341.9 202.7,206.2 241.6,138.6"/>
+        <polygon points="359.9,67.5 320.9,0 84.5,0 45.5,67.5"/>
+        <polygon points="39,344.7 0,277.2 80,138.6 157.2,138.6"/>
+        <polygon points="0,277.2 39,344.7 198.9,344.7 161.3,277.2"/>
+      </g>
+    </svg>
+  </div>
+
+  <!-- Bottom half (slides down on exit) -->
+  <div class="loader__half is-bottom" id="loader-half-bottom">
+    <svg class="loader__logo" viewBox="0 0 359.9 344.7" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <g>
+        <polygon points="320.9,0 359.9,67.5 279.9,206.2 202.7,206.2"/>
+        <polygon points="320.8,275.4 281.3,341.9 202.7,206.2 241.6,138.6"/>
+        <polygon points="359.9,67.5 320.9,0 84.5,0 45.5,67.5"/>
+        <polygon points="39,344.7 0,277.2 80,138.6 157.2,138.6"/>
+        <polygon points="0,277.2 39,344.7 198.9,344.7 161.3,277.2"/>
+      </g>
+    </svg>
+  </div>
+
+</div>
+
+<style>
+  .loader {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    pointer-events: all;
+    overflow: hidden;
+  }
+
+  /* Two halves — when stacked they cover the viewport, when split they
+     slide off the screen revealing the page. Theme-aware: --c-bg is
+     warm white in light mode, near-black in dark mode, so the loader
+     blends with whatever theme the page is in. */
+  .loader__half {
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: 50%;
+    background-color: var(--c-bg);
+    overflow: hidden;
+    transition: transform 700ms cubic-bezier(0.76, 0, 0.24, 1);
+  }
+
+  .loader__half.is-top    { top: 0; }
+  .loader__half.is-bottom { bottom: 0; }
+
+  /* Exit: each half slides off in its own direction. */
+  .loader__half.is-top.is-exit    { transform: translateY(-100%); }
+  .loader__half.is-bottom.is-exit { transform: translateY(100%); }
+
+  /* Logo positioning trick:
+     - Both halves contain a FULL copy of the logo.
+     - The logo is absolutely positioned so its vertical CENTRE sits at
+       the half boundary, which is the viewport centre.
+     - Each half's overflow: hidden then clips off the portion that
+       belongs to the other half.
+     - When the halves slide apart, each one carries its own half of
+       the logo off-screen, producing the "logo splitting in two" effect. */
+  .loader__logo {
+    position: absolute;
+    left: 50%;
+    width: clamp(7rem, 16vw, 12rem);
+    height: auto;
+    aspect-ratio: 359.9 / 344.7;
+  }
+
+  /* Top half: logo's bottom anchored to half's bottom (= viewport mid),
+     translate down 50% of its own height so the centre lands on that line. */
+  .loader__half.is-top .loader__logo {
+    bottom: 0;
+    transform: translate(-50%, 50%);
+  }
+
+  /* Bottom half: logo's top anchored to half's top (= viewport mid),
+     translate up 50% so the centre lands on that line. */
+  .loader__half.is-bottom .loader__logo {
+    top: 0;
+    transform: translate(-50%, -50%);
+  }
+
+  /* Pulse animation: each polygon fades from dim → bright → dim. The 5
+     polygons get staggered animation-delays (0, 100, 200, 300, 400 ms),
+     producing a wave of brightness that travels through the logo.
+     --c-logo is the theme-aware "ink" colour: dark on the light theme,
+     warm white on the dark theme — always contrasting with the bg. */
+  .loader__logo polygon {
+    fill: var(--c-logo);
+    opacity: 0.25;
+    animation: loader-pulse 1.4s ease-in-out infinite;
+  }
+
+  .loader__logo polygon:nth-child(1) { animation-delay: 0ms; }
+  .loader__logo polygon:nth-child(2) { animation-delay: 100ms; }
+  .loader__logo polygon:nth-child(3) { animation-delay: 200ms; }
+  .loader__logo polygon:nth-child(4) { animation-delay: 300ms; }
+  .loader__logo polygon:nth-child(5) { animation-delay: 400ms; }
+
+  @keyframes loader-pulse {
+    0%, 100% { opacity: 0.25; }
+    50%      { opacity: 1; }
+  }
+
+  /* Respect prefers-reduced-motion: pin polygons at full opacity, no pulse. */
+  @media (prefers-reduced-motion: reduce) {
+    .loader__logo polygon {
+      animation: none;
+      opacity: 1;
+    }
+    .loader__half {
+      transition: none;
+    }
+  }
+
+  /* After exit completes the loader is invisible & non-interactive. */
+  .loader.is-done {
+    pointer-events: none;
+  }
+</style>
+
+<script>
+  (function () {
+    const loader     = document.getElementById('page-loader')!;
+    const halfTop    = document.getElementById('loader-half-top')!;
+    const halfBottom = document.getElementById('loader-half-bottom')!;
+
+    // Lock scroll while loader is up.
+    document.body.style.overflow = 'hidden';
+
+    // Reduced motion: skip the pulse + slide choreography, dismiss
+    // immediately so the page isn't blocked for ~2.5 s for users with
+    // vestibular sensitivities or who explicitly opted out of motion.
+    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    // How long the pulse animation runs before we trigger the split.
+    // The pulse cycle is 1.4 s; we let it loop a bit more than once so
+    // the wave clearly reads as "loading" before things move on.
+    const LOADING_DURATION = reduced ? 0 : 1800;
+    const SLIDE_DURATION = reduced ? 0 : 750;
+
+    setTimeout(exitLoader, LOADING_DURATION);
+
+    function exitLoader() {
+      halfTop.classList.add('is-exit');
+      halfBottom.classList.add('is-exit');
+
+      // After the slide finishes, clean up and unblock the page.
+      setTimeout(() => {
+        loader.classList.add('is-done');
+        loader.style.display = 'none';
+        document.body.style.overflow = '';
+
+        // 1. Hero entry animation
+        document.body.classList.add('hero-ready');
+
+        // 2. Notify the rest of the app that reveals can run.
+        document.dispatchEvent(new CustomEvent('loader:done'));
+      }, SLIDE_DURATION);
+    }
+  })();
+</script>

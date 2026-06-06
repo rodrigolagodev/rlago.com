@@ -1,0 +1,33 @@
+[data-theme="dark"] {
+  color-scheme: dark;
+  --c-bg:         #1F1C1D;
+  --c-text:       #F0F0EB;
+  --c-text-muted: #B5B2B0;
+  --c-line:       rgba(240, 240, 235, 0.12);
+  --c-line-dash:  rgba(240, 240, 235, 0.18);
+  --c-line-strong:rgba(240, 240, 235, 0.20);
+  --c-surface-tint:        rgba(240, 240, 235, 0.06);
+  --c-surface-tint-strong: rgba(240, 240, 235, 0.08);
+  --c-surface-tint-soft:   rgba(240, 240, 235, 0.04);
+  --c-stripe-line:         rgba(240, 240, 235, 0.035);
+  --c-overlay-hover:       rgba(0, 0, 0, 0.35);
+  --c-logo:       #F0F0EB;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --c-bg:         #1F1C1D;
+    --c-text:       #F0F0EB;
+    --c-text-muted: #B5B2B0;
+    --c-line:       rgba(240, 240, 235, 0.12);
+    --c-line-dash:  rgba(240, 240, 235, 0.18);
+    --c-line-strong:rgba(240, 240, 235, 0.20);
+    --c-surface-tint:        rgba(240, 240, 235, 0.06);
+    --c-surface-tint-strong: rgba(240, 240, 235, 0.08);
+    --c-surface-tint-soft:   rgba(240, 240, 235, 0.04);
+    --c-stripe-line:         rgba(240, 240, 235, 0.035);
+    --c-overlay-hover:       rgba(0, 0, 0, 0.35);
+    --c-logo:       #F0F0EB;
+  }
+}

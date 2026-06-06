@@ -1,0 +1,230 @@
+/* Modern CSS reset */
+*, *::before, *::after { box-sizing: border-box; }
+* { margin: 0; padding: 0; }
+html {
+  scroll-behavior: smooth;
+  /* Clip the html element itself, not just body. body's clip is supposed
+     to propagate to the viewport, but browser support for that
+     propagation with the `clip` keyword (vs `hidden`) is inconsistent —
+     Safari notably leaks. Clipping html directly guarantees no
+     horizontal page scroll no matter what any descendant does. We use
+     `clip` rather than `hidden` so we don't create a scroll container,
+     which would break the Hero (sticky top) and Footer (sticky bottom). */
+  overflow-x: clip;
+}
+body {
+  overflow-x: clip;
+  min-height: 100dvh;
+  background-color: var(--c-bg);
+  color: var(--c-text);
+  transition: background-color 350ms var(--ease), color 350ms var(--ease);
+}
+img, video { display: block; max-width: 100%; }
+input, button, textarea, select { font: inherit; }
+ul, ol { list-style: none; }
+button { cursor: pointer; background: none; border: none; }
+
+/* ================================================
+   Focus styles — visible, theme-aware ring for keyboard users.
+   :focus-visible only paints when the browser detects keyboard
+   navigation, so mouse clicks stay clean.
+================================================ */
+:focus { outline: none; }
+
+:focus-visible {
+  outline: 2px solid var(--c-text);
+  outline-offset: 3px;
+  border-radius: 2px;
+}
+
+a:focus-visible,
+button:focus-visible,
+[role="button"]:focus-visible {
+  outline: 2px solid var(--c-text);
+  outline-offset: 4px;
+}
+
+/* ================================================
+   Skip link — first tab stop, jumps over the fixed nav.
+================================================ */
+.skip-link {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 10000;
+  padding: 0.75rem 1.25rem;
+  background: var(--c-text);
+  color: var(--c-bg);
+  font-family: var(--font-ui);
+  font-size: 0.9rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  transform: translateY(-150%);
+  transition: transform 200ms var(--ease);
+}
+
+.skip-link:focus-visible {
+  transform: translateY(0);
+  outline: 2px solid var(--c-bg);
+  outline-offset: -6px;
+}
+
+/* Selection */
+::selection {
+  background: var(--c-text);
+  color: var(--c-bg);
+}
+
+/* ================================================
+   Layout utilities
+================================================ */
+.container {
+  width: 100%;
+  max-width: var(--max-w);
+  margin-inline: auto;
+  padding-inline: var(--gutter);
+}
+
+/* Horizontal line — thin solid */
+.line {
+  width: 100%;
+  height: 1px;
+  background-color: var(--c-line);
+}
+
+/* Horizontal line — dashed */
+.line-dashed {
+  width: 100%;
+  height: 0;
+  border-top: 1px dashed var(--c-line-dash);
+}
+
+/* ================================================
+   Line-draw — divider lines that scrub from left → right as they
+   enter the viewport. Mark a .line / .line-dashed with .line--draw
+   (or .line-dashed--draw) AND data-line-draw, and they will animate.
+
+   - Modern browsers: animation-timeline: view() scrubs scaleX with scroll.
+   - Fallback: IntersectionObserver in Layout.astro adds .is-drawn.
+   - Lines nested inside a [data-reveal] block also fire when the parent
+     reveal trips, so they stay in sync with cascading section reveals.
+================================================ */
+.line--draw,
+.line-dashed--draw {
+  transform: scaleX(0);
+  transform-origin: left center;
+  transition: transform 900ms cubic-bezier(0.65, 0, 0.35, 1);
+  will-change: transform;
+}
+
+.line--draw.is-drawn,
+.line-dashed--draw.is-drawn,
+[data-reveal].is-visible .line--draw,
+[data-reveal].is-visible .line-dashed--draw {
+  transform: scaleX(1);
+}
+
+@supports (animation-timeline: view()) {
+  body.reveals-ready .line--draw,
+  body.reveals-ready .line-dashed--draw {
+    transform: scaleX(0);
+    animation: line-draw-keyframes linear both;
+    animation-timeline: view();
+    animation-range: entry 0% cover 25%;
+    transition: none;
+  }
+  @keyframes line-draw-keyframes {
+    from { transform: scaleX(0); }
+    to   { transform: scaleX(1); }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .line--draw,
+  .line-dashed--draw {
+    transform: none;
+    animation: none;
+    transition: none;
+  }
+}
+
+/* Decorative dot */
+.dot {
+  display: inline-block;
+  width: var(--dot-size);
+  height: var(--dot-size);
+  border-radius: 50%;
+  background-color: currentColor;
+  flex-shrink: 0;
+}
+
+.dot.is-large {
+  width: calc(var(--dot-size) * 1.5);
+  height: calc(var(--dot-size) * 1.5);
+}
+
+.dot.is-white {
+  color: var(--c-white);
+}
+
+/* Spacer utilities */
+.u-spacer-24  { height: var(--sp-24); }
+.u-spacer-36  { height: var(--sp-36); }
+.u-spacer-48  { height: var(--sp-48); }
+.u-spacer-60  { height: var(--sp-60); }
+.u-spacer-84  { height: var(--sp-84); }
+.u-spacer-120 { height: var(--sp-120); }
+.u-spacer-360 { height: var(--sp-360); }
+
+/* ================================================
+   Scramble hover — per-char slot styling. The script in
+   ScrambleHover.ts splits text into <span class="scramble-char">
+   spans on init so each glyph can be swapped independently.
+   inline-block keeps reflows local to the marked node.
+================================================ */
+.scramble-char {
+  display: inline-block;
+}
+
+/* SVG star icon */
+.svg-star {
+  width: clamp(1rem, 2vw, 2rem);
+  height: auto;
+  flex-shrink: 0;
+}
+
+/* ================================================
+   Text distortion effect — wrapper + canvas pattern
+   The text element is kept in the DOM for SEO/a11y
+   but painted transparent; the canvas overlays it.
+================================================ */
+[data-text-distortion] {
+  position: relative;
+  display: inline-block;
+}
+
+[data-text-distortion] > canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+  pointer-events: none;
+}
+
+/* The text is kept in the DOM for SEO/a11y but hidden visually when the
+   WebGL distortion is active (the canvas overlay paints the visible glyphs).
+   The transparent rule is gated on .is-distortion-ready, which the runtime
+   adds to the wrapper once WebGL init succeeds — on mobile or when WebGL is
+   unavailable, the text falls back to its normal color so nothing disappears. */
+[data-text-distortion].is-distortion-ready [data-text-distortion-text] {
+  color: transparent;
+}
+
+/* Hide the canvas on coarse-pointer / narrow viewports — the water effect
+   depends on a fine pointer to feel right, and shows ugly empty rectangles
+   otherwise. */
+@media (hover: none), (pointer: coarse), (max-width: 768px) {
+  [data-text-distortion] > canvas { display: none; }
+}

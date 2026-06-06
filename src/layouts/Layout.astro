@@ -1,0 +1,543 @@
+---
+interface Props {
+  title?: string;
+  description?: string;
+}
+
+const {
+  title = 'Rodrigo Lago — UX Engineer',
+  description = "Rodrigo Lago — UX Engineer building interfaces for SaaS and e-commerce. He works alongside designers and developers to ship products that work for real people.",
+} = Astro.props;
+
+const url = Astro.url;
+// Absolute URL so social crawlers resolve the asset regardless of where
+// the page is served from. Asset still has to exist in /public/images/.
+const ogImage = new URL('/images/og.png', url).toString();
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content={description} />
+
+    <!-- OG / Social -->
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content={url} />
+    <meta property="og:image" content={ogImage} />
+    <meta name="twitter:card" content="summary_large_image" />
+    <link rel="canonical" href={url} />
+
+    <!-- Fonts: Bebas Neue (H1) + Cormorant Garamond (serif italic) + Barlow family (UI) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <!-- Preload the CSS itself so the font @font-face declarations arrive
+         ahead of render-blocking discovery. -->
+    <link
+      rel="preload"
+      as="style"
+      href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow:ital,wght@0,400;0,500;0,700;0,800;1,400&family=Barlow+Condensed:wght@700;800&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400;1,600&display=swap"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow:ital,wght@0,400;0,500;0,700;0,800;1,400&family=Barlow+Condensed:wght@700;800&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400;1,600&display=swap"
+      rel="stylesheet"
+    />
+
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <title>{title}</title>
+
+    <!-- Structured data: identifies the site as Rodrigo Lago's personal
+         portfolio so search engines surface richer results. -->
+    <script type="application/ld+json" set:html={JSON.stringify({
+      '@context': 'https://schema.org',
+      '@type': 'Person',
+      name: 'Rodrigo Lago',
+      jobTitle: 'UX Engineer',
+      description,
+      url: url.origin,
+      email: 'mailto:rodrigo.n.lago@gmail.com',
+      address: {
+        '@type': 'PostalAddress',
+        addressLocality: 'Mar del Plata',
+        addressCountry: 'AR',
+      },
+      sameAs: [
+        'https://linkedin.com/in/rodrigolago',
+        'https://github.com/rodrigolagodev',
+      ],
+    })} />
+
+    <!-- Theme init: runs before first paint to avoid flash -->
+    <script is:inline>
+      (function () {
+        const stored = localStorage.getItem('theme');
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        document.documentElement.setAttribute('data-theme', stored || (prefersDark ? 'dark' : 'light'));
+      })();
+    </script>
+  </head>
+  <body>
+    <a href="#main-content" class="skip-link">Skip to content</a>
+    <div id="page-scrim" aria-hidden="true"></div>
+    <slot />
+    <canvas id="grain-canvas" aria-hidden="true"></canvas>
+    <div id="cursor" class="cursor" aria-hidden="true"></div>
+  </body>
+</html>
+
+<style is:global>
+  @import '../styles/theme-light.css';
+  @import '../styles/theme-dark.css';
+  @import '../styles/tokens.css';
+  @import '../styles/typography.css';
+  @import '../styles/global.css';
+
+  /* Scroll-driven dark overlay — sits between hero (z-index 0) and
+     overlay-stack content (z-index 1) at root level */
+  #page-scrim {
+    position: fixed;
+    inset: 0;
+    z-index: 1;
+    background: #000;
+    opacity: 0;
+    pointer-events: none;
+    will-change: opacity;
+  }
+
+  /* Grain noise overlay */
+  #grain-canvas {
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 500;
+    pointer-events: none;
+    opacity: 0.04;
+  }
+
+  /* ================================================
+     Custom cursor — white circle, invert via difference
+  ================================================ */
+  .cursor {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: #fff;
+    pointer-events: none;
+    mix-blend-mode: difference;
+    z-index: 9999;
+    transform: translate(var(--cx, -100px), var(--cy, -100px)) translate(-50%, -50%);
+    transition: width 280ms cubic-bezier(0.2, 0.8, 0.2, 1),
+                height 280ms cubic-bezier(0.2, 0.8, 0.2, 1),
+                opacity 200ms;
+    opacity: 0;
+    will-change: transform, width, height;
+  }
+
+  .cursor.is-ready { opacity: 1; }
+
+  .cursor.is-active {
+    width: 72px;
+    height: 72px;
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    html, body { cursor: none; }
+    a, button, [role="button"], label { cursor: none; }
+  }
+
+  /* Restore the system cursor when motion is reduced or input is coarse —
+     low-vision users, screen-magnifier users, and touch devices all rely
+     on it. The custom cursor itself is also hidden below. */
+  @media (hover: none), (pointer: coarse), (prefers-reduced-motion: reduce) {
+    html, body { cursor: auto; }
+    a, button, [role="button"], label { cursor: pointer; }
+    .cursor { display: none; }
+  }
+
+  /* ================================================
+     Scroll reveal
+     ─ Modern path: CSS scroll-driven animations
+       (animation-timeline: view()) — scrub-tied to viewport entry
+     ─ Fallback: IntersectionObserver toggles .is-visible
+  ================================================ */
+  [data-reveal] {
+    opacity: 0;
+    transform: translateY(28px);
+    transition:
+      opacity  700ms cubic-bezier(0.4, 0, 0.2, 1),
+      transform 700ms cubic-bezier(0.4, 0, 0.2, 1);
+    will-change: opacity, transform;
+  }
+
+  [data-reveal].is-visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  /* Stagger delays (1–6) — only the IO fallback uses these */
+  [data-reveal][data-reveal-delay="1"] { transition-delay: 80ms; }
+  [data-reveal][data-reveal-delay="2"] { transition-delay: 160ms; }
+  [data-reveal][data-reveal-delay="3"] { transition-delay: 240ms; }
+  [data-reveal][data-reveal-delay="4"] { transition-delay: 320ms; }
+  [data-reveal][data-reveal-delay="5"] { transition-delay: 400ms; }
+  [data-reveal][data-reveal-delay="6"] { transition-delay: 480ms; }
+
+  /* Native scroll-driven animations — scrubbed by viewport position.
+     Gated on body.reveals-ready so the loader can hold them off. */
+  @supports (animation-timeline: view()) {
+    body.reveals-ready [data-reveal] {
+      opacity: 1;
+      transform: none;
+      transition: none;
+      animation: reveal-rise linear both;
+      animation-timeline: view();
+      animation-range: entry 0% cover 15%;
+    }
+
+    @keyframes reveal-rise {
+      from { opacity: 0; transform: translateY(28px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+  }
+
+  /* Respect prefers-reduced-motion */
+  @media (prefers-reduced-motion: reduce) {
+    [data-reveal] {
+      opacity: 1;
+      transform: none;
+      transition: none;
+      animation: none;
+    }
+  }
+
+  /* ================================================
+     Mask reveal — words slide up from behind a clip
+  ================================================ */
+  .mask-reveal__word {
+    display: inline-block;
+    overflow: hidden;
+    vertical-align: top;
+    /* extra room so descenders (g, p, y) aren't clipped */
+    padding-block: 0.15em;
+    margin-block: -0.15em;
+  }
+
+  .mask-reveal__inner {
+    display: inline-block;
+    transform: translateY(110%);
+    transition: transform 950ms cubic-bezier(0.215, 0.61, 0.355, 1);
+    transition-delay: calc(var(--i, 0) * 70ms);
+    will-change: transform;
+  }
+
+  [data-mask-reveal].is-mask-revealed .mask-reveal__inner {
+    transform: translateY(0);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .mask-reveal__inner {
+      transform: none;
+      transition: none;
+    }
+  }
+
+  /* ================================================
+     Lenis smooth scroll
+  ================================================ */
+  html.lenis, html.lenis body { height: auto; }
+  .lenis.lenis-smooth { scroll-behavior: auto !important; }
+  .lenis.lenis-smooth [data-lenis-prevent] { overscroll-behavior: contain; }
+  .lenis.lenis-stopped { overflow: hidden; }
+  .lenis.lenis-smooth iframe { pointer-events: none; }
+</style>
+
+<script>
+  // ================================================
+  // Lenis smooth scroll
+  // ================================================
+  import Lenis from 'lenis';
+
+  // Honour the user's reduced-motion preference: smooth scroll is
+  // disorientating for vestibular-sensitive users. Skip Lenis entirely
+  // and let native scrolling drive the page.
+  const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  const lenis = prefersReducedMotion
+    ? null
+    : new Lenis({
+        duration: 2,
+        easing: (t: number) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+        smoothWheel: true,
+      });
+
+  // Expose for components that need programmatic scroll (e.g. Hero button).
+  if (lenis) {
+    (window as unknown as { __lenis: Lenis }).__lenis = lenis;
+    function lenisRaf(time: number) {
+      lenis!.raf(time);
+      updateScrims();
+      requestAnimationFrame(lenisRaf);
+    }
+    requestAnimationFrame(lenisRaf);
+  }
+
+  // Hijack same-page anchor clicks so they go through Lenis.
+  document.addEventListener('click', (e) => {
+    const target = e.target as HTMLElement | null;
+    const link = target?.closest<HTMLAnchorElement>('a');
+    if (!link) return;
+
+    // [data-scroll-top] → smooth scroll to top (Home links).
+    if (link.hasAttribute('data-scroll-top')) {
+      e.preventDefault();
+      if (lenis) {
+        lenis.scrollTo(0);
+      } else {
+        window.scrollTo({ top: 0 });
+      }
+      return;
+    }
+
+    const href = link.getAttribute('href');
+    if (!href || !href.startsWith('#') || href === '#') return;
+    const el = document.querySelector(href);
+    if (!el) return;
+    if (lenis) {
+      e.preventDefault();
+      lenis.scrollTo(el as HTMLElement);
+    }
+    // No-lenis (reduced motion): let the browser's native anchor jump
+    // happen — instant, no smooth scroll, no surprises.
+  });
+
+  // ================================================
+  // Scroll-driven scrim opacity (hero + footer)
+  // ================================================
+  let heroScrim: HTMLElement | null = null;
+  let marqueeEl: HTMLElement | null = null;
+
+  const MAX_SCRIM = 0.65;
+
+  function updateScrims() {
+    const vh = window.innerHeight;
+
+    // Hero scrim — driven by the Marquee's top edge.
+    //   marquee.top >= vh → marquee still below viewport → no overlay
+    //   marquee.top == 0  → marquee at viewport top, hero covered → full overlay
+    //   marquee.top < 0   → marquee above viewport → no overlay (#page-scrim
+    //     is fixed z:1 over the whole viewport, including the footer, so it
+    //     must clear once the hero is gone or it tints everything below).
+    if (heroScrim && marqueeEl) {
+      const top = marqueeEl.getBoundingClientRect().top;
+      let p: number;
+      const start = vh * 0.5;
+      if (top >= start || top <= 0) p = 0;
+      else p = 1 - top / start;
+      heroScrim.style.opacity = String(p * MAX_SCRIM);
+    }
+  }
+
+  function initScrims() {
+    heroScrim = document.querySelector<HTMLElement>('#page-scrim');
+    marqueeEl = document.querySelector<HTMLElement>('.marquee');
+    updateScrims();
+  }
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initScrims);
+  } else {
+    initScrims();
+  }
+
+  // No-lenis (reduced motion): drive scrims from scroll event instead.
+  if (!lenis) {
+    window.addEventListener('scroll', updateScrims, { passive: true });
+  }
+
+  // ================================================
+  // Scroll reveal
+  // ─ Modern browsers: CSS animation-timeline: view() handles it.
+  // ─ Older browsers: IntersectionObserver fallback toggles .is-visible.
+  // ================================================
+  const supportsScrollTimeline =
+    typeof CSS !== 'undefined' && CSS.supports('animation-timeline: view()');
+
+  // ================================================
+  // Mask reveal — split text into word spans, observe entry
+  // ================================================
+  function setupMaskReveals() {
+    document.querySelectorAll<HTMLElement>('[data-mask-reveal]').forEach((el) => {
+      if (el.dataset.maskReady === 'true') return;
+      const text = (el.textContent || '').trim();
+      if (!text) return;
+      const words = text.split(/\s+/);
+      el.innerHTML = words
+        .map((w, i) => {
+          const safe = w
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;');
+          return `<span class="mask-reveal__word"><span class="mask-reveal__inner" style="--i:${i}">${safe}</span></span>`;
+        })
+        .join(' ');
+      el.dataset.maskReady = 'true';
+    });
+  }
+
+  function observeMaskReveals() {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('is-mask-revealed');
+            observer.unobserve(entry.target);
+          }
+        });
+      },
+      { threshold: 0.2 }
+    );
+    // Elements marked with data-mask-reveal-manual opt out of this default
+    // viewport-based trigger — they're driven from their own component
+    // (e.g. the Footer triggers its reveals when the sticky cover slides
+     // away to expose it, not when the element first intersects).
+    document.querySelectorAll('[data-mask-reveal]:not([data-mask-reveal-manual])')
+      .forEach((el) => observer.observe(el));
+  }
+
+  // Split words immediately so they're hidden before loader:done.
+  setupMaskReveals();
+
+  function initReveal() {
+    document.body.classList.add('reveals-ready');
+    observeMaskReveals();
+
+    if (supportsScrollTimeline) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('is-visible');
+            observer.unobserve(entry.target);
+          }
+        });
+      },
+      { threshold: 0.08, rootMargin: '0px 0px -40px 0px' }
+    );
+
+    document.querySelectorAll('[data-reveal]').forEach((el) => {
+      observer.observe(el);
+    });
+
+    // Line-draw fallback: when scroll-timeline is unsupported, a dedicated
+    // IO toggles .is-drawn on every [data-line-draw] as it enters. Modern
+    // browsers use the CSS @supports path in global.css and skip this.
+    const lineObserver = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('is-drawn');
+            lineObserver.unobserve(entry.target);
+          }
+        });
+      },
+      { threshold: 0.05, rootMargin: '0px 0px -20px 0px' }
+    );
+    document.querySelectorAll('[data-line-draw]').forEach((el) => {
+      lineObserver.observe(el);
+    });
+  }
+
+  // ================================================
+  // Animated film grain via canvas
+  // ================================================
+  const grainCanvas = document.getElementById('grain-canvas') as HTMLCanvasElement | null;
+  const grainCtx = grainCanvas?.getContext('2d') ?? null;
+
+  if (grainCanvas && grainCtx && !prefersReducedMotion) {
+    const resizeGrain = () => {
+      grainCanvas.width = window.innerWidth;
+      grainCanvas.height = window.innerHeight;
+    };
+
+    let grainFrame = 0;
+    const drawGrain = () => {
+      grainFrame++;
+      if (grainFrame % 3 === 0) {
+        const { width, height } = grainCanvas;
+        const imageData = grainCtx.createImageData(width, height);
+        const data = imageData.data;
+        for (let i = 0; i < data.length; i += 4) {
+          const v = Math.random() * 255 | 0;
+          data[i] = v;
+          data[i + 1] = v;
+          data[i + 2] = v;
+          data[i + 3] = 255;
+        }
+        grainCtx.putImageData(imageData, 0, 0);
+      }
+      requestAnimationFrame(drawGrain);
+    };
+
+    resizeGrain();
+    drawGrain();
+    window.addEventListener('resize', resizeGrain);
+  }
+
+  // ================================================
+  // Custom cursor — follow mouse, scale on interactive elements
+  // ================================================
+  const cursor = document.getElementById('cursor');
+  if (
+    cursor &&
+    window.matchMedia('(hover: hover) and (pointer: fine)').matches &&
+    !window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  ) {
+    const INTERACTIVE_SELECTOR =
+      'a, button, [role="button"], label, summary, [data-cursor="active"]';
+
+    window.addEventListener('mousemove', (e) => {
+      cursor.style.setProperty('--cx', `${e.clientX}px`);
+      cursor.style.setProperty('--cy', `${e.clientY}px`);
+      cursor.classList.add('is-ready');
+
+      const under = document.elementFromPoint(e.clientX, e.clientY) as HTMLElement | null;
+      const isInteractive = !!under?.closest(INTERACTIVE_SELECTOR);
+      cursor.classList.toggle('is-active', isInteractive);
+    });
+
+    window.addEventListener('mouseleave', () => cursor.classList.remove('is-ready'));
+    window.addEventListener('mouseenter', () => cursor.classList.add('is-ready'));
+  }
+
+  // ================================================
+  // Text distortion effect (water-like) — scan and init
+  // ================================================
+  import('../scripts/TextDistortion').then(({ initTextDistortions }) => {
+    initTextDistortions();
+  });
+
+  // ================================================
+  // Scramble hover — split-flap text effect on links.
+  // Scans for [data-scramble] elements site-wide and wires them up.
+  // ================================================
+  import('../scripts/ScrambleHover').then(({ initScrambleHover }) => {
+    initScrambleHover();
+  });
+
+  // Scroll-reveal starts after loader:done
+  document.addEventListener('loader:done', initReveal);
+
+  // Fallback: if loader never fires within 4s (e.g. JS error), reveal everything
+  const fallback = setTimeout(() => {
+    document.body.classList.add('hero-ready');
+    initReveal();
+  }, 4000);
+  document.addEventListener('loader:done', () => clearTimeout(fallback));
+</script>

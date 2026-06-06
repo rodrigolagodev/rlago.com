@@ -1,0 +1,163 @@
+---
+interface Props {
+  href: string;
+  label: string;
+  ariaLabel?: string;
+  external?: boolean;
+}
+
+const { href, label, ariaLabel, external = false } = Astro.props;
+const externalAttrs = external
+  ? { target: '_blank', rel: 'noopener noreferrer' }
+  : {};
+---
+
+<a
+  href={href}
+  class="primary-cta"
+  aria-label={ariaLabel}
+  {...externalAttrs}
+>
+  <span class="primary-cta__inner">
+    <span class="primary-cta__label">{label}</span>
+    <span class="primary-cta__arrow" aria-hidden="true">
+      <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M6 18L18 6M18 6H9M18 6V15" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M6 18L18 6M18 6H9M18 6V15" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </span>
+  </span>
+</a>
+
+<style>
+  /* Editorial primary CTA — ink-filled rectangle, paper text at rest.
+     On hover: ink slides out (paper fill rises from below), text flips
+     to ink, the whole button lifts 4px, and the diagonal arrow loops
+     continuously through the centre.
+
+     Single source of truth — used by About and Footer. */
+  .primary-cta {
+    --cta-duration: 520ms;
+    --cta-ease: cubic-bezier(0.65, 0, 0.35, 1);
+
+    display: inline-flex;
+    color: var(--c-bg);
+    text-decoration: none;
+    width: fit-content;
+    position: relative;
+    isolation: isolate;
+    border: 1px solid var(--c-line);
+    background: var(--c-text);
+    overflow: hidden;
+    transition:
+      color var(--cta-duration) var(--cta-ease),
+      transform 240ms var(--ease);
+  }
+
+  /* Paper fill that slides up from below the button on hover */
+  .primary-cta::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-color: var(--c-bg);
+    transform: translateY(101%);
+    transition: transform var(--cta-duration) var(--cta-ease);
+    z-index: 0;
+  }
+
+  .primary-cta:hover,
+  .primary-cta:focus-visible {
+    color: var(--c-text);
+    transform: translateY(-4px);
+  }
+
+  .primary-cta:hover::before,
+  .primary-cta:focus-visible::before {
+    transform: translateY(0);
+  }
+
+  .primary-cta:focus-visible {
+    outline-offset: 4px;
+  }
+
+  /* Inner cluster sits above ::before so text stays readable while the
+     fill animates underneath. The surface tint gives the resting ink
+     a slight warmth so the button doesn't read as pure black. */
+  .primary-cta__inner {
+    position: relative;
+    z-index: 1;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5em;
+    padding: 1.3em 2.2em;
+    background-color: var(--c-surface-tint-strong);
+  }
+
+  .primary-cta__label {
+    font-family: var(--font-ui);
+    font-size: clamp(1.0625rem, 1.25vw, 1.375rem);
+    font-weight: 500;
+    line-height: 1;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+
+  /* Arrow swap-loop: two stacked SVGs offset by half a cycle so one is
+     always crossing the centre while the other is off-screen. Reads as
+     continuous diagonal motion, no reverse "tug", no jump. */
+  .primary-cta__arrow {
+    position: relative;
+    display: inline-flex;
+    overflow: hidden;
+    width: 0.95em;
+    height: 0.95em;
+    color: inherit;
+    transition: color var(--cta-duration) var(--cta-ease);
+    will-change: transform;
+  }
+
+  .primary-cta__arrow svg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    display: block;
+  }
+
+  /* Rest: SVG #1 visible at centre, SVG #2 parked off-screen bottom-left */
+  .primary-cta__arrow svg:nth-child(1) { transform: translate(0, 0); }
+  .primary-cta__arrow svg:nth-child(2) { transform: translate(-100%, 100%); }
+
+  @keyframes primary-cta-arrow-loop {
+    0%   { transform: translate(-100%, 100%); }
+    100% { transform: translate(100%, -100%); }
+  }
+
+  .primary-cta:hover .primary-cta__arrow svg,
+  .primary-cta:focus-visible .primary-cta__arrow svg {
+    animation: primary-cta-arrow-loop 1.6s linear infinite;
+  }
+
+  /* SVG #1 enters its cycle half-way (at centre) — matches its rest
+     position so the animation start doesn't pop. */
+  .primary-cta:hover .primary-cta__arrow svg:nth-child(1),
+  .primary-cta:focus-visible .primary-cta__arrow svg:nth-child(1) {
+    animation-delay: -0.8s;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .primary-cta,
+    .primary-cta::before,
+    .primary-cta__arrow,
+    .primary-cta__arrow svg {
+      transition: none;
+      animation: none;
+    }
+    .primary-cta:hover,
+    .primary-cta:focus-visible {
+      transform: none;
+    }
+  }
+</style>

@@ -1,0 +1,492 @@
+---
+import PrimaryCta from './PrimaryCta.astro';
+const year = new Date().getFullYear();
+---
+
+<footer class="footer" id="contact">
+
+  <!-- Oversized background asterisk — anchored to the left edge,
+       sits under everything else. Parallax + base rotation that
+       accelerates with scroll velocity (same envelope as About). -->
+  <svg
+    class="footer__star svg-star"
+    id="footer-star"
+    viewBox="0 0 44 49"
+    fill="none"
+    aria-hidden="true"
+  >
+    <path d="M19.139 48.5C21.1121 35.7531 21.3094 30.7739 21.3094 25.5954C16.574 28.3838 10.2601 32.1681 2.76233 38.7407L0 33.9606C9.66816 30.5747 16.1794 26.9896 20.9148 24.4004C16.1794 21.8112 9.66816 18.027 0 14.8403L2.76233 10.0602C10.2601 16.6328 16.574 20.2178 21.3094 23.2054C21.3094 18.027 21.1121 13.0477 19.139 0.5H24.6637C22.8879 13.0477 22.6906 18.027 22.4933 23.4046C27.0314 20.417 33.3453 16.6328 41.0404 10.0602L44 14.8403C34.5292 18.2261 28.0179 22.0104 23.0852 24.4004C28.0179 26.9896 34.5292 30.5747 44 33.9606L41.0404 38.7407C33.3453 32.1681 27.0314 28.1846 22.4933 25.3963C22.6906 30.7739 22.8879 35.7531 24.6637 48.5H19.139Z" fill="currentColor"/>
+  </svg>
+
+  <div class="footer__content container">
+
+    <div class="footer__main">
+
+      <div class="footer__block" data-footer-reveal>
+
+        <p class="footer__intro">
+          I'm always interested about cool stuff.
+        </p>
+
+        <div class="footer__question-wrap" data-text-distortion>
+          <h2 class="footer__question" data-text-distortion-text>
+            Are you minding<br />a project?
+          </h2>
+          <canvas aria-hidden="true"></canvas>
+        </div>
+
+        <div class="footer__cta-slot">
+          <PrimaryCta
+            href="mailto:rodrigo.n.lago@gmail.com"
+            label="Let's talk"
+            ariaLabel="Let's talk — opens email client"
+          />
+        </div>
+
+      </div>
+
+    </div>
+
+    <div class="footer__bar-wrap">
+      <button
+        type="button"
+        class="footer__top"
+        id="footer-top"
+        aria-label="Back to top"
+        title="Back to top"
+      >
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <path d="M12 19V5M12 5L5 12M12 5L19 12" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+      <div class="line footer__bar-line"></div>
+      <div class="footer__bar">
+
+        <p class="footer__colophon overline">
+          &copy; {year} Rodrigo Lago
+        </p>
+
+        <nav class="footer__social overline" aria-label="Contact and social links">
+          <a href="mailto:hi@rlago.com"
+            ><span data-scramble>hi@rlago.com</span></a>
+          <span class="footer__bar-sep" aria-hidden="true">·</span>
+          <a
+            href="https://linkedin.com/in/rodrigolago"
+            target="_blank"
+            rel="noopener noreferrer"
+          ><span data-scramble>LinkedIn</span><span class="sr-only"> (opens in a new tab)</span></a>
+          <span class="footer__bar-sep" aria-hidden="true">·</span>
+          <a
+            href="https://github.com/rodrigolagodev"
+            target="_blank"
+            rel="noopener noreferrer"
+          ><span data-scramble>GitHub</span><span class="sr-only"> (opens in a new tab)</span></a>
+        </nav>
+
+      </div>
+    </div>
+
+  </div>
+
+</footer>
+
+<style>
+  .footer {
+    position: relative;
+    z-index: 1;
+    background-color: var(--c-bg);
+    color: var(--c-text);
+    min-height: clamp(58svh, 75vh, 85vh);
+    display: flex;
+    flex-direction: column;
+    overflow-x: clip;
+  }
+
+  /* ── Background asterisk ─────────────────────────────────
+     - Anchored to the LEFT edge of the section
+     - Sits at z-index 0 under all content
+     - Two CSS vars: --footer-star-parallax (translateY, JS) and
+       --star-spin (rotation, JS — same envelope as About) */
+  .footer__star {
+    position: absolute;
+    top: 32%;
+    right: clamp(-8rem, -6vw, -3rem);
+    width: clamp(20rem, 44vw, 44rem);
+    height: auto;
+    color: var(--c-text);
+    opacity: 0.07;
+    z-index: 0;
+    pointer-events: none;
+    will-change: transform;
+    transform:
+      translateY(calc(-50% + var(--footer-star-parallax, 0px)))
+      rotate(var(--star-spin, 0deg));
+    transform-origin: 50% 50%;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .footer__star { transform: translateY(-50%); }
+  }
+
+  /* ── Foreground content ─────────────────────────────── */
+  .footer__content {
+    position: relative;
+    z-index: 1;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    padding-top: clamp(1.5rem, 3vh, 2.5rem);
+    padding-bottom: var(--gutter);
+  }
+
+  .footer__main {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    align-items: center;
+    padding-block: clamp(1rem, 2.5vh, 2rem);
+  }
+
+  .footer__block {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: clamp(0.25rem, 0.8vw, 0.6rem);
+    max-width: 75rem;
+  }
+
+  /* Staggered entry — applied on a wrapper around the CTA so we don't
+     fight PrimaryCta's own transform on hover/focus. */
+  .footer__intro,
+  .footer__question,
+  .footer__cta-slot {
+    opacity: 0;
+    transform: translateY(28px);
+    transition:
+      opacity 800ms var(--ease),
+      transform 800ms var(--ease);
+  }
+  .footer__block.is-revealed .footer__intro {
+    opacity: 1; transform: translateY(0); transition-delay: 80ms;
+  }
+  .footer__block.is-revealed .footer__question {
+    opacity: 1; transform: translateY(0); transition-delay: 240ms;
+  }
+  .footer__block.is-revealed .footer__cta-slot {
+    opacity: 1; transform: translateY(0); transition-delay: 520ms;
+  }
+
+  .footer__cta-slot {
+    margin-top: clamp(0.5rem, 1vh, 1.5rem);
+  }
+
+  /* ── Intro — Cormorant italic eyebrow, mid-scale ─────── */
+  .footer__intro {
+    margin: 0;
+    font-family: var(--font-serif);
+    font-style: italic;
+    font-weight: 300;
+    font-size: clamp(2.25rem, 3.2vw, 3.5rem);
+    line-height: 1.25;
+    letter-spacing: -0.01em;
+    color: var(--c-text-muted);
+    max-width: 38ch;
+  }
+
+  /* ── Question — Bebas Neue, fit-to-90vw with text-distortion ────
+     The wrap is 90vw wide. JS (fitQuestion) fits the font-size so the
+     longest line spans the wrap's width. The wrap stays in its natural
+     flex position (block's left) — no margin-left repositioning. */
+  .footer__question-wrap {
+    display: block;
+    width: 90vw;
+  }
+
+  .footer__question {
+    /* inline-block so the wrapper height collapses to the text's height
+       (matches Hero pattern, lets the distortion canvas sit flush).
+       nowrap so the JS-measured font-size isn't overridden by intrinsic
+       line wrapping (line breaks come from <br> only). */
+    display: inline-block;
+    margin: 0;
+    font-family: var(--font-display);
+    font-weight: 400;
+    text-transform: uppercase;
+    /* Pre-JS fallback. fitQuestion() overrides with an exact-fit size. */
+    font-size: clamp(4rem, 13vw, 16rem);
+    line-height: 0.88;
+    letter-spacing: -0.02em;
+    color: var(--c-text);
+    white-space: nowrap;
+  }
+
+  /* The bar-wrap is the positioning context for the back-to-top button.
+     The button is anchored to its top-right corner with a single offset
+     value used for both axes — so the gap above the hairline equals the
+     gap to the right edge, regardless of viewport. */
+  .footer__bar-wrap {
+    position: relative;
+  }
+
+  /* ── Back-to-top: circle + arrow, anchored above the bar's hairline
+     with equal padding to the right edge. */
+  .footer__top {
+    --top-offset: clamp(1.5rem, 3vw, 3rem);
+    position: absolute;
+    right: var(--top-offset);
+    bottom: calc(100% + var(--top-offset));
+    z-index: 2;
+    width: clamp(3.5rem, 5vw, 4.5rem);
+    height: clamp(3.5rem, 5vw, 4.5rem);
+    background: transparent;
+    border: 1px solid var(--c-line-strong, rgba(31, 28, 29, 0.20));
+    border-radius: 999px;
+    color: var(--c-text-muted);
+    cursor: pointer;
+    padding: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition:
+      color 240ms var(--ease),
+      border-color 240ms var(--ease),
+      background-color 240ms var(--ease),
+      transform 240ms var(--ease);
+  }
+
+  .footer__top svg {
+    width: 42%;
+    height: 42%;
+    transition: transform 320ms var(--ease);
+  }
+
+  .footer__top:hover,
+  .footer__top:focus-visible {
+    color: var(--c-bg);
+    background-color: var(--c-text);
+    border-color: var(--c-text);
+    transform: translateY(-4px);
+  }
+
+  .footer__top:hover svg,
+  .footer__top:focus-visible svg {
+    transform: translateY(-3px);
+  }
+
+  /* ── Bottom bar ──────────────────────────────────────── */
+  .footer__bar-line {
+    background-color: var(--c-line);
+    margin-bottom: var(--sp-12);
+  }
+
+  .footer__bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: var(--sp-24);
+    width: 100%;
+  }
+
+  .footer__colophon {
+    margin: 0;
+    color: var(--c-text-muted);
+  }
+
+  .footer__bar-sep { color: var(--c-text-muted); }
+
+  .footer__social {
+    display: flex;
+    gap: var(--sp-12);
+    align-items: baseline;
+    margin: 0;
+  }
+
+  .footer__social a {
+    color: var(--c-text-muted);
+    transition: color 200ms;
+    padding-block: 0.6rem;
+    display: inline-block;
+  }
+
+  .footer__social a:hover,
+  .footer__social a:focus-visible { color: var(--c-text); }
+
+  @media (max-width: 768px) {
+    .footer {
+      min-height: clamp(68svh, 82vh, 92vh);
+    }
+    .footer__content {
+      padding-top: clamp(0.5rem, 1vh, 0.875rem);
+    }
+    .footer__main {
+      padding-block: clamp(0.25rem, 0.6vh, 0.5rem);
+    }
+    .footer__star {
+      width: clamp(16rem, 50vw, 24rem);
+      opacity: 0.06;
+      right: clamp(-6rem, -8vw, -2rem);
+    }
+    .footer__block { padding-left: 0; }
+    .footer__intro {
+      font-size: clamp(1.2rem, 5vw, 1.8rem);
+    }
+    /* Mobile: JS fit still wins, this is just the pre-JS fallback. */
+    .footer__question {
+      font-size: clamp(3.25rem, 17vw, 6.5rem);
+    }
+    .footer__cta-label { font-size: clamp(1rem, 4vw, 1.2rem); }
+    .footer__top {
+      --top-offset: clamp(1rem, 4vw, 1.5rem);
+      width: 3rem;
+      height: 3rem;
+    }
+
+    .footer__colophon {
+      padding-bottom: 0.6rem;
+    }
+    .footer__bar {
+      flex-direction: column-reverse;
+      align-items: center;
+      gap: var(--sp-12);
+    }
+    .footer__social { flex-wrap: wrap; }
+  }
+</style>
+
+<script>
+  // ──────────────────────────────────────────────────────────
+  // Fit the question text so the longest line spans the wrap's
+  // full width (which CSS pins to 90vw). Same recipe as Hero's
+  // fitHeroRole. Re-runs on font load and resize.
+  // ──────────────────────────────────────────────────────────
+  const questionEl = document.querySelector<HTMLElement>('.footer__question');
+  const wrapEl = document.querySelector<HTMLElement>('.footer__question-wrap');
+
+  function fitQuestion() {
+    if (!questionEl || !wrapEl) return;
+
+    // Fit font-size so the longest line spans the wrap's width (90vw).
+    const targetWidth = wrapEl.getBoundingClientRect().width;
+    if (targetWidth <= 0) return;
+    const tmp = document.createElement('canvas').getContext('2d');
+    if (!tmp) return;
+    const baseFs = 100;
+    tmp.font = `400 ${baseFs}px "Bebas Neue", Impact, sans-serif`;
+    if ('letterSpacing' in tmp) {
+      (tmp as CanvasRenderingContext2D & { letterSpacing: string }).letterSpacing =
+        `${-0.02 * baseFs}px`;
+    }
+    // Bebas is uppercase-rendered via CSS; measure the uppercase glyphs.
+    const longest = Math.max(
+      tmp.measureText('ARE YOU MINDING').width,
+      tmp.measureText('A PROJECT?').width,
+    );
+    if (longest <= 0) return;
+    questionEl.style.fontSize = `${(baseFs * targetWidth) / longest}px`;
+  }
+  if (document.fonts && document.fonts.ready) {
+    document.fonts.ready.then(fitQuestion);
+  } else {
+    fitQuestion();
+  }
+  window.addEventListener('resize', fitQuestion, { passive: true });
+
+  // ──────────────────────────────────────────────────────────
+  // Block reveal cascade
+  // ──────────────────────────────────────────────────────────
+  const block = document.querySelector<HTMLElement>('.footer__block');
+  if (block) {
+    const obs = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) {
+          block.classList.add('is-revealed');
+          obs.disconnect();
+        }
+      },
+      { rootMargin: '0px 0px -20% 0px' },
+    );
+    obs.observe(block);
+  }
+
+  // ──────────────────────────────────────────────────────────
+  // Back-to-top button: hook into Lenis if present, else native.
+  // ──────────────────────────────────────────────────────────
+  const topBtn = document.getElementById('footer-top');
+  if (topBtn) {
+    topBtn.addEventListener('click', () => {
+      const lenis = (window as unknown as {
+        __lenis?: { scrollTo: (target: number | HTMLElement) => void };
+      }).__lenis;
+      if (lenis) {
+        lenis.scrollTo(0);
+      } else {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+    });
+  }
+
+  // ──────────────────────────────────────────────────────────
+  // Asterisk: parallax (section-centered) + base rotation
+  // that accelerates with scroll velocity. Same envelope as About.
+  // ──────────────────────────────────────────────────────────
+  const footerEl = document.querySelector<HTMLElement>('.footer');
+  const star = document.getElementById('footer-star');
+  const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  if (footerEl && star) {
+    // Parallax — offset goes from -1 (section below) to +1 (above),
+    // centered at 0 when the section's middle is at the viewport's middle.
+    let ticking = false;
+    const updateParallax = () => {
+      const rect = footerEl.getBoundingClientRect();
+      const vh = window.innerHeight;
+      const sectionCenter = rect.top + rect.height / 2;
+      const offset = (vh / 2 - sectionCenter) / vh;
+      // Negative multiplier so the star RISES through the section as
+      // the page scrolls past it (matches About's behavior).
+      star.style.setProperty('--footer-star-parallax', `${offset * -480}px`);
+      ticking = false;
+    };
+    const onScroll = () => {
+      if (!ticking) {
+        requestAnimationFrame(updateParallax);
+        ticking = true;
+      }
+    };
+    window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('resize', onScroll, { passive: true });
+    updateParallax();
+
+    if (!reducedMotion) {
+      // Same velocity-boost envelope as About's star.
+      const BASE_DEG_PER_SEC = 6;
+      const BOOST_FACTOR = 0.08;
+      const MAX_BOOST = 90;
+      const DECAY = 0.90;
+
+      let angle = 0;
+      let boost = 0;
+      let prevScrollY = window.scrollY;
+      let prevT = performance.now();
+
+      const spin = (now: number) => {
+        const dt = Math.min(0.1, (now - prevT) / 1000);
+        prevT = now;
+        const dy = window.scrollY - prevScrollY;
+        prevScrollY = window.scrollY;
+        const instBoost = dt > 0
+          ? Math.min(MAX_BOOST, Math.abs(dy / dt) * BOOST_FACTOR)
+          : 0;
+        if (instBoost > boost) {
+          boost = instBoost;
+        } else {
+          boost *= Math.pow(DECAY, dt * 60);
+        }
+        angle = (angle + (BASE_DEG_PER_SEC + boost) * dt) % 360;
+        star.style.setProperty('--star-spin', `${angle}deg`);
+        requestAnimationFrame(spin);
+      };
+      requestAnimationFrame(spin);
+    }
+  }
+</script>
