@@ -1,8 +1,9 @@
 ---
 import { social } from '../config/site';
+import hero from '../content/hero.json';
 ---
 
-<section class="hero" aria-label="Introduction">
+<section class="hero" aria-label={hero.ariaLabel}>
 
   <!-- Pixelated background canvas — same effect as Footer -->
   <div class="hero__bg" aria-hidden="true">
@@ -19,11 +20,11 @@ import { social } from '../config/site';
         data-text-distortion
         data-text-distortion-skip
       >
-        <h1 class="hero__role-text h1" data-text-distortion-text>RODRIGO LAGO<br>UX ENGINEER</h1>
+        <h1 class="hero__role-text h1" data-text-distortion-text>{hero.titleLine1}<br>{hero.titleLine2}</h1>
         <canvas id="hero-role-canvas" aria-hidden="true"></canvas>
       </div>
       <p class="hero__desc hero-anim" style="--delay:240ms">
-        Building refined digital products at the intersection of design and code.
+        {hero.description}
       </p>
     </div>
 
@@ -33,22 +34,22 @@ import { social } from '../config/site';
         type="button"
         class="hero__scroll"
         id="hero-scroll"
-        aria-label="Scroll to next section"
+        aria-label={hero.scrollAriaLabel}
       >
         <span class="overline hero__scroll-text">
-          <span data-scramble>Scroll</span>
+          <span data-scramble>{hero.scrollLabel}</span>
           <span class="hero__scroll-arrow" aria-hidden="true">&darr;</span>
         </span>
       </button>
 
-      <nav class="hero__socials" aria-label="Social links">
+      <nav class="hero__socials" aria-label={hero.socialsAriaLabel}>
         <a
           class="overline"
           href={social.linkedin.url}
           target="_blank"
           rel="noopener noreferrer"
         >
-          <span data-scramble>LinkedIn</span><span class="sr-only"> (opens in a new tab)</span>
+          <span data-scramble>{social.linkedin.label}</span><span class="sr-only">{hero.newTabSrText}</span>
         </a>
         <span class="overline hero__socials-sep" aria-hidden="true">·</span>
         <a
@@ -57,7 +58,7 @@ import { social } from '../config/site';
           target="_blank"
           rel="noopener noreferrer"
         >
-          <span data-scramble>GitHub</span><span class="sr-only"> (opens in a new tab)</span>
+          <span data-scramble>{social.github.label}</span><span class="sr-only">{hero.newTabSrText}</span>
         </a>
       </nav>
     </div>

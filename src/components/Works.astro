@@ -1,65 +1,27 @@
 ---
 import WorkCard from './WorkCard.astro';
 import SectionMeta from './SectionMeta.astro';
-import { social } from '../config/site';
+import { fillTokens } from '../config/site';
+import works from '../content/works.json';
 
-const projects = [
-  {
-    title: 'Sando Design System',
-    year: '2026',
-    category: 'Design System',
-    image: undefined,
-    href: 'https://github.com/rodrigolagodev/SandoDesignSystem',
-    role: 'Creator & Lead Developer',
-    description:
-      'A <strong>three-layer token architecture</strong> — Ingredients, Flavors, Recipes — that brings the same rigor to UI as a crafted Japanese katsu sando. <strong>Framework-agnostic Web Components</strong> (Lit 3), <strong>WCAG 2.1 AA</strong> by default, <strong>multi-theme</strong> out of the box. The monorepo (Turborepo + pnpm) ships with <strong>7 AI agents</strong> that scaffold, test, document, and maintain components autonomously.',
-    techStack: [
-      { name: 'Lit 3', url: 'https://lit.dev' },
-      { name: 'TypeScript', url: 'https://www.typescriptlang.org' },
-      { name: 'Turborepo', url: 'https://turbo.build/repo' },
-      { name: 'pnpm', url: 'https://pnpm.io' },
-      { name: 'Style Dictionary', url: 'https://styledictionary.com' },
-      { name: 'Storybook', url: 'https://storybook.js.org' },
-      { name: 'VitePress', url: 'https://vitepress.dev' },
-      { name: 'Vitest', url: 'https://vitest.dev' },
-      { name: 'Playwright', url: 'https://playwright.dev' },
-    ],
-    comingSoon: false,
-  },
-  {
-    title: 'Stack Overflow Teams MCP',
-    year: '2025',
-    category: 'Developer Tooling',
-    image: undefined,
-    href: 'https://github.com/rodrigolagodev/StackOverflowTeams-MCP',
-    role: 'Creator & Lead Developer',
-    description:
-      'An <strong>MCP server</strong> that plugs your Stack Overflow for Teams knowledge base directly into <strong>Copilot</strong>, <strong>Claude</strong>, and any MCP-compatible IDE. <strong>21 tools</strong> across search, discovery, articles, and personal queries — with <strong>smart caching</strong>, exponential-backoff retries, structured logging, and real-time health metrics.',
-    techStack: [
-      { name: 'TypeScript', url: 'https://www.typescriptlang.org' },
-      { name: 'Node.js', url: 'https://nodejs.org' },
-      { name: 'MCP SDK', url: 'https://github.com/modelcontextprotocol/typescript-sdk' },
-      { name: 'Vitest', url: 'https://vitest.dev' },
-      { name: 'GitHub Actions', url: 'https://github.com/features/actions' },
-    ],
-    comingSoon: false,
-  },
-];
+const projects = works.projects;
+const projectCount = String(projects.length).padStart(2, '0');
+const metaRightLabel = works.metaRightLabelTemplate.replace('{count}', projectCount);
 ---
 
-<section class="works" id="works" aria-label="Selected works">
+<section class="works" id="works" aria-label={works.ariaLabel}>
   <div class="works__wrapper container">
 
-    <SectionMeta index="02" rightLabel={`${String(projects.length).padStart(2, '0')} projects`} rightIcon="asterisk" />
+    <SectionMeta index={works.metaIndex} rightLabel={metaRightLabel} rightIcon="asterisk" />
     <div class="u-spacer-48"></div>
 
     <!-- Heading: SELECTED (display, distorted) + WORKS (italic serif) edge-to-edge -->
     <div class="works__heading-group" data-reveal>
       <div class="works__selected-wrap" data-text-distortion>
-        <span class="works__selected h1" data-text-distortion-text>Selected</span>
+        <span class="works__selected h1" data-text-distortion-text>{works.headingSelected}</span>
         <canvas aria-hidden="true"></canvas>
       </div>
-      <h2 id="works-heading" class="works__title h2" data-mask-reveal>Works</h2>
+      <h2 id="works-heading" class="works__title h2" data-mask-reveal>{works.headingTitle}</h2>
     </div>
 
     <!-- 2-column project grid -->
@@ -70,7 +32,6 @@ const projects = [
           title={p.title}
           year={p.year}
           category={p.category}
-          image={p.image}
           href={p.href}
           role={p.role}
           comingSoon={p.comingSoon}
@@ -88,12 +49,12 @@ const projects = [
       <div class="works__cta-inner" data-reveal>
         <div class="line line--draw" data-line-draw></div>
         <a
-          href={social.github.url}
+          href={fillTokens(works.seeMoreHref)}
           target="_blank"
           rel="noopener noreferrer"
           class="overline works__see-more"
         >
-          See more projects on <strong data-scramble>{social.github.label}</strong><span class="sr-only"> (opens in a new tab)</span>
+          {works.seeMorePrefix}<strong data-scramble>{fillTokens(works.seeMoreLabel)}</strong><span class="sr-only">{works.newTabSrText}</span>
         </a>
       </div>
     </div>

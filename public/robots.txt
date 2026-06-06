@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://rodrigolago.dev/sitemap-index.xml
+Sitemap: https://rlago.com/sitemap-index.xml

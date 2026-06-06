@@ -1,0 +1,49 @@
+{
+  "ariaLabel": "Selected works",
+  "metaIndex": "02",
+  "metaRightLabelTemplate": "{count} projects",
+  "headingSelected": "Selected",
+  "headingTitle": "Works",
+  "seeMorePrefix": "See more projects on ",
+  "seeMoreLabel": "{{githubLabel}}",
+  "seeMoreHref": "{{githubUrl}}",
+  "newTabSrText": " (opens in a new tab)",
+  "projects": [
+    {
+      "title": "Sando Design System",
+      "year": "2026",
+      "category": "Design System",
+      "href": "https://github.com/rodrigolagodev/SandoDesignSystem",
+      "role": "Creator & Lead Developer",
+      "description": "A <strong>three-layer token architecture</strong> — Ingredients, Flavors, Recipes — that brings the same rigor to UI as a crafted Japanese katsu sando. <strong>Framework-agnostic Web Components</strong> (Lit 3), <strong>WCAG 2.1 AA</strong> by default, <strong>multi-theme</strong> out of the box. The monorepo (Turborepo + pnpm) ships with <strong>7 AI agents</strong> that scaffold, test, document, and maintain components autonomously.",
+      "techStack": [
+        { "name": "Lit 3", "url": "https://lit.dev" },
+        { "name": "TypeScript", "url": "https://www.typescriptlang.org" },
+        { "name": "Turborepo", "url": "https://turbo.build/repo" },
+        { "name": "pnpm", "url": "https://pnpm.io" },
+        { "name": "Style Dictionary", "url": "https://styledictionary.com" },
+        { "name": "Storybook", "url": "https://storybook.js.org" },
+        { "name": "VitePress", "url": "https://vitepress.dev" },
+        { "name": "Vitest", "url": "https://vitest.dev" },
+        { "name": "Playwright", "url": "https://playwright.dev" }
+      ],
+      "comingSoon": false
+    },
+    {
+      "title": "Stack Overflow Teams MCP",
+      "year": "2025",
+      "category": "Developer Tooling",
+      "href": "https://github.com/rodrigolagodev/StackOverflowTeams-MCP",
+      "role": "Creator & Lead Developer",
+      "description": "An <strong>MCP server</strong> that plugs your Stack Overflow for Teams knowledge base directly into <strong>Copilot</strong>, <strong>Claude</strong>, and any MCP-compatible IDE. <strong>21 tools</strong> across search, discovery, articles, and personal queries — with <strong>smart caching</strong>, exponential-backoff retries, structured logging, and real-time health metrics.",
+      "techStack": [
+        { "name": "TypeScript", "url": "https://www.typescriptlang.org" },
+        { "name": "Node.js", "url": "https://nodejs.org" },
+        { "name": "MCP SDK", "url": "https://github.com/modelcontextprotocol/typescript-sdk" },
+        { "name": "Vitest", "url": "https://vitest.dev" },
+        { "name": "GitHub Actions", "url": "https://github.com/features/actions" }
+      ],
+      "comingSoon": false
+    }
+  ]
+}

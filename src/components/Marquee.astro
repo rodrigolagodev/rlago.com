@@ -1,13 +1,7 @@
 ---
-const items = [
-  'Open to opportunities',
-  'Mar del Plata, Argentina',
-  'UX Engineer',
-  'Product UI · Design Systems · Front-end',
-  'B2B · SaaS',
-];
+import marquee from '../content/marquee.json';
 // Duplicate so we can translate -50% for a seamless loop
-const allItems = [...items, ...items];
+const allItems = [...marquee.items, ...marquee.items];
 ---
 
 <div class="marquee" aria-hidden="true">

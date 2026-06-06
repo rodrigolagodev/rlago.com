@@ -1,0 +1,12 @@
+{
+  "intro": "I'm always interested about cool stuff.",
+  "questionLine1": "Are you minding",
+  "questionLine2": "a project?",
+  "ctaLabel": "Let's talk",
+  "ctaAriaLabel": "Let's talk — opens email client",
+  "backToTopAriaLabel": "Back to top",
+  "backToTopTitle": "Back to top",
+  "socialAriaLabel": "Contact and social links",
+  "copyrightTemplate": "© {year} {name}",
+  "newTabSrText": " (opens in a new tab)"
+}

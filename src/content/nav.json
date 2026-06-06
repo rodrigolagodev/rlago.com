@@ -1,0 +1,14 @@
+{
+  "logoAriaLabel": "Rodrigo Lago — Home",
+  "linksAriaLabel": "Main navigation",
+  "links": [
+    { "label": "Home", "href": "#", "scrollTop": true },
+    { "label": "Works", "href": "#works" },
+    { "label": "FAQ", "href": "#faq" },
+    { "label": "Contact", "href": "{{contactMailto}}" }
+  ],
+  "themeToggle": {
+    "labelToDark": "Switch to dark theme",
+    "labelToLight": "Switch to light theme"
+  }
+}

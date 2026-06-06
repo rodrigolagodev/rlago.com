@@ -1,60 +1,31 @@
 ---
 import SectionMeta from './SectionMeta.astro';
-import { contact, social } from '../config/site';
-const faqs = [
-  {
-    cat: 'Stack',
-    q: 'What tools and technologies do you use day to day?',
-    a: '<strong>React, TypeScript, HTML, SCSS, vanilla JavaScript, Figma, design systems, Playwright, Vitest, GSAP</strong>. I pick what fits the project — the goal is shipping quality interfaces, not ticking boxes on a tech stack.',
-  },
-  {
-    cat: 'AI',
-    q: 'How do you use AI in your workflow?',
-    a: 'Across several layers. I generate UI components from written <strong>specs</strong> — consistent, editable, no manual repetition. I <strong>automate</strong> repetitive workflows: pipelines, code generation, documentation. I use AI to maintain <strong>design token systems</strong> and audit UI consistency across surfaces. And at the team level, I analyze processes to find where <strong>AI</strong> can reduce friction. The goal is not to replace the work, but to remove the overhead.',
-  },
-  {
-    cat: 'AI Tools',
-    q: 'Which AI tools do you use day to day?',
-    a: '<strong>Claude, Gemini, and GitHub Copilot</strong> are my daily drivers. But I also build my own tools — custom <strong>MCP servers</strong>, tailored workflows for specific use cases, and <strong>automation pipelines</strong> that connect AI output directly into <strong>production code</strong>. The real leverage is not the tool itself, but how you configure it for your context.',
-  },
-  {
-    cat: 'Collaboration',
-    q: 'How do you collaborate with designers, developers, and stakeholders?',
-    a: 'I sit at the <strong>intersection of design and engineering</strong> — translating concepts into production code while feeding technical insight back into the design process. It is a <strong>continuous dialogue, not a handoff</strong>.',
-  },
-  {
-    cat: 'Experience',
-    q: 'What kind of products and industries have you worked in?',
-    a: '<strong>B2B SaaS, e-commerce, and end-user products</strong> across different verticals — mostly with <strong>US-based clients</strong>. The common thread is interfaces where people need to get things done efficiently.',
-  },
-  {
-    cat: 'Remote',
-    q: "What's your experience with remote work?",
-    a: 'Years working remotely with teams across the <strong>US and Latin America</strong>. Async communication, timezone management, <strong>remote-first</strong> tools — it is how I work every day and I am comfortable with it.',
-  },
-  {
-    cat: 'Team',
-    q: 'What size teams have you worked with?',
-    a: '<strong>Cross-functional</strong> teams of various sizes — from small squads to larger product orgs. I am used to collaborating closely with <strong>designers, product managers, and engineers</strong> in the same cycle.',
-  },
-  {
-    cat: 'English',
-    q: "What's your English level?",
-    a: '<strong>Professional proficiency</strong>. I have daily conversations with <strong>US-based clients</strong>, write <strong>technical documentation</strong>, and participate in product meetings in English.',
-  },
-  {
-    cat: 'Availability',
-    q: 'Are you available for freelance or contract work?',
-    a: 'I am open to <strong>remote opportunities</strong>. Comfortable working across time zones and with asynchronous collaboration.',
-  },
-  {
-    cat: 'Contact',
-    q: 'How can I reach you?',
-    a: `Reach out through <a href="${social.linkedin.url}" target="_blank" rel="noopener noreferrer"><strong>${social.linkedin.label}</strong></a> or use the <a href="${contact.mailto}"><strong>contact link</strong></a> on this site.`,
-  },
-];
+import { fillTokens } from '../config/site';
+import faqContent from '../content/faq.json';
+
+const faqs = faqContent.items.map((f) => ({
+  ...f,
+  a: fillTokens(f.a),
+}));
 const totalQ = String(faqs.length).padStart(2, '0');
+const metaRightLabel = faqContent.metaRightLabelTemplate.replace('{count}', totalQ);
+
+const stripTags = (s: string) => s.replace(/<[^>]+>/g, '');
+const faqSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  mainEntity: faqs.map((f) => ({
+    '@type': 'Question',
+    name: f.q,
+    acceptedAnswer: {
+      '@type': 'Answer',
+      text: stripTags(f.a),
+    },
+  })),
+};
 ---
+
+<script type="application/ld+json" set:html={JSON.stringify(faqSchema)} />
 
 <section class="faq" id="faq" aria-labelledby="faq-heading">
   <div class="faq__wrapper container">
@@ -63,14 +34,14 @@ const totalQ = String(faqs.length).padStart(2, '0');
 
       <!-- Heading: FAQ (left, display) + INFORMATION (right, italic serif) edge-to-edge -->
       <div class="faq__heading-group" data-reveal>
-        <SectionMeta index="03" rightLabel={`${totalQ} questions`} rightIcon="asterisk" />
+        <SectionMeta index={faqContent.metaIndex} rightLabel={metaRightLabel} rightIcon="asterisk" />
         <div class="u-spacer-48"></div>
         <div class="faq__heading-row">
           <div class="faq__title-wrap" data-text-distortion>
-            <h2 id="faq-heading" class="faq__title h1" data-text-distortion-text>FAQ</h2>
+            <h2 id="faq-heading" class="faq__title h1" data-text-distortion-text>{faqContent.headingTitle}</h2>
             <canvas aria-hidden="true"></canvas>
           </div>
-          <span class="faq__info-label h2" data-mask-reveal aria-hidden="true">Information</span>
+          <span class="faq__info-label h2" data-mask-reveal aria-hidden="true">{faqContent.headingRightLabel}</span>
         </div>
         <div class="u-spacer-48"></div>
         <div class="line line--draw" data-line-draw></div>
@@ -86,10 +57,10 @@ const totalQ = String(faqs.length).padStart(2, '0');
         <div class="faq__header-row" aria-hidden="true">
           <div class="faq__col-num"></div>
           <div class="faq__col-q">
-            <span class="h3">Question</span>
+            <span class="h3">{faqContent.columnQuestion}</span>
           </div>
           <div class="faq__col-a">
-            <span class="h3">Answer</span>
+            <span class="h3">{faqContent.columnAnswer}</span>
           </div>
         </div>
 

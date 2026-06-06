@@ -2,10 +2,11 @@
 import SectionMeta from './SectionMeta.astro';
 import PrimaryCta from './PrimaryCta.astro';
 import { contact } from '../config/site';
+import about from '../content/about.json';
 ---
 
 <section class="about" id="about" aria-labelledby="about-heading">
-  <h2 id="about-heading" class="sr-only">About</h2>
+  <h2 id="about-heading" class="sr-only">{about.headingSrLabel}</h2>
 
   <!-- Decorative oversized asterisk: lives behind all section content,
        gets parallax + a continuous base rotation that accelerates with
@@ -21,18 +22,18 @@ import { contact } from '../config/site';
   </svg>
 
   <div class="about__meta container">
-    <SectionMeta index="01" rightLabel="UX Engineer" rightIcon="asterisk" />
+    <SectionMeta index={about.metaIndex} rightLabel={about.metaRightLabel} rightIcon="asterisk" />
   </div>
 
   <div class="about__hero" id="about-hero">
     <div class="about__hello-wrap" id="about-hello-wrap" data-text-distortion>
-      <span class="about__hello" id="about-hello" data-text-distortion-text aria-hidden="true">HELLOOOOO!</span>
+      <span class="about__hello" id="about-hello" data-text-distortion-text aria-hidden="true">{about.hello}</span>
       <canvas aria-hidden="true"></canvas>
     </div>
     <div class="about__photo" id="about-photo">
       <img
         src="/images/photo.webp"
-        alt="Rodrigo Lago — UX Engineer"
+        alt={about.photoAlt}
         class="about__photo-img"
         draggable="false"
       />
@@ -41,16 +42,14 @@ import { contact } from '../config/site';
   </div>
 
   <div class="about__bottom">
-    <p class="about__text">
-      Hey, I'm <strong>Rodrigo</strong>. I'm a <strong>UX Engineer</strong>. I build interfaces for SaaS products, e-commerce, whatever the project needs. Day to day, I work alongside <strong>designers and developers</strong> — turning concepts into <strong>interfaces that actually ship</strong>. I've been doing this for a while now, across different teams, products, and industries. The common thread? Making things that work for <strong>real people</strong>. I'm <strong>open to remote opportunities</strong>.
-    </p>
+    <p class="about__text" set:html={about.body}></p>
 
     <div class="about__ctas">
-      <PrimaryCta href={contact.mailto} label="Contact me" />
+      <PrimaryCta href={contact.mailto} label={about.primaryCtaLabel} />
 
-      <a href="/cv.pdf" download class="about__cta about__cta--ghost">
+      <a href={about.resumeHref} download class="about__cta about__cta--ghost">
         <span class="about__cta-inner">
-          <span class="about__cta-label">Get my résumé</span>
+          <span class="about__cta-label">{about.resumeCtaLabel}</span>
           <span class="about__cta-arrow" aria-hidden="true">
             <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
               <path d="M12 5V18M12 18L6 12M12 18L18 12" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>

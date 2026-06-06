@@ -1,5 +1,6 @@
 ---
-import { contact } from '../config/site';
+import { fillTokens } from '../config/site';
+import nav from '../content/nav.json';
 ---
 
 <nav id="navbar" class="navbar">
@@ -12,7 +13,7 @@ import { contact } from '../config/site';
 
       <!-- LEFT: logo + status badge -->
       <div class="navbar__col is-left">
-        <a href="#" data-scroll-top class="navbar__logo" aria-label="Rodrigo Lago — Home">
+        <a href="#" data-scroll-top class="navbar__logo" aria-label={nav.logoAriaLabel}>
           <svg class="navbar__logo-svg" viewBox="0 0 359.9 344.7" width="29" height="28" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
             <style>.st0{fill:var(--c-logo)}.st1{opacity:.15}.st2{fill:url(#sg1)}.st3{fill:url(#sg2)}.st4{fill:url(#sg3)}</style>
             <g>
@@ -47,11 +48,13 @@ import { contact } from '../config/site';
 
       <!-- CENTER: nav links -->
       <div class="navbar__col is-center">
-        <nav class="navbar__links h4" aria-label="Main navigation">
-          <a href="#" data-scroll-top><span data-scramble>Home</span></a>
-          <a href="#works"><span data-scramble>Works</span></a>
-          <a href="#faq"><span data-scramble>FAQ</span></a>
-          <a href={contact.mailto}><span data-scramble>Contact</span></a>
+        <nav class="navbar__links h4" aria-label={nav.linksAriaLabel}>
+          {nav.links.map((link) => (
+            <a
+              href={fillTokens(link.href)}
+              {...(link.scrollTop ? { 'data-scroll-top': true } : {})}
+            ><span data-scramble>{link.label}</span></a>
+          ))}
         </nav>
       </div>
 
@@ -61,8 +64,10 @@ import { contact } from '../config/site';
           type="button"
           class="theme-toggle"
           id="theme-toggle"
-          aria-label="Switch to dark theme"
+          aria-label={nav.themeToggle.labelToDark}
           aria-pressed="false"
+          data-label-to-dark={nav.themeToggle.labelToDark}
+          data-label-to-light={nav.themeToggle.labelToLight}
         >
           <span class="theme-toggle__swatch" aria-hidden="true"></span>
         </button>
@@ -286,10 +291,9 @@ import { contact } from '../config/site';
     // describes the action that would happen on activation, so screen
     // readers say "Switch to <opposite> theme, toggle button, pressed".
     toggle.setAttribute('aria-pressed', String(isDark));
-    toggle.setAttribute(
-      'aria-label',
-      isDark ? 'Switch to light theme' : 'Switch to dark theme',
-    );
+    const labelToDark = toggle.dataset.labelToDark || 'Switch to dark theme';
+    const labelToLight = toggle.dataset.labelToLight || 'Switch to light theme';
+    toggle.setAttribute('aria-label', isDark ? labelToLight : labelToDark);
   }
   syncToggleA11y();
 

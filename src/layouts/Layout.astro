@@ -1,6 +1,23 @@
 ---
 import { site, contact, social } from '../config/site';
 
+// Self-hosted fonts via Fontsource. Latin subset only (site is in English
+// with occasional Spanish accents). Bundled and fingerprinted by Vite.
+import '@fontsource/bebas-neue/latin-400.css';
+import '@fontsource/barlow/latin-400.css';
+import '@fontsource/barlow/latin-500.css';
+import '@fontsource/barlow/latin-700.css';
+import '@fontsource/barlow/latin-800.css';
+import '@fontsource/barlow/latin-400-italic.css';
+import '@fontsource/barlow-condensed/latin-700.css';
+import '@fontsource/barlow-condensed/latin-800.css';
+import '@fontsource/cormorant-garamond/latin-300.css';
+import '@fontsource/cormorant-garamond/latin-400.css';
+import '@fontsource/cormorant-garamond/latin-600.css';
+import '@fontsource/cormorant-garamond/latin-300-italic.css';
+import '@fontsource/cormorant-garamond/latin-400-italic.css';
+import '@fontsource/cormorant-garamond/latin-600-italic.css';
+
 interface Props {
   title?: string;
   description?: string;
@@ -15,6 +32,41 @@ const url = Astro.url;
 // Absolute URL so social crawlers resolve the asset regardless of where
 // the page is served from. Asset still has to exist in /public/images/.
 const ogImage = new URL(site.ogImage, url).toString();
+const avatarUrl = new URL(site.avatar, url).toString();
+
+const personSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'Person',
+  '@id': `${site.url}/#person`,
+  name: site.name,
+  givenName: site.givenName,
+  familyName: site.familyName,
+  jobTitle: site.role,
+  description: site.description,
+  url: site.url,
+  image: avatarUrl,
+  email: contact.email,
+  nationality: site.nationality,
+  knowsAbout: site.knowsAbout,
+  address: {
+    '@type': 'PostalAddress',
+    addressLocality: site.location.city,
+    addressRegion: site.location.region,
+    addressCountry: site.location.country,
+  },
+  sameAs: [social.linkedin.url, social.github.url],
+};
+
+const websiteSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'WebSite',
+  '@id': `${site.url}/#website`,
+  url: site.url,
+  name: site.name,
+  description: site.description,
+  inLanguage: site.lang,
+  publisher: { '@id': `${site.url}/#person` },
+};
 ---
 
 <!doctype html>
@@ -23,51 +75,43 @@ const ogImage = new URL(site.ogImage, url).toString();
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content={description} />
+    <meta name="author" content={site.name} />
+    <meta name="theme-color" content={site.themeColor} />
+    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1" />
+    <meta name="generator" content={Astro.generator} />
 
     <!-- OG / Social -->
+    <meta property="og:site_name" content={site.name} />
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
     <meta property="og:type" content="website" />
+    <meta property="og:locale" content={site.locale} />
     <meta property="og:url" content={url} />
     <meta property="og:image" content={ogImage} />
-    <meta name="twitter:card" content="summary_large_image" />
+    <meta property="og:image:width" content={String(site.ogImageWidth)} />
+    <meta property="og:image:height" content={String(site.ogImageHeight)} />
+    <meta property="og:image:alt" content={site.ogImageAlt} />
     <link rel="canonical" href={url} />
 
-    <!-- Fonts: Bebas Neue (H1) + Cormorant Garamond (serif italic) + Barlow family (UI) -->
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <!-- Preload the CSS itself so the font @font-face declarations arrive
-         ahead of render-blocking discovery. -->
-    <link
-      rel="preload"
-      as="style"
-      href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow:ital,wght@0,400;0,500;0,700;0,800;1,400&family=Barlow+Condensed:wght@700;800&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400;1,600&display=swap"
-    />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow:ital,wght@0,400;0,500;0,700;0,800;1,400&family=Barlow+Condensed:wght@700;800&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400;1,600&display=swap"
-      rel="stylesheet"
-    />
+    <!-- Fonts are self-hosted via @fontsource imports in the frontmatter.
+         No third-party font CDN is hit at runtime. -->
 
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="alternate icon" href="/favicon.ico" />
+
+    <!-- IndieWeb / Mastodon-style identity confirmation. Search engines and
+         IndieAuth use rel="me" links to verify that profiles belong to the
+         same person as the canonical site. -->
+    <link rel="me" href={social.linkedin.url} />
+    <link rel="me" href={social.github.url} />
+    <link rel="me" href={contact.mailto} />
+
     <title>{title}</title>
 
-    <!-- Structured data: identifies the site as Rodrigo Lago's personal
-         portfolio so search engines surface richer results. -->
-    <script type="application/ld+json" set:html={JSON.stringify({
-      '@context': 'https://schema.org',
-      '@type': 'Person',
-      name: site.name,
-      jobTitle: site.role,
-      description,
-      url: url.origin,
-      email: contact.mailto,
-      address: {
-        '@type': 'PostalAddress',
-        addressLocality: site.location.city,
-        addressCountry: site.location.country,
-      },
-      sameAs: [social.linkedin.url, social.github.url],
-    })} />
+    <!-- Structured data: Person + WebSite schemas, linked by @id so search
+         engines treat them as a single knowledge-graph entity. -->
+    <script type="application/ld+json" set:html={JSON.stringify(personSchema)} />
+    <script type="application/ld+json" set:html={JSON.stringify(websiteSchema)} />
 
     <!-- Theme init: runs before first paint to avoid flash -->
     <script is:inline>
