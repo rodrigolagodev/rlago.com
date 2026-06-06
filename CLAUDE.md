@@ -164,7 +164,7 @@ All spacing tokens are fluid `clamp()` values. Always use `--sp-*` tokens, never
 - **Role**: UX Engineer
 - **Location**: Mar del Plata, Buenos Aires, Argentina
 - **Language**: English (`<html lang="en">`)
-- **Email**: rodrigo.n.lago@gmail.com
+- **Email**: hi@rlago.com
 - **LinkedIn**: linkedin.com/in/rnlago (handle displayed: `rodrigolago`)
 - **GitHub**: github.com/rodrigolagodev
 - **Site URL**: https://rlago.com

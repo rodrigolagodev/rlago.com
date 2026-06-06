@@ -38,8 +38,8 @@ export const site = {
 } as const;
 
 export const contact = {
-  email: 'rodrigo.n.lago@gmail.com',
-  mailto: 'mailto:rodrigo.n.lago@gmail.com',
+  email: 'hi@rlago.com',
+  mailto: 'mailto:hi@rlago.com',
 } as const;
 
 export const social = {
