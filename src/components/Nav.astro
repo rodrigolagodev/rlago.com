@@ -282,7 +282,7 @@ import nav from '../content/nav.json';
         : 0;
       progress.style.setProperty('--progress', String(ratio));
     };
-    update();
+    requestAnimationFrame(update);
     window.addEventListener('scroll', update, { passive: true });
     window.addEventListener('resize', update, { passive: true });
     if (reduced) {

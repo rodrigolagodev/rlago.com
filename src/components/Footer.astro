@@ -417,7 +417,7 @@ const copyright = footer.copyrightTemplate
     };
     window.addEventListener('scroll', onScroll, { passive: true });
     window.addEventListener('resize', onScroll, { passive: true });
-    updateParallax();
+    requestAnimationFrame(updateParallax);
 
     startStarSpin(star);
   }

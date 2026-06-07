@@ -30,7 +30,7 @@ export function initPageScrim(): void {
   const init = () => {
     heroScrim = document.querySelector<HTMLElement>('#page-scrim');
     marqueeEl = document.querySelector<HTMLElement>('.marquee');
-    update();
+    requestAnimationFrame(update);
   };
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', init);

@@ -57,7 +57,7 @@ const showIcon = rightIcon !== 'none';
     /* Slow tonal fade between ink and muted-ink — reads as a soft
        titillation; never goes dim enough to disappear. No size change. */
     animation: section-meta-dot-tint 3.2s ease-in-out infinite;
-    will-change: background-color;
+    will-change: opacity;
   }
 
   @keyframes section-meta-dot-tint {
@@ -134,7 +134,7 @@ const showIcon = rightIcon !== 'none';
         if (raf) return;
         raf = requestAnimationFrame(update);
       };
-      update();
+      requestAnimationFrame(update);
       window.addEventListener('scroll', onScroll, { passive: true });
       window.addEventListener('resize', onScroll, { passive: true });
       // Lenis emits native scroll events, but on first paint scrollY may
