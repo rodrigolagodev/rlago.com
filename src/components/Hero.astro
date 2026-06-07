@@ -276,12 +276,11 @@ import hero from '../content/hero.json';
   // because it uses the kinetic subclass.
   const wrapper = document.querySelector<HTMLElement>('.hero__role');
   const canvas = document.getElementById('hero-role-canvas') as HTMLCanvasElement | null;
-  const heroSection = document.querySelector<HTMLElement>('.hero');
   const isMobileLike = window.matchMedia(
     '(hover: none), (pointer: coarse), (max-width: 768px)'
   ).matches;
-  if (wrapper && canvas && heroSection && !isMobileLike) {
-    const effect = new HeroKineticEffect(wrapper, canvas, heroSection);
+  if (wrapper && canvas && !isMobileLike) {
+    const effect = new HeroKineticEffect(wrapper, canvas);
     effect.start();
   }
 

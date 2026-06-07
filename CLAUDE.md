@@ -147,7 +147,8 @@ All spacing tokens are fluid `clamp()` values. Always use `--sp-*` tokens, never
 | `StarSpin.ts` | RAF-driven star rotation with scroll-velocity boost |
 | `PixelDrift.ts` | Pixelated bg drift factory (Hero bg + FAQ row glow) |
 | `TextDistortion.ts` | WebGL water-distortion overlay on selected text |
-| `HeroKineticEffect.ts` | Hero-specific subclass — scroll-driven horizontal stretch |
+| `KineticTextEffect.ts` | Reusable subclass — progress-driven horizontal glyph stretch; configurable `align` + `fitToWidth`, pluggable progress strategies (`stickyScrollProgress`, `settleAtBottomProgress`) + `kineticLine()` helper. Currently used by Hero |
+| `HeroKineticEffect.ts` | Hero config of `KineticTextEffect` (sticky-scroll progress) |
 | `ScrambleHover.ts` | Split-flap-style hover effect on links |
 
 ## Animations & motion

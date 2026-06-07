@@ -263,11 +263,13 @@ const websiteSchema = {
   import { initReveal, setupMaskReveals } from '../scripts/Reveal';
   import { initGrain } from '../scripts/GrainCanvas';
   import { initCustomCursor } from '../scripts/CustomCursor';
+  import { initConsoleGreeting } from '../scripts/ConsoleGreeting';
 
   initSmoothScroll();
   initPageScrim();
   initGrain();
   initCustomCursor();
+  initConsoleGreeting();
 
   import('../scripts/TextDistortion').then(({ initTextDistortions }) => {
     initTextDistortions();
