@@ -1,0 +1,83 @@
+# Rodrigo Lago — UX Engineer
+
+Full site content for https://rlago.com.
+
+---
+
+## About
+
+Hey, I'm **Rodrigo**. I'm a **UX Engineer**. I build interfaces for SaaS products, e-commerce, whatever the project needs. Day to day, I work alongside **designers and developers** — turning concepts into **interfaces that actually ship**. I've been doing this for a while now, across different teams, products, and industries. The common thread? Making things that work for **real people**. I'm **open to remote opportunities**.
+
+## Works
+
+### Sando Design System (2026)
+
+**Category**: Design System
+**Role**: Creator & Lead Developer
+**URL**: https://github.com/rodrigolagodev/SandoDesignSystem
+
+A three-layer token architecture — Ingredients, Flavors, Recipes — that brings the same rigor to UI as a crafted Japanese katsu sando. Framework-agnostic Web Components (Lit 3), WCAG 2.1 AA by default, multi-theme out of the box. The monorepo (Turborepo + pnpm) ships with 7 AI agents that scaffold, test, document, and maintain components autonomously.
+
+**Tech stack**: Lit 3, TypeScript, Turborepo, pnpm, Style Dictionary, Storybook, VitePress, Vitest, Playwright
+
+### Stack Overflow Teams MCP (2025)
+
+**Category**: Developer Tooling
+**Role**: Creator & Lead Developer
+**URL**: https://github.com/rodrigolagodev/StackOverflowTeams-MCP
+
+An MCP server that plugs your Stack Overflow for Teams knowledge base directly into Copilot, Claude, and any MCP-compatible IDE. 21 tools across search, discovery, articles, and personal queries — with smart caching, exponential-backoff retries, structured logging, and real-time health metrics.
+
+**Tech stack**: TypeScript, Node.js, MCP SDK, Vitest, GitHub Actions
+
+## FAQ
+
+### What tools and technologies do you use day to day?
+
+React, TypeScript, HTML, SCSS, vanilla JavaScript, Figma, design systems, Playwright, Vitest, GSAP. I pick what fits the project — the goal is shipping quality interfaces, not ticking boxes on a tech stack.
+
+### How do you use AI in your workflow?
+
+Across several layers. I generate UI components from written specs — consistent, editable, no manual repetition. I automate repetitive workflows: pipelines, code generation, documentation. I use AI to maintain design token systems and audit UI consistency across surfaces. And at the team level, I analyze processes to find where AI can reduce friction. The goal is not to replace the work, but to remove the overhead.
+
+### Which AI tools do you use day to day?
+
+Claude, Gemini, and GitHub Copilot are my daily drivers. But I also build my own tools — custom MCP servers, tailored workflows for specific use cases, and automation pipelines that connect AI output directly into production code. The real leverage is not the tool itself, but how you configure it for your context.
+
+### How do you collaborate with designers, developers, and stakeholders?
+
+I sit at the intersection of design and engineering — translating concepts into production code while feeding technical insight back into the design process. It is a continuous dialogue, not a handoff.
+
+### What kind of products and industries have you worked in?
+
+B2B SaaS, e-commerce, and end-user products across different verticals — mostly with US-based clients. The common thread is interfaces where people need to get things done efficiently.
+
+### What's your experience with remote work?
+
+Years working remotely with teams across the US and Latin America. Async communication, timezone management, remote-first tools — it is how I work every day and I am comfortable with it.
+
+### What size teams have you worked with?
+
+Cross-functional teams of various sizes — from small squads to larger product orgs. I am used to collaborating closely with designers, product managers, and engineers in the same cycle.
+
+### What's your English level?
+
+Professional proficiency. I have daily conversations with US-based clients, write technical documentation, and participate in product meetings in English.
+
+### Are you available for freelance or contract work?
+
+I am open to remote opportunities. Comfortable working across time zones and with asynchronous collaboration.
+
+### How can I reach you?
+
+Reach out through LinkedIn (https://linkedin.com/in/rnlago) or use the contact link — hi@rlago.com.
+
+## Contact
+
+- **Email**: hi@rlago.com
+- **LinkedIn**: https://linkedin.com/in/rnlago
+- **GitHub**: https://github.com/rodrigolagodev
+
+---
+
+Built with Astro 6, TypeScript, pure CSS, vanilla JS. Self-hosted fonts. Deployed to Cloudflare Workers.

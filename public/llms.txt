@@ -1,0 +1,33 @@
+# Rodrigo Lago — UX Engineer
+
+> Building refined digital products at the intersection of design and code.
+
+## About
+
+Rodrigo Lago is a UX Engineer based in Mar del Plata, Buenos Aires, Argentina. He builds interfaces for SaaS products and e-commerce, working alongside designers and developers to ship interfaces that work for real people. Open to remote opportunities.
+
+- **Location**: Mar del Plata, Buenos Aires, Argentina
+- **Email**: hi@rlago.com
+- **LinkedIn**: https://linkedin.com/in/rnlago
+- **GitHub**: https://github.com/rodrigolagodev
+- **Full site**: https://rlago.com
+
+## Known for
+
+- User Experience Design
+- Front End Engineering
+- Design Systems
+- TypeScript, React, Astro, Web Components
+- Accessibility (WCAG 2.1)
+- AI Tooling & MCP
+
+## Key pages
+
+- [Full content](/llms-full.txt) — complete site content in markdown
+- [Works](/llms-full.txt#works) — project portfolio
+- [FAQ](/llms-full.txt#faq) — tools, process, availability
+- [Contact](mailto:hi@rlago.com)
+
+## Stack used on this site
+
+Astro 6, TypeScript, pure CSS, vanilla JS (no React, no Tailwind). Self-hosted fonts via Fontsource. Deployed to Cloudflare Workers.

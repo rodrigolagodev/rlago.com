@@ -1,15 +1,32 @@
 ---
 import WorkCard from './WorkCard.astro';
 import SectionMeta from './SectionMeta.astro';
-import { fillTokens } from '../config/site';
+import { fillTokens, social } from '../config/site';
 import works from '../content/works.json';
 
 const projects = works.projects;
 const projectCount = String(projects.length).padStart(2, '0');
 const metaRightLabel = works.metaRightLabelTemplate.replace('{count}', projectCount);
+
+const stripTags = (s: string) => s.replace(/<[^>]+>/g, '');
+const projectSchemas = projects.map((p) => ({
+  '@context': 'https://schema.org',
+  '@type': 'SoftwareSourceCode',
+  name: p.title,
+  description: stripTags(p.description),
+  url: p.href,
+  author: { '@type': 'Person', name: 'Rodrigo Lago', url: 'https://rlago.com' },
+  codeRepository: p.href,
+  programmingLanguage: p.techStack.map((t) => t.name),
+  datePublished: p.year,
+  applicationCategory: p.category,
+}));
 ---
 
 <section class="works" id="works" aria-label={works.ariaLabel}>
+  {projectSchemas.map((schema) => (
+    <script type="application/ld+json" set:html={JSON.stringify(schema)} />
+  ))}
   <div class="works__wrapper container">
 
     <SectionMeta index={works.metaIndex} rightLabel={metaRightLabel} rightIcon="asterisk" />
