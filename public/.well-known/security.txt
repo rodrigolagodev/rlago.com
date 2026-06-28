@@ -1,0 +1,4 @@
+Contact: mailto:hi@rlago.com
+Expires: 2027-06-28T00:00:00.000Z
+Preferred-Languages: en, es
+Canonical: https://rlago.com/.well-known/security.txt
