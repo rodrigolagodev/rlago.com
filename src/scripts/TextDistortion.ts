@@ -61,15 +61,17 @@ class WaterTexture {
     this.points.push({ x: point.x, y: point.y, age: 0, force, vx, vy });
   }
 
-  update() {
+  // `scale` is dt normalised to 60 Hz frames — so a ripple's lifetime stays
+  // ~833 ms whether the monitor is 60, 120 or 144 Hz.
+  update(scale: number) {
     this.clear();
     const agePart = 1 / this.maxAge;
     this.points = this.points.filter((p) => {
       const slow = 1 - p.age / this.maxAge;
       const f = p.force * agePart * slow;
-      p.x += p.vx * f;
-      p.y += p.vy * f;
-      p.age += 1;
+      p.x += p.vx * f * scale;
+      p.y += p.vy * f * scale;
+      p.age += scale;
       return p.age <= this.maxAge;
     });
     this.points.forEach((p) => this.drawPoint(p));
@@ -209,6 +211,7 @@ export class TextDistortion {
   private glWaterTex: WebGLTexture;
 
   private rafId: number | null = null;
+  private prevT = 0;
   protected isVisible = false;
   private resizeObserver: ResizeObserver;
   private themeObserver: MutationObserver;
@@ -309,6 +312,7 @@ export class TextDistortion {
     const wasVisible = this.isVisible;
     this.isVisible = entries[0].isIntersecting;
     if (this.isVisible && !wasVisible && this.rafId === null) {
+      this.prevT = 0;
       this.rafId = requestAnimationFrame(this.tick);
     }
   }
@@ -430,9 +434,13 @@ export class TextDistortion {
     gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, source);
   }
 
-  private tick() {
+  private tick(now: number) {
+    if (this.prevT === 0) this.prevT = now;
+    const scale = Math.min(4, ((now - this.prevT) / 1000) * 60);
+    this.prevT = now;
+
     this.beforeRender();
-    this.waterTexture.update();
+    this.waterTexture.update(scale);
 
     const gl = this.gl;
     if (this.textTexture.needsUpdate && this.textCanvas.width > 0) {

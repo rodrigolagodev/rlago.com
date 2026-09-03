@@ -84,6 +84,7 @@ export function makePixelDrift(
 
   let rafId = 0;
   let running = false;
+  let prevT = 0;
 
   const paint = () => {
     ctx!.clearRect(0, 0, PIXEL_W, PIXEL_H);
@@ -98,21 +99,29 @@ export function makePixelDrift(
 
   const step = (t: number) => {
     if (!running) return;
+    // Physics constants below are calibrated for 60 Hz. Scale by dt so the
+    // motion is identical on 120 Hz+ displays instead of being over-damped.
+    // Clamp guards against huge dt after tab-switch / dev-tools pauses.
+    if (prevT === 0) prevT = t;
+    const scale = Math.min(4, ((t - prevT) / 1000) * 60);
+    prevT = t;
+
     if (t >= nextRetargetAt) {
       pickTarget();
       nextRetargetAt =
         t + TARGET_INTERVAL_MIN +
         Math.random() * (TARGET_INTERVAL_MAX - TARGET_INTERVAL_MIN);
     }
-    vx += (targetX - dx) * CHASE;
-    vy += (targetY - dy) * CHASE;
+    vx += (targetX - dx) * CHASE * scale;
+    vy += (targetY - dy) * CHASE * scale;
     const angle = Math.random() * Math.PI * 2;
-    vx += Math.cos(angle) * JITTER;
-    vy += Math.sin(angle) * JITTER;
-    vx *= DAMPING;
-    vy *= DAMPING;
-    dx += vx;
-    dy += vy;
+    vx += Math.cos(angle) * JITTER * scale;
+    vy += Math.sin(angle) * JITTER * scale;
+    const damp = Math.pow(DAMPING, scale);
+    vx *= damp;
+    vy *= damp;
+    dx += vx * scale;
+    dy += vy * scale;
     if (dx > MAX_DX) { dx = MAX_DX; vx = -Math.abs(vx) * 0.3; }
     else if (dx < -MAX_DX) { dx = -MAX_DX; vx = Math.abs(vx) * 0.3; }
     if (dy > MAX_DY) { dy = MAX_DY; vy = -Math.abs(vy) * 0.3; }
@@ -125,6 +134,7 @@ export function makePixelDrift(
     start() {
       if (running) return;
       running = true;
+      prevT = 0;
       recomputeDims();
       rafId = requestAnimationFrame(step);
     },

@@ -10,12 +10,13 @@ export function initGrain(): void {
     canvas.height = window.innerHeight;
   };
 
-  // Repaint every 3rd RAF frame — enough to read as flicker without
-  // burning the CPU at full 60Hz.
-  let frame = 0;
-  const draw = () => {
-    frame++;
-    if (frame % 3 === 0) {
+  // Time-based repaint — ~20 Hz regardless of monitor refresh rate.
+  // Reads as flicker without burning CPU on 120 Hz+ displays.
+  const REPAINT_INTERVAL_MS = 1000 / 20;
+  let lastPaint = 0;
+  const draw = (now: number) => {
+    if (now - lastPaint >= REPAINT_INTERVAL_MS) {
+      lastPaint = now;
       const { width, height } = canvas;
       const imageData = ctx.createImageData(width, height);
       const data = imageData.data;
@@ -32,6 +33,6 @@ export function initGrain(): void {
   };
 
   resize();
-  draw();
+  requestAnimationFrame(draw);
   window.addEventListener('resize', resize);
 }
