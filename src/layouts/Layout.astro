@@ -149,9 +149,13 @@ const websiteSchema = {
     width: 32px;
     height: 32px;
     border-radius: 50%;
-    background: #fff;
+    background: transparent;
     pointer-events: none;
-    mix-blend-mode: difference;
+    /* Localised inversion — same visual as mix-blend-mode: difference on
+       a white fill, but only samples the pixels under the cursor's box
+       instead of forcing the whole viewport into an isolation group. */
+    backdrop-filter: invert(1);
+    -webkit-backdrop-filter: invert(1);
     z-index: 9999;
     transform: translate(var(--cx, -100px), var(--cy, -100px)) translate(-50%, -50%);
     transition: width 280ms cubic-bezier(0.2, 0.8, 0.2, 1),
