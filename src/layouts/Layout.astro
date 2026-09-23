@@ -111,8 +111,8 @@ const websiteSchema = {
     <a href="#main-content" class="skip-link">Skip to content</a>
     <div id="page-scrim" aria-hidden="true"></div>
     <slot />
-    <canvas id="grain-canvas" aria-hidden="true"></canvas>
     <div id="cursor" class="cursor" aria-hidden="true"></div>
+    <div id="grain-layer" aria-hidden="true"></div>
   </body>
 </html>
 
@@ -132,14 +132,51 @@ const websiteSchema = {
     will-change: opacity;
   }
 
-  #grain-canvas {
+  /* One noise tile, repeated, on a layer that is rasterised once and then
+     only ever transformed — so the grain costs nothing per frame at any
+     resolution. Sized past the viewport on every side so the stepped
+     transform never exposes an edge.
+
+     Stacked ABOVE the cursor on purpose: `backdrop-filter` has to re-read
+     whatever paints beneath it, so a full-screen layer changing 20 times a
+     second was dragging the cursor's filter along with it. */
+  #grain-layer {
     position: fixed;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    z-index: 500;
+    top: -25%;
+    left: -25%;
+    width: 150%;
+    height: 150%;
+    z-index: 10000;
     pointer-events: none;
+    opacity: 0;
+    background-repeat: repeat;
+    will-change: transform;
+    contain: strict;
+  }
+
+  #grain-layer.is-grain-ready {
     opacity: 0.04;
+    animation: grain-shift 500ms steps(1, end) infinite;
+  }
+
+  /* Ten stops across 500ms — the same 20 changes a second the canvas
+     repaint produced, as a compositor-only transform. Offsets stay well
+     inside the 25% margin the layer carries on each side. */
+  @keyframes grain-shift {
+    0%   { transform: translate3d(0, 0, 0); }
+    10%  { transform: translate3d(-6%, -3%, 0); }
+    20%  { transform: translate3d(4%, -7%, 0); }
+    30%  { transform: translate3d(-8%, 5%, 0); }
+    40%  { transform: translate3d(7%, 2%, 0); }
+    50%  { transform: translate3d(-3%, -8%, 0); }
+    60%  { transform: translate3d(8%, 6%, 0); }
+    70%  { transform: translate3d(-5%, -2%, 0); }
+    80%  { transform: translate3d(2%, 8%, 0); }
+    90%  { transform: translate3d(-7%, 4%, 0); }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    #grain-layer { animation: none; }
   }
 
   .cursor {
@@ -151,9 +188,11 @@ const websiteSchema = {
     border-radius: 50%;
     background: transparent;
     pointer-events: none;
-    /* Localised inversion — same visual as mix-blend-mode: difference on
-       a white fill, but only samples the pixels under the cursor's box
-       instead of forcing the whole viewport into an isolation group. */
+    /* Inversion of whatever sits under the cursor. The filter only READS
+       the pixels inside the cursor's box, but the compositor still has to
+       keep everything painted below it available to sample — so anything
+       changing down there re-runs the filter. That is why the grain layer
+       is stacked OVER the cursor rather than under it. */
     backdrop-filter: invert(1);
     -webkit-backdrop-filter: invert(1);
     z-index: 9999;

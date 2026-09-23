@@ -142,8 +142,8 @@ All spacing tokens are fluid `clamp()` values. Always use `--sp-*` tokens, never
 | `DriftTexture.ts` | Shared, downscaled source image for every `PixelDrift` |
 | `PageScrim.ts` | Scroll-driven dark overlay between hero and overlay content |
 | `Reveal.ts` | `[data-reveal]` + mask-reveal + line-draw IO fallbacks |
-| `GrainCanvas.ts` | Animated film grain |
-| `CustomCursor.ts` | Mix-blend-difference cursor |
+| `GrainCanvas.ts` | Bakes one noise tile; CSS tiles it and steps a transform. No per-frame work |
+| `CustomCursor.ts` | Inverting cursor (`backdrop-filter`), RAF-coalesced hit testing |
 | `FitText.ts` | Canvas + DOM helpers to size headings to container width |
 | `StarSpin.ts` | RAF-driven star rotation with scroll-velocity boost |
 | `PixelDrift.ts` | Pixelated bg drift factory (Hero bg + FAQ row glow) |
@@ -182,6 +182,7 @@ Site identity, contact, and social handles are centralised in `src/config/site.t
 - New design tokens go in `tokens.css`, not inline
 - Copy lives in `src/content/*.json` — components import it via static `import`
 - One vanilla-TS module per concern in `src/scripts/`
+- Anything full-screen that changes every frame is a resolution-scaling trap: a viewport-sized canvas repaint re-uploads megabytes to the compositor per tick. Prefer a layer that is rasterised once and only transformed
 - Semantic HTML + ARIA required — do not regress accessibility (skip-link, focus-visible, aria-pressed on theme toggle, `aria-labelledby`/`aria-label` on sections)
 - Sections use `id` for anchor nav: `#about`, `#works`, `#faq`, `#contact`
 - `set:html` is used in About/FAQ for inline `<strong>` and `<a>` — source is the JSON files we own; **do not** wire this to an untrusted CMS without sanitising
