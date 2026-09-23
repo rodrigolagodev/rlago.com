@@ -190,6 +190,8 @@ Site identity, contact, and social handles are centralised in `src/config/site.t
 - Never measure the DOM inside a frame loop (`getBoundingClientRect`, `getComputedStyle`, `measureText`). Cache on resize and theme change instead — `TextDistortion` shows the pattern
 - Assigning `canvas.width`/`height` reallocates and zero-fills the backing store even when the value is unchanged. Guard every assignment with a size comparison
 - Never set `UNPACK_FLIP_Y_WEBGL`. It forces a full-image CPU pass on every upload; flip in the vertex shader, which is free
+- Never put a CSS `filter` on a full-size element whose contents change every frame. For the pixelated drift canvases the filter functions are per-pixel and the upscale is nearest-neighbour, so `PixelDrift`'s `filter` option applies them to the 12px source instead — same picture, a few hundred pixels instead of two million
+- `IntersectionObserver` does not gate a `position: sticky` element. The Hero never stops intersecting; the next section just covers it. Gate on the cover's top edge instead — see `pauseWhenCovered` in Hero.astro
 - Semantic HTML + ARIA required — do not regress accessibility (skip-link, focus-visible, aria-pressed on theme toggle, `aria-labelledby`/`aria-label` on sections)
 - Sections use `id` for anchor nav: `#about`, `#works`, `#faq`, `#contact`
 - `set:html` is used in About/FAQ for inline `<strong>` and `<a>` — source is the JSON files we own; **do not** wire this to an untrusted CMS without sanitising
