@@ -192,6 +192,9 @@ Site identity, contact, and social handles are centralised in `src/config/site.t
 - Never set `UNPACK_FLIP_Y_WEBGL`. It forces a full-image CPU pass on every upload; flip in the vertex shader, which is free
 - Never put a CSS `filter` on a full-size element whose contents change every frame. For the pixelated drift canvases the filter functions are per-pixel and the upscale is nearest-neighbour, so `PixelDrift`'s `filter` option applies them to the 12px source instead — same picture, a few hundred pixels instead of two million
 - `IntersectionObserver` does not gate a `position: sticky` element. The Hero never stops intersecting; the next section just covers it. Gate on the cover's top edge instead — see `pauseWhenCovered` in Hero.astro
+- Flat-coloured canvas textures upload as `GL_ALPHA`, not `GL_RGBA`, with the colour passed as a uniform. Three quarters of the bytes in an RGBA upload of single-colour text are a constant
+- Per-frame cost has to fit the DISPLAY's frame, not 16.7 ms. A 165 Hz monitor allows 6 ms. Anything that scales with viewport area needs a rate limit of its own — see `MIN_TEXT_FRAME_MS` in KineticTextEffect.ts
+- Measure with vsync off (`--disable-gpu-vsync --disable-frame-rate-limit`) and read the 95th-percentile frame time. Frame counts under vsync only tell you whether it hit 60, not how much headroom is left
 - Semantic HTML + ARIA required — do not regress accessibility (skip-link, focus-visible, aria-pressed on theme toggle, `aria-labelledby`/`aria-label` on sections)
 - Sections use `id` for anchor nav: `#about`, `#works`, `#faq`, `#contact`
 - `set:html` is used in About/FAQ for inline `<strong>` and `<a>` — source is the JSON files we own; **do not** wire this to an untrusted CMS without sanitising
