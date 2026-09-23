@@ -244,6 +244,65 @@ export class TextDistortion {
   /** True while the last frame still had live ripples, so the frame that
       drains the final point still gets drawn once. */
   private hadRipples = false;
+
+  /* ── Self-tuning render budget ──────────────────────────────────────────
+     The frame budget is the DISPLAY's, not 16.7ms: a 144 Hz monitor allows
+     6.9ms and a 165 Hz one 6.1ms. What a text render costs depends on the
+     viewport and on the GPU. Guessing either gives the wrong answer on
+     somebody's machine, so measure both and re-render only as often as the
+     pair actually allows. */
+
+  /** Shortest recent gap between frames, i.e. the display's vsync period. */
+  private frameIntervalMs = 16.7;
+  /** Smoothed cost of one full render, measured on the main thread. */
+  private renderCostMs = 0;
+  /** Never back off past this — 30 Hz is the floor for a visual deformation. */
+  private static readonly MAX_RENDER_INTERVAL_MS = 33;
+  /** Never render more often than this, whatever the measurement says.
+   *
+   * The cost measured below is main-thread time. If a machine is instead
+   * GPU-bound the draw call returns before the work is done, the measurement
+   * reads low, and the controller would happily ask for 144 rasters a second
+   * on a display that cannot absorb them. Sitting just under a 60 Hz frame
+   * keeps 60 Hz displays rendering every frame, while capping 120 Hz and
+   * above at roughly 60-80 — far past the point where a deformation on a
+   * sticky element reads as smooth. */
+  private static readonly MIN_RENDER_INTERVAL_MS = 11;
+  /** Subclasses gate their re-render on this. */
+  protected minRenderIntervalMs = 0;
+
+  private observeFrameInterval(delta: number) {
+    if (delta <= 0.5) return;
+    // Take any shorter gap at once (that is the true vsync period) but drift
+    // back up slowly, so swapping to a slower monitor is still picked up.
+    const next =
+      delta < this.frameIntervalMs ? delta : Math.min(this.frameIntervalMs * 1.002, 20);
+    // Clamped to the range real displays actually live in: 240 Hz to 50 Hz.
+    // Without a floor, a browser running rAF unthrottled reports a frame
+    // interval no monitor has and the alignment below becomes meaningless.
+    this.frameIntervalMs = Math.min(20, Math.max(4, next));
+  }
+
+  private observeRenderCost(cost: number) {
+    // Rise fast, fall slow: one cheap frame should not undo a backoff.
+    this.renderCostMs =
+      cost > this.renderCostMs ? cost : this.renderCostMs * 0.95 + cost * 0.05;
+    // Round up to a whole number of display frames rather than some fraction,
+    // so renders land on vsync boundaries instead of beating against them.
+    // A render that already fits its frame is left completely alone.
+    const framesNeeded = Math.max(
+      1,
+      Math.ceil((this.renderCostMs * 1.15) / this.frameIntervalMs),
+    );
+    this.minRenderIntervalMs = Math.min(
+      TextDistortion.MAX_RENDER_INTERVAL_MS,
+      Math.max(
+        TextDistortion.MIN_RENDER_INTERVAL_MS,
+        // Shaded under the boundary so the gate reliably opens on that frame.
+        framesNeeded * this.frameIntervalMs - 1,
+      ),
+    );
+  }
   /** Set by callers that know the element is covered. The IntersectionObserver
       cannot work this out on its own for a sticky element: the Hero keeps
       intersecting the viewport the whole time the next section slides over
@@ -538,9 +597,12 @@ export class TextDistortion {
       return;
     }
     if (this.prevT === 0) this.prevT = now;
-    const scale = Math.min(4, ((now - this.prevT) / 1000) * 60);
+    const delta = now - this.prevT;
+    const scale = Math.min(4, (delta / 1000) * 60);
     this.prevT = now;
+    this.observeFrameInterval(delta);
 
+    const startedAt = performance.now();
     this.beforeRender(now);
 
     // Ripples only exist while the pointer is moving over this element. With
@@ -588,6 +650,10 @@ export class TextDistortion {
     gl.enableVertexAttribArray(this.positionLoc);
     gl.vertexAttribPointer(this.positionLoc, 2, gl.FLOAT, false, 0, 0);
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+
+    // Only the CPU side of this is captured, which is the part that overruns
+    // a frame: the raster, and the readback/convert inside the upload.
+    this.observeRenderCost(performance.now() - startedAt);
 
     this.rafId = this.isVisible ? requestAnimationFrame(this.tick) : null;
   }

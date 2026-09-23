@@ -31,18 +31,19 @@ export interface KineticTextConfig {
 
 const DEFAULT_LETTER_SCALE_MAX = 6;
 
-/** Minimum gap between text rasters, in ms.
- *
- * Rasterising the text and pushing it to the GPU is the most expensive thing
- * in the Hero and it scales with viewport area, so on a 144 or 165 Hz display
- * there is simply no budget for it on every frame. There is also no need: the
- * Hero is `position: sticky`, so nothing around the text moves for a slightly
- * coarser deformation to judder against, and the mouse ripple keeps running
- * at full display rate because its texture is 128px square.
- *
- * Sitting just under a 60 Hz frame leaves 60 Hz displays completely
- * untouched, and naturally halves 120 Hz and thirds 165 Hz. */
-const MIN_TEXT_FRAME_MS = 13;
+/* Rasterising the stretched text and pushing it to the GPU is the most
+   expensive thing in the Hero, and it scales with viewport area. On a 144 Hz
+   display a frame is 6.9ms, so on a large monitor there is no budget for it
+   every frame — while on a 60 Hz laptop there is room to spare.
+   `minRenderIntervalMs` comes from the base class, which measures both the
+   display's frame interval and what a render actually costs on this machine,
+   so the rate lands where the hardware allows instead of on a constant
+   somebody guessed.
+
+   Skipping is invisible here for the same reason it is affordable: the Hero
+   is `position: sticky`, so nothing around the text moves for a coarser
+   deformation to judder against. The mouse ripple is never capped — its
+   texture is 128px square. */
 
 // ── Progress strategies ─────────────────────────────────────────────────
 
@@ -184,7 +185,7 @@ export class KineticTextEffect extends TextDistortion {
   protected beforeRender(now: number) {
     this.updateProgress();
     if (Math.abs(this.progress - this.lastRenderedProgress) <= 0.001) return;
-    if (now - this.lastTextRenderAt < MIN_TEXT_FRAME_MS) return;
+    if (now - this.lastTextRenderAt < this.minRenderIntervalMs) return;
     this.lastTextRenderAt = now;
     this.renderText();
     this.lastRenderedProgress = this.progress;
