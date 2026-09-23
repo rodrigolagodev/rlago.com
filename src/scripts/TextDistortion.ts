@@ -234,6 +234,11 @@ export class TextDistortion {
   /** True while the last frame still had live ripples, so the frame that
       drains the final point still gets drawn once. */
   private hadRipples = false;
+  /** Set by callers that know the element is covered. The IntersectionObserver
+      cannot work this out on its own for a sticky element: the Hero keeps
+      intersecting the viewport the whole time the next section slides over
+      the top of it. */
+  private suspended = false;
   private resizeObserver: ResizeObserver;
   private themeObserver: MutationObserver;
   private intersectionObserver: IntersectionObserver;
@@ -337,9 +342,25 @@ export class TextDistortion {
   private onIntersect(entries: IntersectionObserverEntry[]) {
     const wasVisible = this.isVisible;
     this.isVisible = entries[0].isIntersecting;
-    if (this.isVisible && !wasVisible && this.rafId === null) {
+    if (this.isVisible && !wasVisible) this.resume();
+  }
+
+  private resume() {
+    if (this.isVisible && !this.suspended && this.rafId === null) {
       this.prevT = 0;
       this.rafId = requestAnimationFrame(this.tick);
+    }
+  }
+
+  /** Pause every frame of work while the element is fully covered. */
+  setSuspended(value: boolean) {
+    if (this.suspended === value) return;
+    this.suspended = value;
+    if (value) {
+      if (this.rafId !== null) cancelAnimationFrame(this.rafId);
+      this.rafId = null;
+    } else {
+      this.resume();
     }
   }
 
@@ -495,6 +516,10 @@ export class TextDistortion {
   }
 
   private tick(now: number) {
+    if (this.suspended) {
+      this.rafId = null;
+      return;
+    }
     if (this.prevT === 0) this.prevT = now;
     const scale = Math.min(4, ((now - this.prevT) / 1000) * 60);
     this.prevT = now;
@@ -513,8 +538,7 @@ export class TextDistortion {
     this.hadRipples = hasRipples;
 
     if (!dirty) {
-      if (this.isVisible) this.rafId = requestAnimationFrame(this.tick);
-      else this.rafId = null;
+      this.rafId = this.isVisible ? requestAnimationFrame(this.tick) : null;
       return;
     }
 
@@ -543,11 +567,7 @@ export class TextDistortion {
     gl.vertexAttribPointer(this.positionLoc, 2, gl.FLOAT, false, 0, 0);
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
 
-    if (this.isVisible) {
-      this.rafId = requestAnimationFrame(this.tick);
-    } else {
-      this.rafId = null;
-    }
+    this.rafId = this.isVisible ? requestAnimationFrame(this.tick) : null;
   }
 }
 

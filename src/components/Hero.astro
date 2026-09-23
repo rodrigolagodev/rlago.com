@@ -264,6 +264,7 @@ import hero from '../content/hero.json';
   import { fitByCanvas } from '../scripts/FitText';
   import { makePixelDrift } from '../scripts/PixelDrift';
   import { loadDriftTexture } from '../scripts/DriftTexture';
+  import { onScrollFrame } from '../scripts/ScrollScheduler';
 
   const scrollBtn = document.getElementById('hero-scroll');
   if (scrollBtn) {
@@ -288,9 +289,16 @@ import hero from '../content/hero.json';
   const isMobileLike = window.matchMedia(
     '(hover: none), (pointer: coarse), (max-width: 768px)'
   ).matches;
+  // The Hero is `position: sticky`, so it never stops intersecting the
+  // viewport — the next section just slides over the top of it. Everything
+  // here keeps running, invisibly, right through the hand-off that costs the
+  // most. Pause it once the opaque cover reaches the top edge.
+  const pauseWhenCovered: Array<(covered: boolean) => void> = [];
+
   if (wrapper && canvas && !isMobileLike) {
     const effect = new HeroKineticEffect(wrapper, canvas);
     effect.start();
+    pauseWhenCovered.push((covered) => effect.setSuspended(covered));
   }
 
   const roleText = document.querySelector<HTMLElement>('.hero__role-text');
@@ -351,7 +359,20 @@ import hero from '../content/hero.json';
       } else {
         drift.start();
         window.addEventListener('resize', drift.resize, { passive: true });
+        pauseWhenCovered.push((covered) => (covered ? drift.stop() : drift.start()));
       }
+    });
+  }
+
+  const heroCover = document.querySelector<HTMLElement>('.hero-cover');
+  if (heroCover) {
+    onScrollFrame<boolean>({
+      // `.hero-cover` is opaque and stacks above the Hero, so once its top
+      // edge passes the viewport top the Hero is completely hidden.
+      read: () => heroCover.getBoundingClientRect().top <= 0,
+      write: (covered) => {
+        for (const pause of pauseWhenCovered) pause(covered);
+      },
     });
   }
 </script>
