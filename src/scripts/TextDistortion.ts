@@ -132,6 +132,7 @@ const FRAGMENT_SHADER = /* glsl */ `
   precision mediump float;
   uniform sampler2D uText;
   uniform sampler2D uWater;
+  uniform vec3 uColor;
   varying vec2 vUv;
 
   void main() {
@@ -147,7 +148,11 @@ const FRAGMENT_SHADER = /* glsl */ `
     // travelling exactly the way it did with a flipped upload.
     uv.y -= vy * intensity * maxAmp;
 
-    gl_FragColor = texture2D(uText, uv);
+    // uText carries alpha only. The text is drawn in a single flat colour,
+    // so the other three channels were three quarters of a multi-megabyte
+    // upload spent re-sending a constant. Premultiplied, to match blendFunc.
+    float a = texture2D(uText, uv).a;
+    gl_FragColor = vec4(uColor * a, a);
   }
 `;
 
@@ -213,6 +218,7 @@ export class TextDistortion {
   private positionLoc: number;
   private uTextLoc: WebGLUniformLocation;
   private uWaterLoc: WebGLUniformLocation;
+  private uColorLoc: WebGLUniformLocation;
   private glTextTex: WebGLTexture;
   private glWaterTex: WebGLTexture;
 
@@ -227,6 +233,10 @@ export class TextDistortion {
   /** Text colour, refreshed on theme change. `getComputedStyle` inside the
       frame loop forces a style recalc on every animated frame. */
   protected textColor = '#1F1C1D';
+  /** The same colour as 0..1 components, handed to the shader. The canvas
+      only carries alpha now, so the colour travels as three floats instead of
+      three full-size channels. */
+  protected textColorRgb: [number, number, number] = [0.122, 0.110, 0.114];
   /** Dimensions currently allocated on the GPU, so an unchanged frame can go
       through texSubImage2D instead of reallocating the texture. */
   private glTextDims = { w: 0, h: 0 };
@@ -270,6 +280,7 @@ export class TextDistortion {
     this.positionLoc = gl.getAttribLocation(this.program, 'a_position');
     this.uTextLoc = gl.getUniformLocation(this.program, 'uText')!;
     this.uWaterLoc = gl.getUniformLocation(this.program, 'uWater')!;
+    this.uColorLoc = gl.getUniformLocation(this.program, 'uColor')!;
 
     this.positionBuffer = gl.createBuffer()!;
     gl.bindBuffer(gl.ARRAY_BUFFER, this.positionBuffer);
@@ -292,7 +303,7 @@ export class TextDistortion {
 
     this.resizeObserver = new ResizeObserver(() => this.resize());
     this.themeObserver = new MutationObserver(() => {
-      this.textColor = readTextColor();
+      this.setTextColor(readTextColor());
       this.onMetricsInvalidated();
       this.renderText();
     });
@@ -316,7 +327,7 @@ export class TextDistortion {
     } catch {
       /* system font fallback */
     }
-    this.textColor = readTextColor();
+    this.setTextColor(readTextColor());
     this.resize();
     this.renderText();
     // Signal to CSS that the WebGL effect is live — global rule keys off
@@ -375,6 +386,11 @@ export class TextDistortion {
     this.canvas.height = Math.round(height * dpr);
     this.gl.viewport(0, 0, this.canvas.width, this.canvas.height);
     this.renderText();
+  }
+
+  private setTextColor(css: string) {
+    this.textColor = css;
+    this.textColorRgb = parseRgb(css) ?? this.textColorRgb;
   }
 
   /** Called whenever the box or the theme changed. Subclasses that cache font
@@ -497,6 +513,7 @@ export class TextDistortion {
     tex: WebGLTexture,
     source: HTMLCanvasElement,
     dims: { w: number; h: number },
+    format: number,
   ) {
     const gl = this.gl;
     gl.bindTexture(gl.TEXTURE_2D, tex);
@@ -507,9 +524,9 @@ export class TextDistortion {
     // texImage2D reallocates GPU storage every call. Once the size settles,
     // texSubImage2D writes into the existing allocation instead.
     if (dims.w === source.width && dims.h === source.height) {
-      gl.texSubImage2D(gl.TEXTURE_2D, 0, 0, 0, gl.RGBA, gl.UNSIGNED_BYTE, source);
+      gl.texSubImage2D(gl.TEXTURE_2D, 0, 0, 0, format, gl.UNSIGNED_BYTE, source);
     } else {
-      gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, source);
+      gl.texImage2D(gl.TEXTURE_2D, 0, format, format, gl.UNSIGNED_BYTE, source);
       dims.w = source.width;
       dims.h = source.height;
     }
@@ -544,10 +561,12 @@ export class TextDistortion {
 
     const gl = this.gl;
     if (this.textTexture.needsUpdate && this.textCanvas.width > 0) {
-      this.uploadTexture(this.glTextTex, this.textCanvas, this.glTextDims);
+      this.uploadTexture(this.glTextTex, this.textCanvas, this.glTextDims, gl.ALPHA);
       this.textTexture.needsUpdate = false;
     }
-    this.uploadTexture(this.glWaterTex, this.waterTexture.canvas, this.glWaterDims);
+    this.uploadTexture(
+      this.glWaterTex, this.waterTexture.canvas, this.glWaterDims, gl.RGBA,
+    );
 
     gl.clearColor(0, 0, 0, 0);
     gl.clear(gl.COLOR_BUFFER_BIT);
@@ -562,6 +581,9 @@ export class TextDistortion {
     gl.bindTexture(gl.TEXTURE_2D, this.glWaterTex);
     gl.uniform1i(this.uWaterLoc, 1);
 
+    const [r, g, b] = this.textColorRgb;
+    gl.uniform3f(this.uColorLoc, r, g, b);
+
     gl.bindBuffer(gl.ARRAY_BUFFER, this.positionBuffer);
     gl.enableVertexAttribArray(this.positionLoc);
     gl.vertexAttribPointer(this.positionLoc, 2, gl.FLOAT, false, 0, 0);
@@ -569,6 +591,14 @@ export class TextDistortion {
 
     this.rafId = this.isVisible ? requestAnimationFrame(this.tick) : null;
   }
+}
+
+/** getComputedStyle always resolves `color` to rgb()/rgba() with integer
+    channels, so this only has to handle that one shape. */
+function parseRgb(css: string): [number, number, number] | null {
+  const m = css.match(/-?[\d.]+/g);
+  if (!m || m.length < 3) return null;
+  return [Number(m[0]) / 255, Number(m[1]) / 255, Number(m[2]) / 255];
 }
 
 // `body` has `transition: color 350ms`, so reading its computed color
