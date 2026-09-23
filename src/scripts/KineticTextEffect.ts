@@ -5,7 +5,7 @@
 // are passed in as config, so the same effect powers both the Hero title
 // and the Footer question.
 
-import { TextDistortion, readTextColor } from './TextDistortion';
+import { TextDistortion } from './TextDistortion';
 
 export type KineticSegment = { text: string; kinetic?: boolean };
 export type KineticLine = KineticSegment[];
@@ -98,6 +98,11 @@ export function kineticLine(text: string, stretchIndices: number[]): KineticLine
 }
 
 // ── Effect ──────────────────────────────────────────────────────────────
+/** Per-segment text metrics at a given font. These depend only on the font,
+    never on the stretch progress, so they are measured once instead of on
+    every animated frame. */
+type SegMetrics = { width: number; abbLeft: number; abbRight: number };
+type FontMetrics = { ascent: number; descent: number; lines: SegMetrics[][] };
 
 export class KineticTextEffect extends TextDistortion {
   private readonly kineticLines: KineticLine[];
@@ -108,6 +113,12 @@ export class KineticTextEffect extends TextDistortion {
 
   private progress = 0;
   private lastRenderedProgress = -1;
+  // Font and metrics are read from the DOM, which is a style recalc and a set
+  // of text measurements. Doing that inside the frame loop is what made the
+  // Hero the most expensive thing on the page, so both are cached and dropped
+  // only when the box or the theme actually changes.
+  private fontCache: FontStyle | null = null;
+  private metricsCache: FontMetrics | null = null;
   // AbortController so the scroll listener can be torn down in one call —
   // a missed removeEventListener leaks the instance across HMR reloads.
   private abortController: AbortController | null = null;
@@ -142,6 +153,11 @@ export class KineticTextEffect extends TextDistortion {
     this.abortController = null;
   }
 
+  protected onMetricsInvalidated() {
+    this.fontCache = null;
+    this.metricsCache = null;
+  }
+
   private updateProgress() {
     this.progress = this.progressFn(this.container);
   }
@@ -156,56 +172,85 @@ export class KineticTextEffect extends TextDistortion {
     }
   }
 
+  private baseFont(height: number): FontStyle {
+    if (!this.fontCache) {
+      const textEl = this.container.querySelector<HTMLElement>(
+        '[data-text-distortion-text]',
+      );
+      // Read the text element's actual computed style so the effect matches
+      // whatever font/size/spacing the component renders — deriving size from
+      // container height drifts when line-height < intrinsic ascent+descent.
+      this.fontCache = readFontStyle(textEl, height, this.kineticLines.length);
+    }
+    return this.fontCache;
+  }
+
+  private baseMetrics(ctx: CanvasRenderingContext2D, font: FontStyle): FontMetrics {
+    if (!this.metricsCache) {
+      const sample = ctx.measureText('MgO');
+      this.metricsCache = {
+        ascent: sample.actualBoundingBoxAscent || font.size * 0.78,
+        descent: sample.actualBoundingBoxDescent || font.size * 0.05,
+        lines: this.kineticLines.map((segments) =>
+          segments.map((seg) => {
+            const m = ctx.measureText(seg.text);
+            return {
+              width: m.width,
+              abbLeft: m.actualBoundingBoxLeft || 0,
+              abbRight: m.actualBoundingBoxRight || m.width,
+            };
+          }),
+        ),
+      };
+    }
+    return this.metricsCache;
+  }
+
   protected renderText() {
-    const { width, height } = this.container.getBoundingClientRect();
+    const width = this.boxW;
+    const height = this.boxH;
     if (width === 0 || height === 0) return;
 
-    const dpr = this.dpr;
-    this.textCanvas.width = Math.round(width * dpr);
-    this.textCanvas.height = Math.round(height * dpr);
-    const ctx = this.textCanvas.getContext('2d')!;
-    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    ctx.clearRect(0, 0, width, height);
+    const ctx = this.prepareTextCanvas(width, height);
 
-    // Read the text element's actual computed style so the effect matches
-    // whatever font/size/spacing the component renders — deriving size from
-    // container height drifts when line-height < intrinsic ascent+descent.
-    const textEl = this.container.querySelector<HTMLElement>(
-      '[data-text-distortion-text]',
-    );
-    let font = readFontStyle(textEl, height, this.kineticLines.length);
+    let font = this.baseFont(height);
     applyFont(ctx, font);
+    let metrics = this.baseMetrics(ctx, font);
 
-    ctx.fillStyle = readTextColor();
+    ctx.fillStyle = this.textColor;
     ctx.textBaseline = 'alphabetic';
 
     const letterScale = 1 + this.progress * this.letterScaleMax;
 
     // Shrink the font so the widest stretched line fits the canvas, so
-    // elongating glyphs never clip past the edge. Spacing scales with size.
+    // elongating glyphs never clip past the edge. Spacing scales with size,
+    // and so do the metrics — advance widths are linear in font size — so the
+    // shrunken metrics are derived rather than re-measured.
     if (this.fitToWidth) {
       const widest = Math.max(
-        ...this.kineticLines.map((s) => segmentLineWidth(ctx, s, letterScale)),
+        ...this.kineticLines.map((segs, i) =>
+          lineAdvance(metrics.lines[i], segs, letterScale),
+        ),
       );
       if (widest > width) {
         const s = width / widest;
         font = { ...font, size: font.size * s, spacingPx: font.spacingPx * s };
         applyFont(ctx, font);
+        metrics = scaleMetrics(metrics, s);
       }
     }
 
-    const sample = ctx.measureText('MgO');
-    const ascent = sample.actualBoundingBoxAscent || font.size * 0.78;
-    const descent = sample.actualBoundingBoxDescent || font.size * 0.05;
-
     const lineSpacing = font.size * 0.85;
     const lineCount = this.kineticLines.length;
-    const stackHeight = ascent + (lineCount - 1) * lineSpacing + descent;
+    const stackHeight =
+      metrics.ascent + (lineCount - 1) * lineSpacing + metrics.descent;
     const stackTop = (height - stackHeight) / 2;
 
     this.kineticLines.forEach((segments, i) => {
-      const baselineY = stackTop + i * lineSpacing + ascent;
-      drawSegmentLine(ctx, segments, letterScale, this.align, width, baselineY);
+      const baselineY = stackTop + i * lineSpacing + metrics.ascent;
+      drawSegmentLine(
+        ctx, segments, metrics.lines[i], letterScale, this.align, width, baselineY,
+      );
     });
 
     this.textTexture.needsUpdate = true;
@@ -250,21 +295,37 @@ function applyFont(ctx: CanvasRenderingContext2D, font: FontStyle) {
 const scaleOf = (seg: KineticSegment, letterScale: number) =>
   seg.kinetic ? letterScale : 1;
 
+function scaleMetrics(m: FontMetrics, s: number): FontMetrics {
+  return {
+    ascent: m.ascent * s,
+    descent: m.descent * s,
+    lines: m.lines.map((line) =>
+      line.map((g) => ({
+        width: g.width * s,
+        abbLeft: g.abbLeft * s,
+        abbRight: g.abbRight * s,
+      })),
+    ),
+  };
+}
+
 /** Total advance width of a line at the given stretch. */
-function segmentLineWidth(
-  ctx: CanvasRenderingContext2D,
+function lineAdvance(
+  metrics: SegMetrics[],
   segments: KineticLine,
   letterScale: number,
 ): number {
-  return segments.reduce(
-    (sum, seg) => sum + ctx.measureText(seg.text).width * scaleOf(seg, letterScale),
-    0,
-  );
+  let sum = 0;
+  for (let i = 0; i < segments.length; i++) {
+    sum += metrics[i].width * scaleOf(segments[i], letterScale);
+  }
+  return sum;
 }
 
 function drawSegmentLine(
   ctx: CanvasRenderingContext2D,
   segments: KineticLine,
+  metrics: SegMetrics[],
   letterScale: number,
   align: 'left' | 'center',
   canvasWidth: number,
@@ -273,7 +334,7 @@ function drawSegmentLine(
   ctx.textAlign = 'left';
 
   const widths = segments.map(
-    (seg) => ctx.measureText(seg.text).width * scaleOf(seg, letterScale),
+    (seg, i) => metrics[i].width * scaleOf(seg, letterScale),
   );
   const total = widths.reduce((a, b) => a + b, 0);
 
@@ -290,11 +351,11 @@ function drawSegmentLine(
     // width — advance-based centring leaves the visible text shifted right.
     const firstSeg = segments[0];
     const lastSeg = segments[segments.length - 1];
-    const firstM = ctx.measureText(firstSeg.text);
-    const lastM = ctx.measureText(lastSeg.text);
-    const abbLeftFirst = (firstM.actualBoundingBoxLeft || 0) * scaleOf(firstSeg, letterScale);
+    const firstM = metrics[0];
+    const lastM = metrics[metrics.length - 1];
+    const abbLeftFirst = firstM.abbLeft * scaleOf(firstSeg, letterScale);
     const lastScale = scaleOf(lastSeg, letterScale);
-    const abbRightLast = (lastM.actualBoundingBoxRight || lastM.width) * lastScale;
+    const abbRightLast = lastM.abbRight * lastScale;
     const lastAdv = lastM.width * lastScale;
     const visualShift = (abbLeftFirst + lastAdv - abbRightLast) / 2;
     cursorX = canvasWidth / 2 - total / 2 + visualShift;

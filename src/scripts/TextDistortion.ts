@@ -119,7 +119,11 @@ const VERTEX_SHADER = /* glsl */ `
   attribute vec2 a_position;
   varying vec2 vUv;
   void main() {
-    vUv = (a_position + 1.0) * 0.5;
+    // Textures are uploaded unflipped, because UNPACK_FLIP_Y_WEBGL makes the
+    // browser run a full-image CPU pass on every single upload. Flipping here
+    // costs nothing: vUv runs top-down, matching canvas row order.
+    vec2 uv = (a_position + 1.0) * 0.5;
+    vUv = vec2(uv.x, 1.0 - uv.y);
     gl_Position = vec4(a_position, 0.0, 1.0);
   }
 `;
@@ -139,7 +143,9 @@ const FRAGMENT_SHADER = /* glsl */ `
 
     vec2 uv = vUv;
     uv.x += vx * intensity * maxAmp;
-    uv.y += vy * intensity * maxAmp;
+    // vUv runs top-down now, so the vertical term inverts to keep the ripple
+    // travelling exactly the way it did with a flipped upload.
+    uv.y -= vy * intensity * maxAmp;
 
     gl_FragColor = texture2D(uText, uv);
   }
@@ -213,6 +219,21 @@ export class TextDistortion {
   private rafId: number | null = null;
   private prevT = 0;
   protected isVisible = false;
+
+  /** Container box, refreshed on resize. Reading it inside the frame loop
+      forces a layout flush on every animated frame. */
+  protected boxW = 0;
+  protected boxH = 0;
+  /** Text colour, refreshed on theme change. `getComputedStyle` inside the
+      frame loop forces a style recalc on every animated frame. */
+  protected textColor = '#1F1C1D';
+  /** Dimensions currently allocated on the GPU, so an unchanged frame can go
+      through texSubImage2D instead of reallocating the texture. */
+  private glTextDims = { w: 0, h: 0 };
+  private glWaterDims = { w: 0, h: 0 };
+  /** True while the last frame still had live ripples, so the frame that
+      drains the final point still gets drawn once. */
+  private hadRipples = false;
   private resizeObserver: ResizeObserver;
   private themeObserver: MutationObserver;
   private intersectionObserver: IntersectionObserver;
@@ -265,7 +286,11 @@ export class TextDistortion {
     this.tick = this.tick.bind(this);
 
     this.resizeObserver = new ResizeObserver(() => this.resize());
-    this.themeObserver = new MutationObserver(() => this.renderText());
+    this.themeObserver = new MutationObserver(() => {
+      this.textColor = readTextColor();
+      this.onMetricsInvalidated();
+      this.renderText();
+    });
     this.intersectionObserver = new IntersectionObserver(
       (entries) => this.onIntersect(entries),
       { threshold: 0 }
@@ -286,6 +311,7 @@ export class TextDistortion {
     } catch {
       /* system font fallback */
     }
+    this.textColor = readTextColor();
     this.resize();
     this.renderText();
     // Signal to CSS that the WebGL effect is live — global rule keys off
@@ -320,6 +346,9 @@ export class TextDistortion {
   private resize() {
     const { width, height } = this.container.getBoundingClientRect();
     if (width === 0 || height === 0) return;
+    this.boxW = width;
+    this.boxH = height;
+    this.onMetricsInvalidated();
     const dpr = this.dpr;
     this.canvas.width = Math.round(width * dpr);
     this.canvas.height = Math.round(height * dpr);
@@ -327,20 +356,37 @@ export class TextDistortion {
     this.renderText();
   }
 
+  /** Called whenever the box or the theme changed. Subclasses that cache font
+      metrics drop them here. */
+  protected onMetricsInvalidated(): void {}
+
+  /** Assigning `width`/`height` reallocates and zero-fills the whole backing
+      store even when the value is identical, so only assign on a real change.
+      Returns the context already transformed into CSS-pixel space. */
+  protected prepareTextCanvas(width: number, height: number): CanvasRenderingContext2D {
+    const dpr = this.dpr;
+    const w = Math.round(width * dpr);
+    const h = Math.round(height * dpr);
+    if (this.textCanvas.width !== w || this.textCanvas.height !== h) {
+      this.textCanvas.width = w;
+      this.textCanvas.height = h;
+    }
+    const ctx = this.textCanvas.getContext('2d')!;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.clearRect(0, 0, width, height);
+    return ctx;
+  }
+
   /** Hook called from the tick loop before the GL render — subclasses can
       refresh the text texture (e.g. on scroll). */
   protected beforeRender(): void {}
 
   protected renderText() {
-    const { width, height } = this.container.getBoundingClientRect();
+    const width = this.boxW;
+    const height = this.boxH;
     if (width === 0 || height === 0) return;
 
-    const dpr = this.dpr;
-    this.textCanvas.width = Math.round(width * dpr);
-    this.textCanvas.height = Math.round(height * dpr);
-    const ctx = this.textCanvas.getContext('2d')!;
-    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    ctx.clearRect(0, 0, width, height);
+    const ctx = this.prepareTextCanvas(width, height);
 
     const textEl = this.container.querySelector<HTMLElement>('[data-text-distortion-text]');
     let fontSize: number;
@@ -379,7 +425,7 @@ export class TextDistortion {
       }
     }
 
-    ctx.fillStyle = readTextColor();
+    ctx.fillStyle = this.textColor;
     ctx.textAlign = textAlign;
     ctx.textBaseline = 'alphabetic';
 
@@ -426,12 +472,26 @@ export class TextDistortion {
     this.waterTexture.addPoint({ x, y });
   }
 
-  private uploadTexture(tex: WebGLTexture, source: HTMLCanvasElement) {
+  private uploadTexture(
+    tex: WebGLTexture,
+    source: HTMLCanvasElement,
+    dims: { w: number; h: number },
+  ) {
     const gl = this.gl;
     gl.bindTexture(gl.TEXTURE_2D, tex);
-    gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
+    gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, false);
+    // Canvas2D already stores premultiplied alpha, so this flag matches the
+    // source format and stays on the fast path. The flip did not.
     gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, true);
-    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, source);
+    // texImage2D reallocates GPU storage every call. Once the size settles,
+    // texSubImage2D writes into the existing allocation instead.
+    if (dims.w === source.width && dims.h === source.height) {
+      gl.texSubImage2D(gl.TEXTURE_2D, 0, 0, 0, gl.RGBA, gl.UNSIGNED_BYTE, source);
+    } else {
+      gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, source);
+      dims.w = source.width;
+      dims.h = source.height;
+    }
   }
 
   private tick(now: number) {
@@ -440,14 +500,30 @@ export class TextDistortion {
     this.prevT = now;
 
     this.beforeRender();
-    this.waterTexture.update(scale);
+
+    // Ripples only exist while the pointer is moving over this element. With
+    // none alive and no new text, the framebuffer already holds exactly this
+    // image, so the shader pass and both uploads would be pure waste — and
+    // three of the four instances on the page sit idle like that most of the
+    // time. The frame that drains the last ripple still renders once, to
+    // clear it.
+    const hasRipples = this.waterTexture.points.length > 0;
+    if (hasRipples) this.waterTexture.update(scale);
+    const dirty = this.textTexture.needsUpdate || hasRipples || this.hadRipples;
+    this.hadRipples = hasRipples;
+
+    if (!dirty) {
+      if (this.isVisible) this.rafId = requestAnimationFrame(this.tick);
+      else this.rafId = null;
+      return;
+    }
 
     const gl = this.gl;
     if (this.textTexture.needsUpdate && this.textCanvas.width > 0) {
-      this.uploadTexture(this.glTextTex, this.textCanvas);
+      this.uploadTexture(this.glTextTex, this.textCanvas, this.glTextDims);
       this.textTexture.needsUpdate = false;
     }
-    this.uploadTexture(this.glWaterTex, this.waterTexture.canvas);
+    this.uploadTexture(this.glWaterTex, this.waterTexture.canvas, this.glWaterDims);
 
     gl.clearColor(0, 0, 0, 0);
     gl.clear(gl.COLOR_BUFFER_BIT);

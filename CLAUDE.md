@@ -187,6 +187,9 @@ Site identity, contact, and social handles are centralised in `src/config/site.t
 - **Never call `requestAnimationFrame` directly** — subscribe to `FrameLoop.ts`. Independent loops each write to the DOM at their own point in the frame and multiply style/layout passes
 - **Never attach a `scroll` listener that measures the DOM** — use `ScrollScheduler.ts`. It splits measurement from mutation so a scroll frame costs one layout pass instead of one per component
 - Anything full-screen that changes every frame is a resolution-scaling trap: a viewport-sized canvas repaint re-uploads megabytes to the compositor per tick. Prefer a layer that is rasterised once and only transformed
+- Never measure the DOM inside a frame loop (`getBoundingClientRect`, `getComputedStyle`, `measureText`). Cache on resize and theme change instead — `TextDistortion` shows the pattern
+- Assigning `canvas.width`/`height` reallocates and zero-fills the backing store even when the value is unchanged. Guard every assignment with a size comparison
+- Never set `UNPACK_FLIP_Y_WEBGL`. It forces a full-image CPU pass on every upload; flip in the vertex shader, which is free
 - Semantic HTML + ARIA required — do not regress accessibility (skip-link, focus-visible, aria-pressed on theme toggle, `aria-labelledby`/`aria-label` on sections)
 - Sections use `id` for anchor nav: `#about`, `#works`, `#faq`, `#contact`
 - `set:html` is used in About/FAQ for inline `<strong>` and `<a>` — source is the JSON files we own; **do not** wire this to an untrusted CMS without sanitising
