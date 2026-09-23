@@ -138,7 +138,7 @@ All spacing tokens are fluid `clamp()` values. Always use `--sp-*` tokens, never
 
 | Module | Responsibility |
 |---|---|
-| `FrameLoop.ts` | **The single RAF loop.** Every continuous animation subscribes here — never start your own `requestAnimationFrame` |
+| `FrameLoop.ts` | **The single RAF loop.** Every continuous animation subscribes here — never start your own `requestAnimationFrame`. Use `onFrameWhileVisible` unless the animation genuinely must run off screen |
 | `ScrollScheduler.ts` | **The single scroll listener.** Batched `read`/`write` phases so a frame does one layout pass, not one per component |
 | `SmoothScroll.ts` | Lenis init + anchor-click hijack |
 | `DriftTexture.ts` | Shared, downscaled source image for every `PixelDrift` |
@@ -186,6 +186,8 @@ Site identity, contact, and social handles are centralised in `src/config/site.t
 - One vanilla-TS module per concern in `src/scripts/`
 - **Never call `requestAnimationFrame` directly** — subscribe to `FrameLoop.ts`. Independent loops each write to the DOM at their own point in the frame and multiply style/layout passes
 - **Never attach a `scroll` listener that measures the DOM** — use `ScrollScheduler.ts`. It splits measurement from mutation so a scroll frame costs one layout pass instead of one per component
+- Animating something nobody can see still costs a style recalculation every frame, forever. Gate continuous animations on visibility with `onFrameWhileVisible`
+- Parallaxed elements are not where their document position says they are. Measure a rendered rect before concluding an animation is broken — the stars travel over 3000px while the page scrolls 2200
 - Anything full-screen that changes every frame is a resolution-scaling trap: a viewport-sized canvas repaint re-uploads megabytes to the compositor per tick. Prefer a layer that is rasterised once and only transformed
 - Never measure the DOM inside a frame loop (`getBoundingClientRect`, `getComputedStyle`, `measureText`). Cache on resize and theme change instead — `TextDistortion` shows the pattern
 - Assigning `canvas.width`/`height` reallocates and zero-fills the backing store even when the value is unchanged. Guard every assignment with a size comparison

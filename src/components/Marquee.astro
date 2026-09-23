@@ -55,7 +55,7 @@ const allItems = [...marquee.items, ...marquee.items];
 </style>
 
 <script>
-  import { onFrame } from '../scripts/FrameLoop';
+  import { onFrameWhileVisible } from '../scripts/FrameLoop';
 
   // Velocity-modulated marquee: base speed + scroll-velocity boost.
   // Runs on the shared frame loop; Lenis 'scroll' event feeds in the boost.
@@ -151,6 +151,9 @@ const allItems = [...marquee.items, ...marquee.items];
     }
     window.addEventListener('resize', measure);
 
-    stopFrame = onFrame(tick);
+    // The marquee used to translate its track every frame for the whole
+    // session, including the entire time it was scrolled past.
+    const marqueeEl = track.closest('.marquee') ?? track;
+    stopFrame = onFrameWhileVisible(marqueeEl, tick);
   }
 </script>

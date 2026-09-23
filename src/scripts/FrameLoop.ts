@@ -29,6 +29,37 @@ const tick = (now: number) => {
   else prevT = 0;
 };
 
+/** Subscribe to the shared loop, but only while `el` is on screen.
+ *
+ * Work nobody can see is still work: an off-screen marquee writing a transform
+ * every frame costs a style recalculation for the whole session, on every
+ * frame, forever. The margin starts the callback slightly before the element
+ * arrives so it is never caught mid-catch-up. */
+export function onFrameWhileVisible(
+  el: Element,
+  cb: FrameCallback,
+  rootMargin = '200px',
+): () => void {
+  let stop: (() => void) | null = null;
+  const io = new IntersectionObserver(
+    (entries) => {
+      const visible = entries[entries.length - 1].isIntersecting;
+      if (visible && !stop) stop = onFrame(cb);
+      else if (!visible && stop) {
+        stop();
+        stop = null;
+      }
+    },
+    { rootMargin },
+  );
+  io.observe(el);
+  return () => {
+    io.disconnect();
+    stop?.();
+    stop = null;
+  };
+}
+
 /** Subscribe to the shared loop. Returns an unsubscribe function. */
 export function onFrame(cb: FrameCallback): () => void {
   callbacks.add(cb);
