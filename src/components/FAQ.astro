@@ -389,6 +389,7 @@ const faqSchema = {
 
 <script>
   import { makePixelDrift } from '../scripts/PixelDrift';
+  import { loadDriftTexture } from '../scripts/DriftTexture';
 
   // Fit "FAQ" + "Information" to exactly 100% of the heading-row width.
   function fitFaqHeading() {
@@ -429,10 +430,7 @@ const faqSchema = {
   // pixel drift) while it's passing through the vertical centre of
   // the viewport. No hover trigger by design — the effect is purely
   // tied to reading position.
-  const img = new Image();
-  img.decoding = 'async';
-  img.src = '/images/background.png';
-  img.onload = () => {
+  loadDriftTexture().then((img) => {
     const wraps = document.querySelectorAll<HTMLElement>('.faq__item-wrap');
     const drifts = new WeakMap<HTMLElement, ReturnType<typeof makePixelDrift>>();
 
@@ -566,5 +564,5 @@ const faqSchema = {
       { rootMargin: '-50% 0px -50% 0px', threshold: 0 },
     );
     wraps.forEach((wrap) => activeObserver.observe(wrap));
-  };
+  });
 </script>

@@ -255,6 +255,7 @@ import hero from '../content/hero.json';
   import { HeroKineticEffect } from '../scripts/HeroKineticEffect';
   import { fitByCanvas } from '../scripts/FitText';
   import { makePixelDrift } from '../scripts/PixelDrift';
+  import { loadDriftTexture } from '../scripts/DriftTexture';
 
   const scrollBtn = document.getElementById('hero-scroll');
   if (scrollBtn) {
@@ -332,10 +333,7 @@ import hero from '../content/hero.json';
   const heroBg = heroBgCanvas?.parentElement as HTMLElement | null;
   if (heroBgCanvas && heroBg) {
     const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    const bgImg = new Image();
-    bgImg.decoding = 'async';
-    bgImg.src = '/images/background.png';
-    bgImg.onload = () => {
+    loadDriftTexture().then((bgImg) => {
       const drift = makePixelDrift(heroBgCanvas, heroBg, bgImg);
       if (reduced) {
         drift.renderOnce();
@@ -343,6 +341,6 @@ import hero from '../content/hero.json';
         drift.start();
         window.addEventListener('resize', drift.resize, { passive: true });
       }
-    };
+    });
   }
 </script>

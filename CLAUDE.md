@@ -139,6 +139,7 @@ All spacing tokens are fluid `clamp()` values. Always use `--sp-*` tokens, never
 | Module | Responsibility |
 |---|---|
 | `SmoothScroll.ts` | Lenis init + anchor-click hijack |
+| `DriftTexture.ts` | Shared, downscaled source image for every `PixelDrift` |
 | `PageScrim.ts` | Scroll-driven dark overlay between hero and overlay content |
 | `Reveal.ts` | `[data-reveal]` + mask-reveal + line-draw IO fallbacks |
 | `GrainCanvas.ts` | Animated film grain |
