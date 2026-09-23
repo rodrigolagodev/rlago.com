@@ -186,6 +186,9 @@ Site identity, contact, and social handles are centralised in `src/config/site.t
 - One vanilla-TS module per concern in `src/scripts/`
 - **Never call `requestAnimationFrame` directly** — subscribe to `FrameLoop.ts`. Independent loops each write to the DOM at their own point in the frame and multiply style/layout passes
 - **Never attach a `scroll` listener that measures the DOM** — use `ScrollScheduler.ts`. It splits measurement from mutation so a scroll frame costs one layout pass instead of one per component
+- A canvas stretched with `width: 100%` gets a composited layer the size of its BOX, not its backing store. Leave it at its own size and scale it with a transform — 12px of canvas instead of a 14 MB layer
+- `will-change` on a fixed, full-viewport element keeps a layer alive for the whole page. If the element is only visible for part of it, take it out of the layer tree the rest of the time
+- Layer footprint is its own budget, separate from frame time. Measure it with CDP `LayerTree` and resolve each layer's owning node — the page carried 388 MB at 1440p, most of it full-viewport layers stacked over the hero
 - Animating something nobody can see still costs a style recalculation every frame, forever. Gate continuous animations on visibility with `onFrameWhileVisible`
 - Parallaxed elements are not where their document position says they are. Measure a rendered rect before concluding an animation is broken — the stars travel over 3000px while the page scrolls 2200
 - Anything full-screen that changes every frame is a resolution-scaling trap: a viewport-sized canvas repaint re-uploads megabytes to the compositor per tick. Prefer a layer that is rasterised once and only transformed
