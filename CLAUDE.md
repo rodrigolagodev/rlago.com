@@ -195,6 +195,7 @@ Site identity, contact, and social handles are centralised in `src/config/site.t
 - Flat-coloured canvas textures upload as `GL_ALPHA`, not `GL_RGBA`, with the colour passed as a uniform. Three quarters of the bytes in an RGBA upload of single-colour text are a constant
 - Per-frame cost has to fit the DISPLAY's frame, not 16.7 ms. A 144 Hz monitor allows 6.9 ms and a 165 Hz one 6.1 ms. Anything that scales with viewport area needs a rate limit of its own. `TextDistortion` measures the display's frame interval and what a render actually costs, and exposes the answer as `minRenderIntervalMs` — do not hardcode a rate, the right one differs per machine
 - Measure with vsync off (`--disable-gpu-vsync --disable-frame-rate-limit`) and read the 95th-percentile frame time. Frame counts under vsync only tell you whether it hit 60, not how much headroom is left
+- Fast scrolling is its own regime and a JS CPU profile cannot see it — the main thread sits ~81% idle while the cost is rasterising newly exposed content. Trace `RasterTask` instead. Measured here: 0.6 ms/s of raster at slow scroll against 38 ms/s at speed, which is why the page degrades with viewport width
 - Semantic HTML + ARIA required — do not regress accessibility (skip-link, focus-visible, aria-pressed on theme toggle, `aria-labelledby`/`aria-label` on sections)
 - Sections use `id` for anchor nav: `#about`, `#works`, `#faq`, `#contact`
 - `set:html` is used in About/FAQ for inline `<strong>` and `<a>` — source is the JSON files we own; **do not** wire this to an untrusted CMS without sanitising

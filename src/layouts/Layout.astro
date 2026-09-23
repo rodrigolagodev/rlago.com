@@ -142,10 +142,13 @@ const websiteSchema = {
      second was dragging the cursor's filter along with it. */
   #grain-layer {
     position: fixed;
-    top: -25%;
-    left: -25%;
-    width: 150%;
-    height: 150%;
+    /* Only as oversized as the animation below actually needs. This layer is
+       rasterised once and never repainted, but it still occupies GPU memory
+       proportional to its area — at 1440p, 150% of the viewport was 33 MB. */
+    top: -10%;
+    left: -10%;
+    width: 120%;
+    height: 120%;
     z-index: 10000;
     pointer-events: none;
     opacity: 0;
@@ -159,20 +162,21 @@ const websiteSchema = {
     animation: grain-shift 500ms steps(1, end) infinite;
   }
 
-  /* Ten stops across 500ms — the same 20 changes a second the canvas
-     repaint produced, as a compositor-only transform. Offsets stay well
-     inside the 25% margin the layer carries on each side. */
+  /* Ten stops across 500ms — the same 20 changes a second the canvas repaint
+     produced, as a compositor-only transform. Offsets are percentages of the
+     layer, so ±5% here is ±6% of the viewport against a 10% margin on each
+     side. The tile is noise, so any offset reads as a fresh grain field. */
   @keyframes grain-shift {
     0%   { transform: translate3d(0, 0, 0); }
-    10%  { transform: translate3d(-6%, -3%, 0); }
-    20%  { transform: translate3d(4%, -7%, 0); }
-    30%  { transform: translate3d(-8%, 5%, 0); }
-    40%  { transform: translate3d(7%, 2%, 0); }
-    50%  { transform: translate3d(-3%, -8%, 0); }
-    60%  { transform: translate3d(8%, 6%, 0); }
-    70%  { transform: translate3d(-5%, -2%, 0); }
-    80%  { transform: translate3d(2%, 8%, 0); }
-    90%  { transform: translate3d(-7%, 4%, 0); }
+    10%  { transform: translate3d(-4%, -2%, 0); }
+    20%  { transform: translate3d(3%, -5%, 0); }
+    30%  { transform: translate3d(-5%, 3%, 0); }
+    40%  { transform: translate3d(4%, 1%, 0); }
+    50%  { transform: translate3d(-2%, -5%, 0); }
+    60%  { transform: translate3d(5%, 4%, 0); }
+    70%  { transform: translate3d(-3%, -1%, 0); }
+    80%  { transform: translate3d(1%, 5%, 0); }
+    90%  { transform: translate3d(-5%, 2%, 0); }
   }
 
   @media (prefers-reduced-motion: reduce) {
