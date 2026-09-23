@@ -101,10 +101,13 @@ import hero from '../content/hero.json';
 
   .hero__bg canvas {
     position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
+    top: 0;
+    left: 0;
     display: block;
+    /* No width/height here on purpose: the element keeps its tiny backing-store
+       size and PixelDrift scales it with a transform, so its composited layer
+       stays a few pixels instead of a full viewport. */
+    transform-origin: 0 0;
     image-rendering: pixelated;
     image-rendering: crisp-edges;
     /* CSS fallback only. PixelDrift normally applies this per pixel on the

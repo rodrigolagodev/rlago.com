@@ -84,6 +84,13 @@ export function makePixelDrift(
     PIXEL_H = Math.max(3, Math.round(PIXEL_W * (vh / vw) * TARGET_PIXEL_ASPECT));
     canvas.width = PIXEL_W;
     canvas.height = PIXEL_H;
+    // Scale with a transform rather than letting CSS stretch the element.
+    // A canvas sized to `width: 100%` gets a composited layer the size of its
+    // box — 14 MB at 1440p, and Chromium keeps two of them — whereas a 12px
+    // one costs nothing and the compositor's scale is free. `pixelated` keeps
+    // the blocks hard-edged either way.
+    canvas.style.transformOrigin = '0 0';
+    canvas.style.transform = `scale(${vw / PIXEL_W}, ${vh / PIXEL_H})`;
     drawW = PIXEL_W * SRC_OVERSCAN;
     drawH = PIXEL_H * SRC_OVERSCAN;
     MAX_DX = (PIXEL_W * (SRC_OVERSCAN - 1)) / 2;

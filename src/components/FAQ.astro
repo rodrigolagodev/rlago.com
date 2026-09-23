@@ -242,10 +242,11 @@ const faqSchema = {
      diluting the effect previously). */
   .faq__item-bg {
     position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
+    top: 0;
+    left: 0;
     display: block;
+    /* Scaled by a transform from its own tiny size — see the Hero. */
+    transform-origin: 0 0;
     image-rendering: pixelated;
     image-rendering: crisp-edges;
     /* invert(1) maps the source's dark pixels to bright values, so
