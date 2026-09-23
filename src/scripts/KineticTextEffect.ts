@@ -31,6 +31,19 @@ export interface KineticTextConfig {
 
 const DEFAULT_LETTER_SCALE_MAX = 6;
 
+/** Minimum gap between text rasters, in ms.
+ *
+ * Rasterising the text and pushing it to the GPU is the most expensive thing
+ * in the Hero and it scales with viewport area, so on a 144 or 165 Hz display
+ * there is simply no budget for it on every frame. There is also no need: the
+ * Hero is `position: sticky`, so nothing around the text moves for a slightly
+ * coarser deformation to judder against, and the mouse ripple keeps running
+ * at full display rate because its texture is 128px square.
+ *
+ * Sitting just under a 60 Hz frame leaves 60 Hz displays completely
+ * untouched, and naturally halves 120 Hz and thirds 165 Hz. */
+const MIN_TEXT_FRAME_MS = 13;
+
 // ── Progress strategies ─────────────────────────────────────────────────
 
 /** Sticky-element progress: keyed off raw page scroll, not the element's
@@ -113,6 +126,7 @@ export class KineticTextEffect extends TextDistortion {
 
   private progress = 0;
   private lastRenderedProgress = -1;
+  private lastTextRenderAt = -Infinity;
   // Font and metrics are read from the DOM, which is a style recalc and a set
   // of text measurements. Doing that inside the frame loop is what made the
   // Hero the most expensive thing on the page, so both are cached and dropped
@@ -156,6 +170,9 @@ export class KineticTextEffect extends TextDistortion {
   protected onMetricsInvalidated() {
     this.fontCache = null;
     this.metricsCache = null;
+    // A resize or theme change must repaint immediately, not wait out the
+    // rate limit with stale metrics.
+    this.lastTextRenderAt = -Infinity;
   }
 
   private updateProgress() {
@@ -164,12 +181,13 @@ export class KineticTextEffect extends TextDistortion {
 
   // Recompute here too — defensive against scenarios where the scroll event
   // doesn't fire (sticky edge cases, smooth-scroll interactions).
-  protected beforeRender() {
+  protected beforeRender(now: number) {
     this.updateProgress();
-    if (Math.abs(this.progress - this.lastRenderedProgress) > 0.001) {
-      this.renderText();
-      this.lastRenderedProgress = this.progress;
-    }
+    if (Math.abs(this.progress - this.lastRenderedProgress) <= 0.001) return;
+    if (now - this.lastTextRenderAt < MIN_TEXT_FRAME_MS) return;
+    this.lastTextRenderAt = now;
+    this.renderText();
+    this.lastRenderedProgress = this.progress;
   }
 
   private baseFont(height: number): FontStyle {

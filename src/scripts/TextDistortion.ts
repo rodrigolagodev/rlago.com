@@ -416,7 +416,7 @@ export class TextDistortion {
 
   /** Hook called from the tick loop before the GL render — subclasses can
       refresh the text texture (e.g. on scroll). */
-  protected beforeRender(): void {}
+  protected beforeRender(_now: number): void {}
 
   protected renderText() {
     const width = this.boxW;
@@ -541,7 +541,7 @@ export class TextDistortion {
     const scale = Math.min(4, ((now - this.prevT) / 1000) * 60);
     this.prevT = now;
 
-    this.beforeRender();
+    this.beforeRender(now);
 
     // Ripples only exist while the pointer is moving over this element. With
     // none alive and no new text, the framebuffer already holds exactly this
