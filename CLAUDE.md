@@ -138,6 +138,8 @@ All spacing tokens are fluid `clamp()` values. Always use `--sp-*` tokens, never
 
 | Module | Responsibility |
 |---|---|
+| `FrameLoop.ts` | **The single RAF loop.** Every continuous animation subscribes here — never start your own `requestAnimationFrame` |
+| `ScrollScheduler.ts` | **The single scroll listener.** Batched `read`/`write` phases so a frame does one layout pass, not one per component |
 | `SmoothScroll.ts` | Lenis init + anchor-click hijack |
 | `DriftTexture.ts` | Shared, downscaled source image for every `PixelDrift` |
 | `PageScrim.ts` | Scroll-driven dark overlay between hero and overlay content |
@@ -182,6 +184,8 @@ Site identity, contact, and social handles are centralised in `src/config/site.t
 - New design tokens go in `tokens.css`, not inline
 - Copy lives in `src/content/*.json` — components import it via static `import`
 - One vanilla-TS module per concern in `src/scripts/`
+- **Never call `requestAnimationFrame` directly** — subscribe to `FrameLoop.ts`. Independent loops each write to the DOM at their own point in the frame and multiply style/layout passes
+- **Never attach a `scroll` listener that measures the DOM** — use `ScrollScheduler.ts`. It splits measurement from mutation so a scroll frame costs one layout pass instead of one per component
 - Anything full-screen that changes every frame is a resolution-scaling trap: a viewport-sized canvas repaint re-uploads megabytes to the compositor per tick. Prefer a layer that is rasterised once and only transformed
 - Semantic HTML + ARIA required — do not regress accessibility (skip-link, focus-visible, aria-pressed on theme toggle, `aria-labelledby`/`aria-label` on sections)
 - Sections use `id` for anchor nav: `#about`, `#works`, `#faq`, `#contact`

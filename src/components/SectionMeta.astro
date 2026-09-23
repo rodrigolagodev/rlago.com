@@ -107,6 +107,8 @@ const showIcon = rightIcon !== 'none';
 </style>
 
 <script>
+  import { onScrollFrame } from '../scripts/ScrollScheduler';
+
   // Scroll-driven star spin. One RAF per scroll event, shared across all
   // section-meta stars on the page. Mapping: 0 → max scroll = 0 → 720°.
   // The scroll-timeline CSS path was dropped because it had no visible
@@ -121,25 +123,16 @@ const showIcon = rightIcon !== 'none';
     );
     if (stars.length > 0) {
       const ROTATIONS = 720; // total degrees over the full page scroll
-      let raf = 0;
-      const update = () => {
-        raf = 0;
-        const doc = document.documentElement;
-        const max = doc.scrollHeight - window.innerHeight;
-        const ratio = max > 0 ? Math.min(1, Math.max(0, window.scrollY / max)) : 0;
-        const deg = ratio * ROTATIONS;
-        stars.forEach((s) => s.style.setProperty('--star-rotate', `${deg}deg`));
-      };
-      const onScroll = () => {
-        if (raf) return;
-        raf = requestAnimationFrame(update);
-      };
-      requestAnimationFrame(update);
-      window.addEventListener('scroll', onScroll, { passive: true });
-      window.addEventListener('resize', onScroll, { passive: true });
-      // Lenis emits native scroll events, but on first paint scrollY may
-      // be 0 before fonts/images settle the layout. Re-run after load.
-      window.addEventListener('load', update);
+      // The scheduler already re-runs after load and after fonts settle,
+      // which is when scrollHeight stops moving.
+      onScrollFrame<number>({
+        read: ({ scrollY, maxScroll }) =>
+          (maxScroll > 0 ? Math.min(1, Math.max(0, scrollY / maxScroll)) : 0) *
+          ROTATIONS,
+        write: (deg) => {
+          for (const s of stars) s.style.setProperty('--star-rotate', `${deg}deg`);
+        },
+      });
     }
   }
 </script>

@@ -335,6 +335,7 @@ const copyright = footer.copyrightTemplate
 <script>
   import { fitByCanvas } from '../scripts/FitText';
   import { startStarSpin } from '../scripts/StarSpin';
+  import { onScrollFrame } from '../scripts/ScrollScheduler';
 
   // Fit question text to wrap width (90vw). Re-runs on font load and resize.
   const questionEl = document.querySelector<HTMLElement>('.footer__question');
@@ -398,26 +399,17 @@ const copyright = footer.copyrightTemplate
   if (footerEl && star) {
     // Parallax — offset goes from -1 (section below) to +1 (above),
     // centered at 0 when the section's middle is at the viewport's middle.
-    let ticking = false;
-    const updateParallax = () => {
-      const rect = footerEl.getBoundingClientRect();
-      const vh = window.innerHeight;
-      const sectionCenter = rect.top + rect.height / 2;
-      const offset = (vh / 2 - sectionCenter) / vh;
+    onScrollFrame<number>({
+      read({ viewportH }) {
+        const rect = footerEl.getBoundingClientRect();
+        const sectionCenter = rect.top + rect.height / 2;
+        return (viewportH / 2 - sectionCenter) / viewportH;
+      },
       // Negative multiplier so the star RISES through the section as
       // the page scrolls past it (matches About's behavior).
-      star.style.setProperty('--footer-star-parallax', `${offset * -480}px`);
-      ticking = false;
-    };
-    const onScroll = () => {
-      if (!ticking) {
-        requestAnimationFrame(updateParallax);
-        ticking = true;
-      }
-    };
-    window.addEventListener('scroll', onScroll, { passive: true });
-    window.addEventListener('resize', onScroll, { passive: true });
-    requestAnimationFrame(updateParallax);
+      write: (offset) =>
+        star.style.setProperty('--footer-star-parallax', `${offset * -480}px`),
+    });
 
     startStarSpin(star);
   }

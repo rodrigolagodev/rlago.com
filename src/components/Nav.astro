@@ -247,6 +247,8 @@ import nav from '../content/nav.json';
 </style>
 
 <script>
+  import { onScrollFrame } from '../scripts/ScrollScheduler';
+
   const toggle = document.getElementById('theme-toggle')!;
   const root = document.documentElement;
 
@@ -274,19 +276,17 @@ import nav from '../content/nav.json';
   const progress = document.getElementById('navbar-progress');
   if (progress) {
     const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    const update = () => {
-      const doc = document.documentElement;
-      const scrollable = Math.max(0, doc.scrollHeight - window.innerHeight);
-      const ratio = scrollable > 0
-        ? Math.min(1, Math.max(0, window.scrollY / scrollable))
-        : 0;
-      progress.style.setProperty('--progress', String(ratio));
-    };
-    requestAnimationFrame(update);
-    window.addEventListener('scroll', update, { passive: true });
-    window.addEventListener('resize', update, { passive: true });
     if (reduced) {
       progress.style.transition = 'none';
     }
+
+    // `scrollHeight` forces a layout flush. This used to run on every scroll
+    // event with no frame gate, so it re-measured the document several times
+    // per frame; the scheduler reads it once and shares it.
+    onScrollFrame<number>({
+      read: ({ scrollY, maxScroll }) =>
+        maxScroll > 0 ? Math.min(1, Math.max(0, scrollY / maxScroll)) : 0,
+      write: (ratio) => progress.style.setProperty('--progress', String(ratio)),
+    });
   }
 </script>

@@ -386,6 +386,7 @@ import about from '../content/about.json';
 <script>
   import { fitByDom } from '../scripts/FitText';
   import { startStarSpin } from '../scripts/StarSpin';
+  import { onScrollFrame, requestScrollUpdate } from '../scripts/ScrollScheduler';
 
   const section = document.getElementById('about');
   const hero = document.getElementById('about-hero');
@@ -412,12 +413,10 @@ import about from '../content/about.json';
     // speeds AND opposite directions so the desfase is clearly visible.
     const mobileQuery = window.matchMedia('(max-width: 768px)');
 
-    let ticking = false;
-    function updateParallax() {
-      const rect = section!.getBoundingClientRect();
-      const viewportHeight = window.innerHeight;
-      const sectionCenter = rect.top + rect.height / 2;
-      const offset = (viewportHeight / 2 - sectionCenter) / viewportHeight;
+    // Measuring happens in the scheduler's read phase; everything below is
+    // pure writes, so no other component's write can land between the
+    // measurement and its use and force a second layout.
+    function applyParallax(offset: number) {
 
       // Star parallax: starts near the bottom of the section (top: 85% in
        // CSS) and lifts up as the section scrolls past. Larger range than
@@ -469,32 +468,31 @@ import about from '../content/about.json';
         photo!.style.setProperty('--about-parallax', `${offset * -800}px`);
       }
 
-      ticking = false;
     }
 
-    function onScroll() {
-      if (!ticking) {
-        requestAnimationFrame(updateParallax);
-        ticking = true;
-      }
-    }
+    onScrollFrame<number>({
+      read({ viewportH }) {
+        const rect = section!.getBoundingClientRect();
+        const sectionCenter = rect.top + rect.height / 2;
+        return (viewportH / 2 - sectionCenter) / viewportH;
+      },
+      write: applyParallax,
+    });
 
     if (document.fonts && document.fonts.ready) {
       document.fonts.ready.then(() => {
         fitHello();
-        updateParallax();
+        requestScrollUpdate();
       });
     } else {
       fitHello();
-      updateParallax();
+      requestScrollUpdate();
     }
 
     window.addEventListener('resize', () => {
       fitHello();
-      updateParallax();
+      requestScrollUpdate();
     }, { passive: true });
-
-    window.addEventListener('scroll', onScroll, { passive: true });
 
     if (star) startStarSpin(star);
 

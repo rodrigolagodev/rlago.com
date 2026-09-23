@@ -4,6 +4,12 @@
 // to fit its parent with `image-rendering: pixelated`, so each internal
 // pixel becomes a visible block. JS animates the source offset via a
 // two-axis spring chase with random retargeting + jitter.
+//
+// Drives off the shared frame loop rather than its own RAF: several drifts can
+// be live at once (the hero plus the active FAQ rows) and they should cost one
+// frame callback between them, not one each.
+
+import { onFrame } from './FrameLoop';
 
 export interface PixelDriftOpts {
   pixelW?: number;
@@ -48,6 +54,8 @@ export function makePixelDrift(
   let MAX_DX = (PIXEL_W * (SRC_OVERSCAN - 1)) / 2;
   let MAX_DY = (PIXEL_H * (SRC_OVERSCAN - 1)) / 2;
 
+  // The container box only changes on resize, so cache it instead of
+  // measuring during a frame callback.
   function recomputeDims() {
     const { width: vw, height: vh } = container.getBoundingClientRect();
     if (vw <= 0 || vh <= 0) return;
@@ -82,9 +90,7 @@ export function makePixelDrift(
   const DAMPING = 0.93;
   const JITTER = 0.006;
 
-  let rafId = 0;
-  let running = false;
-  let prevT = 0;
+  let unsubscribe: (() => void) | null = null;
 
   const paint = () => {
     ctx!.clearRect(0, 0, PIXEL_W, PIXEL_H);
@@ -97,15 +103,9 @@ export function makePixelDrift(
     );
   };
 
-  const step = (t: number) => {
-    if (!running) return;
-    // Physics constants below are calibrated for 60 Hz. Scale by dt so the
-    // motion is identical on 120 Hz+ displays instead of being over-damped.
-    // Clamp guards against huge dt after tab-switch / dev-tools pauses.
-    if (prevT === 0) prevT = t;
-    const scale = Math.min(4, ((t - prevT) / 1000) * 60);
-    prevT = t;
-
+  // Physics constants are calibrated for 60 Hz; `scale` is the frame delta
+  // normalised to that, so motion is identical on 120 Hz+ displays.
+  const step = (t: number, scale: number) => {
     if (t >= nextRetargetAt) {
       pickTarget();
       nextRetargetAt =
@@ -127,20 +127,17 @@ export function makePixelDrift(
     if (dy > MAX_DY) { dy = MAX_DY; vy = -Math.abs(vy) * 0.3; }
     else if (dy < -MAX_DY) { dy = -MAX_DY; vy = Math.abs(vy) * 0.3; }
     paint();
-    rafId = requestAnimationFrame(step);
   };
 
   return {
     start() {
-      if (running) return;
-      running = true;
-      prevT = 0;
+      if (unsubscribe) return;
       recomputeDims();
-      rafId = requestAnimationFrame(step);
+      unsubscribe = onFrame(step);
     },
     stop() {
-      running = false;
-      cancelAnimationFrame(rafId);
+      unsubscribe?.();
+      unsubscribe = null;
     },
     resize: recomputeDims,
     renderOnce() {

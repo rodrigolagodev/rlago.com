@@ -55,18 +55,23 @@ const allItems = [...marquee.items, ...marquee.items];
 </style>
 
 <script>
+  import { onFrame } from '../scripts/FrameLoop';
+
   // Velocity-modulated marquee: base speed + scroll-velocity boost.
-  // Driven by RAF; Lenis 'scroll' event feeds in the boost.
+  // Runs on the shared frame loop; Lenis 'scroll' event feeds in the boost.
   const track = document.querySelector<HTMLElement>('.marquee__track');
   const motionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
-  let rafId = 0;
+  let stopFrame: (() => void) | null = null;
   let stopped = motionQuery.matches;
 
-  // Honour mid-session toggles of reduced-motion. Without this the RAF
+  // Honour mid-session toggles of reduced-motion. Without this the loop
   // keeps churning even after the user enables the OS setting.
   motionQuery.addEventListener('change', (e) => {
     stopped = e.matches;
-    if (stopped) cancelAnimationFrame(rafId);
+    if (stopped) {
+      stopFrame?.();
+      stopFrame = null;
+    }
   });
 
   if (track && !stopped) {
@@ -79,7 +84,6 @@ const allItems = [...marquee.items, ...marquee.items];
     let translateX = 0;
     let currentSpeed = BASE_SPEED;
     let scrollBoost = 0;
-    let lastTime = performance.now();
     let halfWidth = 0;
 
     // Native-scroll fallback velocity tracking.
@@ -113,9 +117,10 @@ const allItems = [...marquee.items, ...marquee.items];
       return nativeVelocity;
     };
 
-    const tick = (now: number) => {
-      const dt = Math.min(0.1, (now - lastTime) / 1000);
-      lastTime = now;
+    // dtScale is the frame delta normalised to 60 Hz and already clamped, so
+    // the marquee covers the same distance per second at any refresh rate.
+    const tick = (_now: number, dtScale: number) => {
+      const dt = dtScale / 60;
 
       // Read scroll velocity each frame; asymmetric envelope —
       // jump up on input, decay slowly when input drops.
@@ -137,7 +142,6 @@ const allItems = [...marquee.items, ...marquee.items];
         translateX += halfWidth;
       }
       track.style.transform = `translate3d(${translateX}px, 0, 0)`;
-      if (!stopped) rafId = requestAnimationFrame(tick);
     };
 
     if (document.fonts && document.fonts.ready) {
@@ -147,7 +151,6 @@ const allItems = [...marquee.items, ...marquee.items];
     }
     window.addEventListener('resize', measure);
 
-    lastTime = performance.now();
-    rafId = requestAnimationFrame(tick);
+    stopFrame = onFrame(tick);
   }
 </script>

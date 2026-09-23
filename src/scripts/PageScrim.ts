@@ -3,41 +3,32 @@
 // into the viewport, clears once it scrolls past the top (otherwise the
 // fixed scrim would tint every section that follows).
 
+import { onScrollFrame } from './ScrollScheduler';
+
 const MAX_SCRIM = 0.65;
 
 export function initPageScrim(): void {
-  let heroScrim: HTMLElement | null = null;
-  let marqueeEl: HTMLElement | null = null;
-  let raf = 0;
-
-  const update = () => {
-    raf = 0;
-    if (!heroScrim || !marqueeEl) return;
-    const vh = window.innerHeight;
-    const top = marqueeEl.getBoundingClientRect().top;
-    let p: number;
-    const start = vh * 0.5;
-    if (top >= start || top <= 0) p = 0;
-    else p = 1 - top / start;
-    heroScrim.style.opacity = String(p * MAX_SCRIM);
-  };
-
-  const onScroll = () => {
-    if (raf) return;
-    raf = requestAnimationFrame(update);
-  };
-
   const init = () => {
-    heroScrim = document.querySelector<HTMLElement>('#page-scrim');
-    marqueeEl = document.querySelector<HTMLElement>('.marquee');
-    requestAnimationFrame(update);
+    const heroScrim = document.querySelector<HTMLElement>('#page-scrim');
+    const marqueeEl = document.querySelector<HTMLElement>('.marquee');
+    if (!heroScrim || !marqueeEl) return;
+
+    onScrollFrame<number>({
+      read({ viewportH }) {
+        const top = marqueeEl.getBoundingClientRect().top;
+        const start = viewportH * 0.5;
+        if (top >= start || top <= 0) return 0;
+        return 1 - top / start;
+      },
+      write(p) {
+        heroScrim.style.opacity = String(p * MAX_SCRIM);
+      },
+    });
   };
+
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', init);
   } else {
     init();
   }
-
-  window.addEventListener('scroll', onScroll, { passive: true });
-  window.addEventListener('resize', onScroll, { passive: true });
 }
