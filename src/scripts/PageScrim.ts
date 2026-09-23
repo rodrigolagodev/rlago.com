@@ -13,6 +13,11 @@ export function initPageScrim(): void {
     const marqueeEl = document.querySelector<HTMLElement>('.marquee');
     if (!heroScrim || !marqueeEl) return;
 
+    // `will-change: opacity` on a fixed, full-viewport element keeps a
+    // composited layer alive for the whole page — 14 MB at 1440p — even though
+    // the scrim is only ever visible across the Hero hand-off. Take it out of
+    // the layer tree entirely the rest of the time.
+    let shown = true;
     onScrollFrame<number>({
       read({ viewportH }) {
         const top = marqueeEl.getBoundingClientRect().top;
@@ -21,7 +26,12 @@ export function initPageScrim(): void {
         return 1 - top / start;
       },
       write(p) {
-        heroScrim.style.opacity = String(p * MAX_SCRIM);
+        const visible = p > 0.001;
+        if (visible !== shown) {
+          shown = visible;
+          heroScrim.style.display = visible ? '' : 'none';
+        }
+        if (visible) heroScrim.style.opacity = String(p * MAX_SCRIM);
       },
     });
   };
