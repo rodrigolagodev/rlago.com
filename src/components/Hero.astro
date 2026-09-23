@@ -107,8 +107,16 @@ import hero from '../content/hero.json';
     display: block;
     image-rendering: pixelated;
     image-rendering: crisp-edges;
+    /* CSS fallback only. PixelDrift normally applies this per pixel on the
+       12px-wide source canvas; here it would run over the whole upscaled
+       viewport on every frame, which is the single most expensive thing in
+       the hero-to-next-section hand-off. */
     filter: grayscale(1) contrast(2.15);
     opacity: 0.1;
+  }
+
+  .hero__bg canvas.is-prefiltered {
+    filter: none;
   }
 
   .hero__inner {
@@ -334,7 +342,10 @@ import hero from '../content/hero.json';
   if (heroBgCanvas && heroBg) {
     const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     loadDriftTexture().then((bgImg) => {
-      const drift = makePixelDrift(heroBgCanvas, heroBg, bgImg);
+      const drift = makePixelDrift(heroBgCanvas, heroBg, bgImg, {
+        filter: 'grayscale(1) contrast(2.15)',
+      });
+      if (drift.isFilterApplied()) heroBgCanvas.classList.add('is-prefiltered');
       if (reduced) {
         drift.renderOnce();
       } else {

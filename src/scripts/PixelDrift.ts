@@ -21,6 +21,12 @@ export interface PixelDriftOpts {
   xBias?: number;
   /** Random horizontal range around the bias. */
   xRange?: number;
+  /** Per-pixel CSS filter string, applied while drawing into the tiny canvas
+      rather than by CSS over the upscaled result. These are all per-pixel
+      functions and the upscale is nearest-neighbour, so filtering before or
+      after it is mathematically identical — but here it touches a few hundred
+      pixels instead of the whole viewport, every frame. */
+  filter?: string;
 }
 
 export interface PixelDrift {
@@ -29,6 +35,9 @@ export interface PixelDrift {
   resize(): void;
   /** Paint a single static frame — use for reduced-motion. */
   renderOnce(): void;
+  /** True when the browser applied the canvas filter, so the caller can drop
+      its CSS fallback. Canvas filters need Safari 17+. */
+  isFilterApplied(): boolean;
 }
 
 export function makePixelDrift(
@@ -39,7 +48,10 @@ export function makePixelDrift(
 ): PixelDrift {
   const ctx = canvas.getContext('2d');
   if (!ctx) {
-    return { start() {}, stop() {}, resize() {}, renderOnce() {} };
+    return {
+      start() {}, stop() {}, resize() {}, renderOnce() {},
+      isFilterApplied: () => false,
+    };
   }
 
   const PIXEL_W = opts.pixelW ?? 12;
@@ -47,6 +59,16 @@ export function makePixelDrift(
   const SRC_OVERSCAN = opts.srcOverscan ?? 3;
   const X_BIAS = opts.xBias ?? -0.55;
   const X_RANGE = opts.xRange ?? 0.4;
+  const FILTER = opts.filter ?? '';
+
+  let filterApplied = false;
+  // Assigning canvas.width resets every context property, this one included,
+  // so it has to be re-applied after each resize.
+  const applyFilter = () => {
+    if (!FILTER || !('filter' in ctx)) return;
+    ctx.filter = FILTER;
+    filterApplied = ctx.filter !== 'none' && ctx.filter !== '';
+  };
 
   let PIXEL_H = PIXEL_W;
   let drawW = PIXEL_W * SRC_OVERSCAN;
@@ -67,6 +89,7 @@ export function makePixelDrift(
     MAX_DX = (PIXEL_W * (SRC_OVERSCAN - 1)) / 2;
     MAX_DY = (PIXEL_H * (SRC_OVERSCAN - 1)) / 2;
     ctx!.imageSmoothingEnabled = false;
+    applyFilter();
   }
   recomputeDims();
 
@@ -144,5 +167,6 @@ export function makePixelDrift(
       recomputeDims();
       paint();
     },
+    isFilterApplied: () => filterApplied,
   };
 }

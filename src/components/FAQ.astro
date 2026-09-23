@@ -252,11 +252,17 @@ const faqSchema = {
        on the now-dark inverted row they read as light highlights
        instead of black blotches (which is what `brightness` alone
        can't fix — it scales channels and 0 × anything is still 0). */
+    /* CSS fallback only — PixelDrift applies this per pixel on the tiny
+       source canvas instead. See the Hero for why. */
     filter: grayscale(1) invert(1) contrast(1.2) brightness(2);
     opacity: 0;
     z-index: 1;
     pointer-events: none;
     transition: opacity 200ms var(--faq-ease);
+  }
+
+  .faq__item-bg.is-prefiltered {
+    filter: none;
   }
 
   .faq__item-wrap.is-neighbor .faq__item-bg {
@@ -439,7 +445,10 @@ const faqSchema = {
       const canvas = wrap.querySelector<HTMLCanvasElement>('.faq__item-bg');
       if (!row || !canvas) return;
 
-      const drift = makePixelDrift(canvas, row, img);
+      const drift = makePixelDrift(canvas, row, img, {
+        filter: 'grayscale(1) invert(1) contrast(1.2) brightness(2)',
+      });
+      if (drift.isFilterApplied()) canvas.classList.add('is-prefiltered');
       drift.renderOnce();
       drifts.set(wrap, drift);
 
